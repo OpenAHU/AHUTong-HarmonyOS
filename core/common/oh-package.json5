@@ -1,0 +1,8 @@
+{
+  "name": "core_common",
+  "version": "1.0.0",
+  "description": "Cross-cutting contracts and utilities for AHUTong.",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {}
+}

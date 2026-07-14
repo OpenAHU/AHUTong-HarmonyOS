@@ -4,7 +4,7 @@
 >
 > 当前分支：`migration/android-to-harmonyos`
 >
-> 当前阶段：M1 架构骨架（待开始）
+> 当前阶段：M2 设计系统与导航（待开始）
 
 本文档是安大通 HarmonyOS 迁移的唯一进度台账。每完成一个可独立验收的功能，必须在同一个提交中更新对应条目、验证结果和变更记录，然后将提交推送到远程迁移分支。
 
@@ -50,8 +50,8 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP
-- 当前实现：DevEco Studio 默认页面，业务功能尚未迁移
+- 当前模块：`entry` HAP、`core_common`、`data_schedule`、`feature_schedule` HAR
+- 当前实现：已建立 `Core → Data → Feature → Entry` 可编译依赖链，业务功能尚未迁移
 
 ## 3. 架构映射
 
@@ -98,7 +98,7 @@ entry (HAP / composition root)
 | 阶段 | 内容 | 状态 |
 | --- | --- | --- |
 | M0 | README、迁移文档、功能与架构基线 | 已完成 |
-| M1 | 多模块骨架、依赖规则、测试与构建基线 | 待开始 |
+| M1 | 多模块骨架、依赖规则、测试与构建基线 | 已完成 |
 | M2 | Design System、主题、通用页面骨架与导航 | 待开始 |
 | M3 | Model、Datastore、Network、SDK 基础能力 | 待开始 |
 | M4 | 协议确认、首次启动、登录与会话管理 | 待开始 |
@@ -208,3 +208,4 @@ entry (HAP / composition root)
 | 日期 | 类型 | 内容 | 验证 |
 | --- | --- | --- | --- |
 | 2026-07-14 | 文档 | 建立项目 README、架构映射、迁移阶段、功能台账与提交纪律 | Markdown 链接与仓库状态检查 |
+| 2026-07-14 | 架构 | 建立 `core_common → data_schedule → feature_schedule → entry` HAR/HAP 依赖链 | OHPM 依赖同步；API 24 Debug HAP 构建成功 |

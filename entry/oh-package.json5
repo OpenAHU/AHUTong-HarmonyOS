@@ -1,10 +1,12 @@
 {
   "name": "entry",
   "version": "1.0.0",
-  "description": "Please describe the basic information.",
+  "description": "AHUTong HarmonyOS application entry module.",
   "main": "",
   "author": "",
   "license": "",
-  "dependencies": {}
+  "dependencies": {
+    "feature_schedule": "file:../feature/schedule"
+  }
 }
 

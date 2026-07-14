@@ -37,6 +37,42 @@
           ]
         }
       ]
+    },
+    {
+      "name": "core_common",
+      "srcPath": "./core/common",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "data_schedule",
+      "srcPath": "./data/schedule",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "feature_schedule",
+      "srcPath": "./feature/schedule",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
     }
   ]
 }

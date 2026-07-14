@@ -1,0 +1,10 @@
+{
+  "name": "feature_schedule",
+  "version": "1.0.0",
+  "description": "Schedule presentation and state management for AHUTong.",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "data_schedule": "file:../../data/schedule"
+  }
+}

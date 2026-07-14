@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "data_schedule",
+    "type": "har",
+    "deviceTypes": [
+      "phone"
+    ]
+  }
+}
