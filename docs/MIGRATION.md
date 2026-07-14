@@ -4,7 +4,7 @@
 >
 > 当前分支：`migration/android-to-harmonyos`
 >
-> 当前阶段：M11 全量审计与发布准备；M10 通知与服务卡片已完成
+> 当前阶段：Android 基线源码迁移完成；M4-M7 与 M11 的外部环境验收阻塞
 
 本文档是安大通 HarmonyOS 迁移的唯一进度台账。每完成一个可独立验收的功能，必须在同一个提交中更新对应条目、验证结果和变更记录，然后将提交推送到远程迁移分支。
 
@@ -50,8 +50,8 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`data_payment`、`data_portal`、`data_weather`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom`、`feature_payment`、`feature_portal`、`feature_tools`、`feature_weather`、`feature_repository`、`feature_settings`、`feature_notification`、`feature_widget` HAR
-- 当前实现：M1-M3 基础架构已完成；M4 已完成协议门、登录 UI、门户/教务联合登录、安全凭据冷启动恢复、业务请求失效重登及个人学期初始化，仍待真实账号真机验收；M5 已开始迁移教务业务数据链路
+- 当前模块：`entry` HAP，7 个 `core/*`、10 个 `data/*` 与 17 个 `feature/*` HAR；Entry 使用 Debug/Release 差异源码目标，Release 不包含 `feature_debug` 字节码
+- 当前实现：Android 基线全部用户路由、数据域、设置、通知、服务卡片、更新、Debug/Mock 和首页编辑灰度均已具备 HarmonyOS 实现；本地自动化验证完成，真实校园接口、资金流程、系统能力、逐页视觉和签名发布需外部环境验收
 
 ## 3. 架构映射
 
@@ -101,14 +101,14 @@ entry (HAP / composition root)
 | M1 | 多模块骨架、依赖规则、测试与构建基线 | 已完成 |
 | M2 | Design System、主题、通用页面骨架与导航 | 已完成 |
 | M3 | Model、Datastore、Network、SDK 基础能力 | 已完成 |
-| M4 | 协议确认、首次启动、登录与会话管理 | 进行中 |
-| M5 | 主页、课表、课程详情与周次配置 | 进行中 |
-| M6 | 成绩、考试、校历与空闲教室 | 进行中 |
-| M7 | 校园卡、电费、浴室与余额充值 | 进行中 |
+| M4 | 协议确认、首次启动、登录与会话管理 | 阻塞 |
+| M5 | 主页、课表、课程详情与周次配置 | 阻塞 |
+| M6 | 成绩、考试、校历与空闲教室 | 阻塞 |
+| M7 | 校园卡、电费、浴室与余额充值 | 阻塞 |
 | M8 | 工具、电话本、失物招领、天气与仓库资源 | 已完成 |
 | M9 | 设置、关于、开源许可与数据清理 | 已完成 |
 | M10 | 通知、课前提醒、服务卡片及后台任务 | 已完成 |
-| M11 | 全量 UI 对照、性能、稳定性、隐私与发布准备 | 进行中 |
+| M11 | 全量 UI 对照、性能、稳定性、隐私与发布准备 | 阻塞 |
 
 阶段只用于组织工作；提交仍按“一个可独立验收的功能”拆分，不把整个阶段压成一个大提交。
 
@@ -122,31 +122,31 @@ entry (HAP / composition root)
 | --- | --- | --- | --- | --- |
 | 四入口主导航 | App / BottomNavBar | `entry` | 已完成 | 主页、课表、工具、设置 Tabs；API 24 Debug HAP 构建通过；无连接设备，待补真机视觉验证 |
 | 启动与协议确认 | `feature:login` / Splash | `feature/login` | 已完成 | 免责声明、隐私政策、商业合作依次确认并分别持久化；拒绝即终止 UIAbility；API 24 Debug HAP 构建通过，无连接设备，待补真机视觉与重启持久化验证 |
-| 统一身份认证登录 | `feature:login` + `data:auth` | `feature/login` + `data/auth` | 进行中 | 已迁移 UI、状态、Repository、门户验证码/OCR/5 次重试，以及教务 CAS `lt`、设备校验、兼容加密、登录和主页验证；固定向量、无凭据端点及 API 24 构建通过；尚缺真实账号真机端到端验证，故未标记完成 |
-| 登录态恢复与失效重登 | `core:common` + `data:auth` | `core/common` + `data/auth` | 进行中 | 已用 Asset Store 安全保存凭据并支持冷启动恢复；教务/门户业务请求识别 401/403 或登录页后重建会话并仅重试一次，只有最终认证失败才发布会话过期事件，AppLaunchGate 订阅后立即返回登录页；通用公共 HTTP 的 401 不再误伤校园会话；API 24 构建及会话状态单测通过，因无真实账号和设备尚未完成过期会话运行验收 |
+| 统一身份认证登录 | `feature:login` + `data:auth` | `feature/login` + `data/auth` | 阻塞 | 源码迁移已完成：UI、状态、Repository、门户验证码/OCR/5 次重试，以及教务 CAS `lt`、设备校验、兼容加密、登录和主页验证；固定向量、无凭据端点及 API 24 构建通过；缺真实账号和设备执行端到端验收 |
+| 登录态恢复与失效重登 | `core:common` + `data:auth` | `core/common` + `data/auth` | 阻塞 | 源码迁移已完成：Asset Store 安全凭据、冷启动恢复、教务/门户自动重登、最终认证失败事件和立即返回登录页；会话状态单测与构建通过，缺真实账号和设备验证线上 Cookie 过期 |
 | 个人与学期初始化 | Setup / Info | `feature/login` + `data/schedule` | 已完成 | 登录后缺少配置时显示学年、学期（1/2/3）、当前周初始化页；校验输入、保存用户隔离学年/学期并按当前周反推开学周一；设置页可随时重新进入相同配置流程，保存后重排课前提醒并刷新服务卡片；API 24 构建通过，无设备待补交互验证 |
 
 ### 6.2 首页与教学服务
 
 | 功能 | Android 来源 | HarmonyOS 目标 | 状态 | 验证/备注 |
 | --- | --- | --- | --- | --- |
-| 首页与卡片编排 | `feature:home` | `feature/home` | 进行中 | 已迁移日期与当前/下节/今日课程概览、今日课程列表、8 槽位工具网格及课表联动，并接入校园卡余额/动态码与天气真实数据卡；API 24 构建通过，待设备视觉验证及其余首页模块审计 |
-| 首页卡片编辑 | `feature:home` | `feature/home` | 进行中 | 支持进入/完成编辑、8 槽位添加与隐藏、长按卡片跨行/列拖拽交换、目标槽高亮、上移/下移无障碍备选、满槽禁用，以及按用户即时持久化；对齐 Android `home_edit` 灰度，服务端优先、本地 0% 稳定分桶回退，启用后工具页显示编辑入口；API 24 构建通过，拖拽阈值与触控视觉待设备验收 |
-| 电子课表 | `feature:schedule` + `data:schedule` | 对应同名域 | 进行中 | 已迁移数据源、用户/学期隔离缓存、20 周切换、回到当前周、强制刷新、星期日期与 1–13 节网格、课程色块及加载/空/错状态；API 24 构建通过，真实课表与视觉仍待账号设备验证 |
-| 课程详情 | `feature:schedule` | `feature/schedule` | 进行中 | 点击课程色块显示名称、连续/单双/离散周次、星期与节次、地点、教师，支持遮罩和按钮关闭；API 24 构建通过，待设备交互与视觉验收 |
-| 成绩查询 | `feature:grade` + `data:grade` | 对应同名域 | 进行中 | 已迁移多学籍资料识别与切换、各学籍独立成绩/排名缓存、成绩 JSON 聚合、学期筛选、跨学期搜索、学期/总 GPA、学分、总专业排名、学期排名、更新时间、刷新与空错状态；排名从 `semester-index/{profileId}` 的 `gpaSemesterModel` 安全提取；API 24 构建通过，真实账号接口待设备验证 |
-| 考试查询 | `feature:exam` + `data:exam` | 对应同名域 | 进行中 | 已兼容新版考试表格/座位脚本与旧版 JS 数组，支持用户缓存、课程搜索、刷新、时间状态、地点座位及空错状态，并从首页工具进入；API 24 构建通过，真实页面待账号设备验证 |
-| 校历 | `feature:calendar` + `data:calendar` | 对应同名域 | 进行中 | 已补齐与 Android 一致的 `data_calendar` 仓库边界，将校历原子下载到应用 `files/images`、缓存优先、强制刷新失败回退旧缓存；UI 支持 0.5–5 倍双指缩放、单指平移、双击复位，并将同一缓存文件通过 PhotoAccessHelper 系统确认对话框保存到图库；API 24 构建通过，文件显示、手势与保存待真机验收 |
-| 空闲教室 | `feature:classroom` | `feature/classroom` | 进行中 | 已迁移磬苑/龙河校区、教学楼多选、1–13 节与上午/下午/晚上快捷选择、今天/明天及任意起止日期（不早于今天、自动维护起止顺序）、全楼/全节默认查询、结果去重排序与空错状态；教务 JSON POST 复用自动重登；API 24 构建通过，真实结果和日期选择器视觉待设备验证 |
+| 首页与卡片编排 | `feature:home` | `feature/home` | 阻塞 | 源码迁移及模块审计完成，含日期/课程、8 槽工具、校园卡动态码和天气卡；构建通过，缺设备逐页视觉验收 |
+| 首页卡片编辑 | `feature:home` | `feature/home` | 阻塞 | 编辑、拖拽、无障碍排序、持久化及 `home_edit` 远程灰度均已实现；分桶单测和构建通过，缺设备触控验收 |
+| 电子课表 | `feature:schedule` + `data:schedule` | 对应同名域 | 阻塞 | 数据源、隔离缓存、20 周网格、刷新和全状态已实现；构建通过，缺真实课表账号与设备视觉验收 |
+| 课程详情 | `feature:schedule` | `feature/schedule` | 阻塞 | 信息与关闭交互已实现并构建通过，缺设备触控与视觉验收 |
+| 成绩查询 | `feature:grade` + `data:grade` | 对应同名域 | 阻塞 | 多学籍成绩/排名、缓存、筛选、搜索和聚合已实现并构建通过，缺真实账号接口验收 |
+| 考试查询 | `feature:exam` + `data:exam` | 对应同名域 | 阻塞 | 新旧页面解析、缓存、搜索、刷新和状态已实现并构建通过，缺真实账号页面验收 |
+| 校历 | `feature:calendar` + `data:calendar` | 对应同名域 | 阻塞 | 仓库缓存、手势查看与系统图库保存已实现并构建通过，缺设备手势和图库确认验收 |
+| 空闲教室 | `feature:classroom` | `feature/classroom` | 阻塞 | 完整筛选、日期范围、查询与状态已实现并构建通过，缺真实账号结果和设备日期选择验收 |
 
 ### 6.3 校园生活与缴费
 
 | 功能 | Android 来源 | HarmonyOS 目标 | 状态 | 验证/备注 |
 | --- | --- | --- | --- | --- |
-| 校园卡信息与余额 | `data:campuscard` / Home | `data/campuscard` + `feature/home` | 进行中 | 新增门户业务会话客户端与失效重登，迁移 `/xzxcard/yue` 余额与 `/xzxcard/qrcode` 动态校园码；支持余额缓存/刷新、卡片正反切换、码刷新、全屏放大及亮度恢复；API 24 Debug HAP 构建通过，真实余额和动态码待真机账号验证 |
-| 校园卡余额充值 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移首页入口、金额校验、身份确认/复制、支付宝 Scheme/网页降级；银行卡路径已接入 YCard CAS 票据换 OAuth 令牌、账户余额、安全随机数与 SHA-256 签名、创建订单、支付结果及防重复提交；API 24 Debug HAP 构建通过，涉及真实资金，未经测试账号和真机成功小额验证前不标记完成 |
-| 电费充值 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移校区→楼栋→楼层→房间四级选择、电量信息、金额与 6 位密码校验、第三方房间载荷、动态密码映射、SHA-256 签名订单/支付和结果；成功支付后按用户保存并去重最近 2 个房间，单条历史自动恢复、双条提供快捷选择；API 24 Debug HAP 构建通过，真实支付待测试账号真机小额验证 |
-| 浴室缴费 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移竹园/龙河、桔园/蕙园选择，手机号账户查询，现金/赠送余额，金额校验，6 位密码确认与映射加密，YCard 订单/支付与成功失败状态；API 24 Debug HAP 构建通过，涉及真实资金，待测试账号真机小额验证 |
+| 校园卡信息与余额 | `data:campuscard` / Home | `data/campuscard` + `feature/home` | 阻塞 | 余额、动态码、缓存刷新、全屏与亮度恢复已实现并构建通过，缺真实账号和设备验证 |
+| 校园卡余额充值 | `feature:payment` | `data/payment` + `feature/payment` | 阻塞 | 支付宝及 YCard 银行卡完整订单路径已实现并构建通过；涉及真实资金，缺授权测试账号和设备小额验收 |
+| 电费充值 | `feature:payment` | `data/payment` + `feature/payment` | 阻塞 | 四级房间、电量、签名支付、结果和最近房间恢复已实现并构建通过；缺授权测试账号和设备小额验收 |
+| 浴室缴费 | `feature:payment` | `data/payment` + `feature/payment` | 阻塞 | 浴室选择、账户余额、密码映射、订单和支付状态已实现并构建通过；缺授权测试账号和设备小额验收 |
 | 浴室开放信息 | `feature:home` | `feature/home` | 不适用 | 当前 Android 基线已注释开放状态 UI，`CrawlerCampusCardSource.fetchBathrooms()` 固定返回空列表，仅保留浴室缴费卡片；2022 年历史接口 `https://ahuer.cn/api/bathroom/open` 已不可连接，因此 HarmonyOS 保持当前基线行为，不恢复过期静态状态 |
 | 失物招领 | `feature:portal` + `data:portal` | 对应同名域 | 已完成 | 双状态列表、缓存、刷新、分页、详情、发布/删除、本人帖子管理、全字段搜索、校区/类别筛选、结果计数和多图全屏浏览均已迁移；API 24 Debug HAP 构建通过，无真实账号与连接设备，接口、图片加载和视觉待运行验收 |
 | 校园电话本 | `feature:tools` | `feature/tools` | 已完成 | 已迁移九类、全部 2025/2026 更新内置号码、磬苑/龙河标识、跨目录名称/号码搜索、单号码直接拨号和双号码校区选择；使用系统隐式拨号器，不申请直接通话权限；API 24 Debug HAP 构建通过，待真机验证拨号器拉起 |
@@ -211,6 +211,8 @@ entry (HAP / composition root)
 - 隐私政策末段的“安卓存储隔离”已按目标平台改为“HarmonyOS 应用数据隔离”，其余协议内容与 Android 基线一致。
 - 测试账号、签名文件和线上接口凭据不得进入 Git。
 - YCard 订单签名协议依赖 Android 客户端已公开的应用级密钥；迁移仅为保持现有协议兼容，不将其视为用户凭据，发布前应与服务端协商更换为不依赖客户端固定密钥的方案。
+- API 24 编译器会对 HAR 内的网络/定位调用给出权限静态提示，即使最终 Entry Manifest 已声明对应权限；最终合并清单已包含 INTERNET、模糊/精确定位和提醒代理权限，仍需真机确认授权与调用。
+- 当前 `hdc list targets` 返回 `[Empty]`，且没有可用真实账号、资金测试授权或签名材料；这些外部条件是剩余验收的明确阻塞项，不属于未迁移源码功能。
 
 ## 10. 变更记录
 
@@ -281,3 +283,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 设置学期显示修正 | 设置页从用户隔离存储的标准学期键（如 `2025-2026-2`）提取末段学期序号，继续以独立学年字段展示，避免出现“第 2025-2026-2 学期”；同时兼容旧版仅保存序号的本地数据 | API 24 Debug HAP 构建验证；无连接设备，字体截断与旧数据升级展示待真机验收 |
 | 2026-07-15 | Release 构建基线 | 对齐 Android Release 压缩策略，开启 ArkTS 压缩和 `console.*` 日志移除；为避免校园 API JSON 与跨 HAR 导出被改名，明确不启用属性/导出/文件名混淆；统一 Ability 正式日志域与标签，删除 DevEco 默认 `abc` 设备测试；新增构建、单测、签名、真机和发布清单并由 README 引用 | API 24 Debug 与 Release HAP 构建验证；签名材料不入库，正式签名、安装升级和真机冒烟仍需发布环境完成 |
 | 2026-07-15 | Debug 代码发布隔离 | 对齐 Android `debugImplementation`：Entry 拆为共享应用根组件及 Debug/Release 目标入口，只有 Debug 目标引用并注入 `feature_debug`；跨入口的清除数据复用同一维护协调器，Mock、灰度和返回状态通过 AppStorage 修订信号同步 | 分别构建 `entry@debug` 与 `entry@release`；扫描 Release HAP 的 `modules.abc` 和源码映射，必须不存在 `feature_debug`、`DebugPage`、`MockScenarioController` 与 Mock 数据文本 |
+| 2026-07-15 | 全量源码迁移收口 | 逐项复核 Android 全部导航路由、功能台账、设置项与 HarmonyOS 模块；确认 Android 二维码首页偏好当前为注释代码，不额外恢复；将源码完成与外部验收分离，M4-M7/M11 转为明确阻塞状态 | `core_common`、`core_model`、`data_crawler`、`feature_update` 四模块测试全部通过；`entry@debug` Debug HAP、`entry@release` Release HAP 构建通过；Release 源码映射及字节码不含 Debug 模块；HDC 无设备 |
