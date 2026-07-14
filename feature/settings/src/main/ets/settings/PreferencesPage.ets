@@ -77,6 +77,7 @@ export struct PreferencesPage {
               .alignItems(HorizontalAlign.Start).layoutWeight(1);
               Toggle({ type: ToggleType.Switch, isOn: this.liquidGlass }).onChange((enabled: boolean) => {
                 this.liquidGlass = enabled; AhuCache.setUseLiquidGlass(enabled);
+                AppStorage.setOrCreate('ahu_liquid_glass', enabled);
               });
             }.width('100%');
           }

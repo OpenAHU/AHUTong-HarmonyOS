@@ -3,7 +3,10 @@ export class AhuColors {
   static readonly card: Resource = $r('app.color.ahu_card');
   static readonly cardStrong: Resource = $r('app.color.ahu_card_strong');
   static readonly accentSurface: Resource = $r('app.color.ahu_accent_surface');
-  static readonly primaryAction: Resource = $r('app.color.ahu_primary_action');
+  static get primaryAction(): ResourceColor {
+    const custom = AppStorage.get<string>('ahu_theme_color') ?? '';
+    return custom.length > 0 ? custom : $r('app.color.ahu_primary_action');
+  }
   static readonly onPrimaryAction: Resource = $r('app.color.ahu_on_primary_action');
   static readonly onSurface: Resource = $r('app.color.ahu_on_surface');
   static readonly onSurfaceSecondary: Resource = $r('app.color.ahu_on_surface_secondary');

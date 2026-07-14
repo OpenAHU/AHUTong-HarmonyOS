@@ -25,6 +25,7 @@ struct Index {
   @State selectedIndex: number = 0;
   @State setupComplete: boolean = false;
   @State activePage: string = '';
+  @StorageLink('ahu_liquid_glass') useLiquidGlass: boolean = true;
   private readonly scheduleSetupRepository: ScheduleSetupRepository = new ScheduleSetupRepository();
 
   private async logout(clearAll: boolean): Promise<void> {
@@ -110,7 +111,7 @@ struct Index {
     .barMode(BarMode.Fixed)
     .barOverlap(true)
     .barBackgroundColor(AhuColors.card)
-    .barBackgroundBlurStyle(BlurStyle.COMPONENT_ULTRA_THICK)
+    .barBackgroundBlurStyle(this.useLiquidGlass ? BlurStyle.COMPONENT_ULTRA_THICK : BlurStyle.NONE)
     .animationDuration(220)
     .onChange((index: number) => {
       this.selectedIndex = index;
