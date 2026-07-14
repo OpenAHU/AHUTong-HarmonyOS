@@ -13,6 +13,7 @@ import { HomePage } from 'feature_home';
 import { GradePage } from 'feature_grade';
 import { ExamPage } from 'feature_exam';
 import { SchoolCalendarPage } from 'feature_calendar';
+import { FreeClassroomPage } from 'feature_classroom';
 import { ScheduleSetupRepository } from 'data_schedule';
 
 @Component
@@ -70,7 +71,7 @@ struct Index {
             this.selectedIndex = 1;
           },
           onOpenWidget: (route: string) => {
-            if (route === 'grade' || route === 'exam' || route === 'school_calendar') {
+            if (route === 'grade' || route === 'exam' || route === 'school_calendar' || route === 'free_classroom') {
               this.activePage = route;
             }
           }
@@ -134,6 +135,8 @@ struct Index {
         ExamPage({ onBack: () => { this.activePage = ''; } });
       } else if (this.activePage === 'school_calendar') {
         SchoolCalendarPage({ onBack: () => { this.activePage = ''; } });
+      } else if (this.activePage === 'free_classroom') {
+        FreeClassroomPage({ onBack: () => { this.activePage = ''; } });
       } else {
         this.mainContent();
       }

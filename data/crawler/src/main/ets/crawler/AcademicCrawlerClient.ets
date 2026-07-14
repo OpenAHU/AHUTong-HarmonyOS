@@ -4,7 +4,7 @@ import { AppErrorKind, AppResult, AppResults, AppSessionState } from 'core_commo
 import { CrawlerSession } from './CrawlerSession';
 
 export class AcademicCrawlerClient {
-  private headers(): Record<string, string> {
+  private headers(hasBody: boolean = false): Record<string, string> {
     const headers: Record<string, string> = {
       'Accept': '*/*',
       'User-Agent': 'AHUTong/1.0 (HarmonyOS)'
@@ -12,6 +12,9 @@ export class AcademicCrawlerClient {
     const cookie = CrawlerSession.academicCookies.header();
     if (cookie.length > 0) {
       headers['Cookie'] = cookie;
+    }
+    if (hasBody) {
+      headers['Content-Type'] = 'application/json; charset=UTF-8';
     }
     return headers;
   }
@@ -23,12 +26,14 @@ export class AcademicCrawlerClient {
     return /name=["']lt["']/i.test(body) && /cas\/login|_eventId/i.test(body);
   }
 
-  private async requestOnce(url: string): Promise<AppResult<string>> {
+  private async requestOnce(url: string, method: http.RequestMethod = http.RequestMethod.GET,
+    body?: string): Promise<AppResult<string>> {
     const request = http.createHttp();
     try {
       const response = await request.request(url, {
-        method: http.RequestMethod.GET,
-        header: this.headers(),
+        method: method,
+        header: this.headers(body !== undefined),
+        extraData: body,
         expectDataType: http.HttpDataType.STRING,
         connectTimeout: 15_000,
         readTimeout: 30_000,
@@ -37,8 +42,8 @@ export class AcademicCrawlerClient {
       });
       CrawlerSession.academicCookies.save(response.cookies);
       const statusCode = response.responseCode as number;
-      const body = response.result as string;
-      if (this.isLoginPage(statusCode, body)) {
+      const responseBody = response.result as string;
+      if (this.isLoginPage(statusCode, responseBody)) {
         AppSessionState.sessionExpired = true;
         return AppResults.failure<string>(AppErrorKind.AUTHENTICATION, '教务登录状态已失效', statusCode);
       }
@@ -46,7 +51,7 @@ export class AcademicCrawlerClient {
         return AppResults.failure<string>(AppErrorKind.HTTP, `教务请求失败（${statusCode}）`, statusCode);
       }
       AppSessionState.sessionExpired = false;
-      return AppResults.success<string>(body);
+      return AppResults.success<string>(responseBody);
     } catch (error) {
       const businessError = error as BusinessError;
       const message = businessError.message ?? '教务网络请求失败';
@@ -69,6 +74,18 @@ export class AcademicCrawlerClient {
     return this.requestOnce(url);
   }
 
+  async postText(url: string, body: string): Promise<AppResult<string>> {
+    const first = await this.requestOnce(url, http.RequestMethod.POST, body);
+    if (first.isSuccess || first.error?.kind !== AppErrorKind.AUTHENTICATION) {
+      return first;
+    }
+    const restored = await CrawlerSession.reauthenticateAcademic();
+    if (!restored) {
+      return first;
+    }
+    return this.requestOnce(url, http.RequestMethod.POST, body);
+  }
+
   async getJson<T>(url: string): Promise<AppResult<T>> {
     const result = await this.getText(url);
     if (!result.isSuccess || result.data === undefined) {
@@ -77,6 +94,20 @@ export class AcademicCrawlerClient {
         result.error?.message ?? '教务请求失败',
         result.error?.code
       );
+    }
+    try {
+      return AppResults.success<T>(JSON.parse(result.data) as T);
+    } catch (_) {
+      return AppResults.failure<T>(AppErrorKind.PARSE, '教务数据解析失败');
+    }
+  }
+
+
+  async postJson<T>(url: string, body: string): Promise<AppResult<T>> {
+    const result = await this.postText(url, body);
+    if (!result.isSuccess || result.data === undefined) {
+      return AppResults.failure<T>(result.error?.kind ?? AppErrorKind.UNKNOWN,
+        result.error?.message ?? '教务请求失败', result.error?.code);
     }
     try {
       return AppResults.success<T>(JSON.parse(result.data) as T);

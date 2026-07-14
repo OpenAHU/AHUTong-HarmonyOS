@@ -50,7 +50,7 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar` HAR
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom` HAR
 - 当前实现：M1-M3 基础架构已完成；M4 已完成协议门、登录 UI、门户/教务联合登录、安全凭据冷启动恢复、业务请求失效重登及个人学期初始化，仍待真实账号真机验收；M5 已开始迁移教务业务数据链路
 
 ## 3. 架构映射
@@ -137,7 +137,7 @@ entry (HAP / composition root)
 | 成绩查询 | `feature:grade` + `data:grade` | 对应同名域 | 进行中 | 已迁移多学籍入口识别、各学籍成绩 JSON 聚合、用户缓存、学期筛选、跨学期搜索、GPA/学分摘要、刷新与空错状态，并从首页工具进入；API 24 构建通过，真实账号接口与排名数据待设备验证 |
 | 考试查询 | `feature:exam` + `data:exam` | 对应同名域 | 进行中 | 已兼容新版考试表格/座位脚本与旧版 JS 数组，支持用户缓存、课程搜索、刷新、时间状态、地点座位及空错状态，并从首页工具进入；API 24 构建通过，真实页面待账号设备验证 |
 | 校历 | `feature:calendar` + `data:calendar` | 对应同名域 | 进行中 | 已迁移 OpenAHU 校历图片加载、系统图片缓存、适应缩放、刷新及加载/失败状态，并从首页工具进入；保存图库与设备缩放手势待平台验收 |
-| 空闲教室 | `feature:classroom` | `feature/classroom` | 待开始 | 日期、校区、节次与空状态 |
+| 空闲教室 | `feature:classroom` | `feature/classroom` | 进行中 | 已迁移磬苑/龙河校区、教学楼多选、1–13 节与上午/下午/晚上快捷选择、今天/明天、全楼/全节默认查询、结果去重排序与空错状态；教务 JSON POST 复用自动重登；API 24 构建通过，任意日期选择器和真实结果待设备验证 |
 
 ### 6.3 校园生活与缴费
 
@@ -234,3 +234,4 @@ entry (HAP / composition root)
 | 2026-07-14 | 成绩查询 | 新增 `data_grade` / `feature_grade`，迁移多学籍识别、成绩 JSON 转换与加权 GPA 聚合、用户缓存、学期筛选、跨学期搜索、摘要和成绩卡片，并接入首页成绩工具路由 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，学籍 HTML、成绩接口及排名数据待运行验收 |
 | 2026-07-14 | 考试查询 | 新增 `data_exam` / `feature_exam`，兼容新版 `tr[data-finished]` 表格与座位脚本、旧版 `studentExamInfoVms`，实现用户缓存、搜索、刷新、考试状态、地点和座位展示，并接入首页考场工具路由 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，两种线上 HTML 格式待运行验收 |
 | 2026-07-14 | 校历 | 新增 `feature_calendar`，接入 OpenAHU 校历图片，支持系统图片缓存、适应缩放、强制刷新、加载和失败重试，并接入首页校历工具路由 | API 24 Debug HAP 构建成功后记录；无连接设备，保存图库与缩放手势仍待平台验收 |
+| 2026-07-15 | 空闲教室 | 扩展教务客户端 JSON POST 与会话失效重试；新增 `feature_classroom`，迁移校区、教学楼、节次分组、今天/明天筛选、逐楼查询、结果去重排序与首页工具路由 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，接口结果及任意日期选择待运行验收 |
