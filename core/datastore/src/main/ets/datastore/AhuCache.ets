@@ -312,6 +312,14 @@ export class AhuCache {
     return AhuPreferences.getString(AhuCache.userKey(PreferencesKeys.ELECTRICITY_ROOM_HISTORY));
   }
 
+  static saveBathroomLastPhone(value: string): void {
+    AhuPreferences.putString(AhuCache.userKey(PreferencesKeys.BATHROOM_LAST_PHONE), value);
+  }
+  static getBathroomLastPhone(): string | undefined {
+    const value = AhuPreferences.getString(AhuCache.userKey(PreferencesKeys.BATHROOM_LAST_PHONE));
+    return value.length > 0 ? value : undefined;
+  }
+
   static setMockData(enabled: boolean): void { AhuPreferences.putBoolean(PreferencesKeys.MOCK_DATA, enabled); }
   static getMockData(): boolean { return AhuPreferences.getBoolean(PreferencesKeys.MOCK_DATA); }
   static saveMockScenario(id: string): void { AhuPreferences.putString(PreferencesKeys.MOCK_SCENARIO, id); }

@@ -1,5 +1,6 @@
 import { AhuColors, AhuInsetCard, AhuScreen, AhuTypography } from 'core_designsystem';
 import { BathroomAccount, CardPaymentRepository, CardPaymentRepositoryProvider } from 'data_payment';
+import { AhuCache } from 'core_datastore';
 
 @Component
 export struct BathroomRechargePage {
@@ -14,7 +15,10 @@ export struct BathroomRechargePage {
   @State error: string = '';
   @State result: string = '';
   @State showConfirm: boolean = false;
+  @State lastPhone?: string = undefined;
   onBack: () => void = () => {};
+
+  aboutToAppear(): void { this.lastPhone = AhuCache.getBathroomLastPhone(); }
 
   private validAmount(value: string): boolean { return /^\d*\.?\d{0,2}$/.test(value); }
 
@@ -33,6 +37,7 @@ export struct BathroomRechargePage {
     const response = await this.repository.chargeBathroom(this.bathroom, this.amount, this.password, this.account);
     if (response.isSuccess) {
       this.result = `充值成功，订单号：${response.data ?? '--'}`;
+      AhuCache.saveBathroomLastPhone(this.phone.trim()); this.lastPhone = this.phone.trim();
       await this.query();
     } else this.error = response.error?.message ?? '浴室充值失败';
     this.password = ''; this.showConfirm = false; this.paying = false;
@@ -77,6 +82,14 @@ export struct BathroomRechargePage {
                 .enabled(!this.loading && this.phone.trim().length > 0).backgroundColor(AhuColors.primaryAction)
                 .onClick(() => this.query());
             }.width('100%');
+            if (this.lastPhone) {
+              Button(`上次充值：${this.lastPhone}`, { type: ButtonType.Capsule })
+                .alignSelf(ItemAlign.End).height(34).fontSize(AhuTypography.label)
+                .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.chipSelected)
+                .onClick(() => {
+                  this.phone = this.lastPhone ?? ''; this.lastPhone = undefined; this.query();
+                });
+            }
             if (this.loading) LoadingProgress().width(28).height(28).color(AhuColors.primaryAction);
             if (this.account) {
               Text(`手机号：${this.account.phone}`).fontSize(AhuTypography.body);
