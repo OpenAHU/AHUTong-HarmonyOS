@@ -17,6 +17,7 @@ import { FreeClassroomPage } from 'feature_classroom';
 import { BathroomRechargePage, CardRechargePage, ElectricityRechargePage } from 'feature_payment';
 import { ScheduleSetupRepository } from 'data_schedule';
 import { LostFoundPage } from 'feature_portal';
+import { ToolsPage } from 'feature_tools';
 
 @Component
 struct MigrationPage {
@@ -96,10 +97,7 @@ struct Index {
       }, $r('app.string.nav_schedule')));
 
       TabContent() {
-        MigrationPage({
-          title: $r('app.string.nav_tools'),
-          description: $r('app.string.tools_migration_description')
-        });
+        ToolsPage({ onOpenWidget: (route: string) => { this.activePage = route; } });
       }
       .tabBar(new BottomTabBarStyle({
         normal: new SymbolGlyphModifier($r('sys.symbol.wrench_and_screwdriver')),

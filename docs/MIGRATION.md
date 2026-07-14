@@ -50,7 +50,7 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`data_payment`、`data_portal`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom`、`feature_payment`、`feature_portal` HAR
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`data_payment`、`data_portal`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom`、`feature_payment`、`feature_portal`、`feature_tools` HAR
 - 当前实现：M1-M3 基础架构已完成；M4 已完成协议门、登录 UI、门户/教务联合登录、安全凭据冷启动恢复、业务请求失效重登及个人学期初始化，仍待真实账号真机验收；M5 已开始迁移教务业务数据链路
 
 ## 3. 架构映射
@@ -156,7 +156,7 @@ entry (HAP / composition root)
 
 | 功能 | Android 来源 | HarmonyOS 目标 | 状态 | 验证/备注 |
 | --- | --- | --- | --- | --- |
-| 工具页 | `feature:tools` | `feature/tools` | 待开始 | 入口编排与可用状态 |
+| 工具页 | `feature:tools` | `feature/tools` | 已完成 | 新增 `feature_tools`，正式替换工具 Tab 占位页；按首页 8 槽位持久化状态过滤已固定工具，以双列卡片展示其余入口并复用业务路由；API 24 Debug HAP 构建通过，待真机视觉验证 |
 | 仓库资源与下载 | `feature:repository` | `feature/repository` | 待开始 | 平台下载能力需重新评估 |
 | 设置与偏好 | `feature:settings` | `feature/settings` | 待开始 | 主题、课前提醒及业务偏好 |
 | 关于、贡献者、开源许可 | `feature:settings` | `feature/settings` | 待开始 | 信息与跳转一致 |
@@ -246,3 +246,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 失物招领发布 | 扩展门户客户端的带登录恢复 JSON POST，迁移校区与物品类型接口及缓存；发布弹层支持联系人、电话、描述、补充说明、校区、类别和失物/寻物状态，执行必填校验、提交防重入和成功后列表刷新 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，未向线上发布测试信息，提交结果待运行验收；与 Android 当前行为一致暂不上传图片 |
 | 2026-07-15 | 失物招领删除 | 扩展门户客户端的带登录恢复表单 POST；按当前用户学号与发布者证件号匹配“我的帖子”，新增管理列表、删除二次确认、防重入、错误反馈，并在成功后同步当前列表及失物/寻物双状态缓存 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，为避免破坏线上数据未执行真实删除，接口结果待运行验收 |
 | 2026-07-15 | 失物招领浏览增强 | 对齐 Android 的浏览交互，新增跨描述、联系人、电话、校区、类别、发布者、补充说明和时间的全字段搜索，校区/类别横向筛选、结果计数、无匹配状态，以及详情图片点击后的多图全屏查看与前后切换 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，远程图片加载、全屏视觉和触控待真机验收 |
+| 2026-07-15 | 工具页 | 新增 `feature_tools` HAR 并替换主导航工具 Tab 占位内容；复用首页工具注册含义与用户 8 槽位状态，过滤已固定入口，以自适应双列卡片呈现剩余工具并回调统一业务路由 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，网格视觉与首页编辑后刷新待真机验收 |

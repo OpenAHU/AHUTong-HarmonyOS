@@ -262,6 +262,18 @@
       "name": "feature_portal",
       "srcPath": "./feature/portal",
       "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "feature_tools",
+      "srcPath": "./feature/tools",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
     }
   ]
 }
