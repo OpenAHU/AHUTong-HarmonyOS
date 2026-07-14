@@ -3,6 +3,7 @@ import { AuthRepositoryProvider, AuthSession } from 'data_auth';
 import { LaunchConsentGate } from './LaunchConsentGate';
 import { LoginPage } from './LoginPage';
 import { AhuCache } from 'core_datastore';
+import { AppSessionState } from 'core_common';
 
 @Component
 export struct AppLaunchGate {
@@ -10,6 +11,9 @@ export struct AppLaunchGate {
   @State restoring: boolean = true;
   @StorageLink('ahu_logout_revision') logoutRevision: number = 0;
   rejectAction: () => void = () => {};
+  private readonly sessionExpiredListener: () => void = (): void => {
+    this.loggedIn = false;
+  };
 
   @Builder
   private emptyContent() {}
@@ -17,6 +21,7 @@ export struct AppLaunchGate {
   @BuilderParam content: () => void = this.emptyContent;
 
   async aboutToAppear(): Promise<void> {
+    AppSessionState.subscribe(this.sessionExpiredListener);
     if (!AuthSession.isLoggedIn()) {
       this.restoring = false;
       return;
@@ -29,6 +34,10 @@ export struct AppLaunchGate {
     const result = await AuthRepositoryProvider.get().restoreSession();
     this.loggedIn = result.isSuccess;
     this.restoring = false;
+  }
+
+  aboutToDisappear(): void {
+    AppSessionState.unsubscribe(this.sessionExpiredListener);
   }
 
   @Builder

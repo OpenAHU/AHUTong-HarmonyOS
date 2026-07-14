@@ -1,4 +1,4 @@
-import { AppErrorKind, AppResult, AppResults } from 'core_common';
+import { AppErrorKind, AppResult, AppResults, AppSessionState } from 'core_common';
 import { AhuCache, SecureCredentialStore } from 'core_datastore';
 import { User } from 'core_model';
 import { CampusNativeGateway } from 'core_sdk_api';
@@ -58,6 +58,7 @@ export class DefaultAuthRepository implements AuthRepository {
       AhuCache.clearCurrentUser();
       return AppResults.failure<User>(AppErrorKind.UNKNOWN, '安全保存登录凭据失败');
     }
+    AppSessionState.activate();
     return result;
   }
 
@@ -78,6 +79,7 @@ export class DefaultAuthRepository implements AuthRepository {
       return result;
     }
     AhuCache.saveCurrentUser(result.data);
+    AppSessionState.activate();
     return result;
   }
 
@@ -85,6 +87,7 @@ export class DefaultAuthRepository implements AuthRepository {
     this.gateway.clearSession();
     this.crawler.clearSession();
     AhuCache.logout();
+    AppSessionState.expire();
     await this.credentialStore.remove();
   }
 }

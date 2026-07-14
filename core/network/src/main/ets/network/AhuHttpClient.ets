@@ -1,6 +1,6 @@
 import { http } from '@kit.NetworkKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { AppErrorKind, AppResult, AppResults, AppSessionState } from 'core_common';
+import { AppErrorKind, AppResult, AppResults } from 'core_common';
 
 export class NetworkDefaults {
   static readonly CONNECT_TIMEOUT_MS: number = 15_000;
@@ -101,7 +101,6 @@ export class AhuHttpClient {
       this.cookieStore.save(request.url, response.cookies);
       const statusCode = response.responseCode as number;
       if (statusCode === 401 || statusCode === 403) {
-        AppSessionState.sessionExpired = true;
         return AppResults.failure<T>(AppErrorKind.AUTHENTICATION, '登录状态已失效', statusCode);
       }
       if (statusCode < 200 || statusCode >= 300) {
@@ -111,7 +110,6 @@ export class AhuHttpClient {
       const body = response.result as string;
       try {
         const data = JSON.parse(body) as T;
-        AppSessionState.sessionExpired = false;
         return AppResults.success<T>(data);
       } catch (_) {
         return AppResults.failure<T>(AppErrorKind.PARSE, '服务器数据解析失败');

@@ -33,5 +33,23 @@ export class AppResults {
 }
 
 export class AppSessionState {
-  static sessionExpired: boolean = true;
+  private static listeners: Array<() => void> = [];
+  static sessionExpired: boolean = false;
+
+  static activate(): void {
+    AppSessionState.sessionExpired = false;
+  }
+
+  static expire(): void {
+    AppSessionState.sessionExpired = true;
+    AppSessionState.listeners.slice().forEach((listener: () => void): void => listener());
+  }
+
+  static subscribe(listener: () => void): void {
+    if (!AppSessionState.listeners.includes(listener)) AppSessionState.listeners.push(listener);
+  }
+
+  static unsubscribe(listener: () => void): void {
+    AppSessionState.listeners = AppSessionState.listeners.filter((item: () => void): boolean => item !== listener);
+  }
 }

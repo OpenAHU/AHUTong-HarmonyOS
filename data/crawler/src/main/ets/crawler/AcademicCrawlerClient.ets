@@ -44,13 +44,11 @@ export class AcademicCrawlerClient {
       const statusCode = response.responseCode as number;
       const responseBody = response.result as string;
       if (this.isLoginPage(statusCode, responseBody)) {
-        AppSessionState.sessionExpired = true;
         return AppResults.failure<string>(AppErrorKind.AUTHENTICATION, '教务登录状态已失效', statusCode);
       }
       if (statusCode < 200 || statusCode >= 300) {
         return AppResults.failure<string>(AppErrorKind.HTTP, `教务请求失败（${statusCode}）`, statusCode);
       }
-      AppSessionState.sessionExpired = false;
       return AppResults.success<string>(responseBody);
     } catch (error) {
       const businessError = error as BusinessError;
@@ -69,9 +67,13 @@ export class AcademicCrawlerClient {
     }
     const restored = await CrawlerSession.reauthenticateAcademic();
     if (!restored) {
+      AppSessionState.expire();
       return first;
     }
-    return this.requestOnce(url);
+    const retry = await this.requestOnce(url);
+    if (!retry.isSuccess && retry.error?.kind === AppErrorKind.AUTHENTICATION) AppSessionState.expire();
+    else if (retry.isSuccess) AppSessionState.activate();
+    return retry;
   }
 
   async postText(url: string, body: string): Promise<AppResult<string>> {
@@ -81,9 +83,13 @@ export class AcademicCrawlerClient {
     }
     const restored = await CrawlerSession.reauthenticateAcademic();
     if (!restored) {
+      AppSessionState.expire();
       return first;
     }
-    return this.requestOnce(url, http.RequestMethod.POST, body);
+    const retry = await this.requestOnce(url, http.RequestMethod.POST, body);
+    if (!retry.isSuccess && retry.error?.kind === AppErrorKind.AUTHENTICATION) AppSessionState.expire();
+    else if (retry.isSuccess) AppSessionState.activate();
+    return retry;
   }
 
   async getJson<T>(url: string): Promise<AppResult<T>> {

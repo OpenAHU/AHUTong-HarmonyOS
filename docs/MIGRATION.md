@@ -123,7 +123,7 @@ entry (HAP / composition root)
 | 四入口主导航 | App / BottomNavBar | `entry` | 已完成 | 主页、课表、工具、设置 Tabs；API 24 Debug HAP 构建通过；无连接设备，待补真机视觉验证 |
 | 启动与协议确认 | `feature:login` / Splash | `feature/login` | 已完成 | 免责声明、隐私政策、商业合作依次确认并分别持久化；拒绝即终止 UIAbility；API 24 Debug HAP 构建通过，无连接设备，待补真机视觉与重启持久化验证 |
 | 统一身份认证登录 | `feature:login` + `data:auth` | `feature/login` + `data/auth` | 进行中 | 已迁移 UI、状态、Repository、门户验证码/OCR/5 次重试，以及教务 CAS `lt`、设备校验、兼容加密、登录和主页验证；固定向量、无凭据端点及 API 24 构建通过；尚缺真实账号真机端到端验证，故未标记完成 |
-| 登录态恢复与失效重登 | `core:common` + `data:auth` | `core/common` + `data/auth` | 进行中 | 已用 Asset Store 安全保存凭据并支持冷启动恢复；教务业务请求统一携带内存 Cookie，识别 401/403 或 CAS 登录页后通过认证仓库重建会话并仅重试一次；API 24 构建通过，因无真实账号和设备尚未完成过期会话运行验收 |
+| 登录态恢复与失效重登 | `core:common` + `data:auth` | `core/common` + `data/auth` | 进行中 | 已用 Asset Store 安全保存凭据并支持冷启动恢复；教务/门户业务请求识别 401/403 或登录页后重建会话并仅重试一次，只有最终认证失败才发布会话过期事件，AppLaunchGate 订阅后立即返回登录页；通用公共 HTTP 的 401 不再误伤校园会话；API 24 构建及会话状态单测通过，因无真实账号和设备尚未完成过期会话运行验收 |
 | 个人与学期初始化 | Setup / Info | `feature/login` + `data/schedule` | 已完成 | 登录后缺少配置时显示学年、学期（1/2/3）、当前周初始化页；校验输入、保存用户隔离学年/学期并按当前周反推开学周一；设置页可随时重新进入相同配置流程，保存后重排课前提醒并刷新服务卡片；API 24 构建通过，无设备待补交互验证 |
 
 ### 6.2 首页与教学服务
@@ -276,3 +276,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 发布元数据清理 | 将 AppScope 应用名与 Android 对齐为“安大通”，厂商标识改为 OpenAHU，替换工程模板的模块/Ability/包描述并删除未使用的迁移占位资源；设置页由组合根注入 BundleInfo 实际版本，避免发版升级后仍显示 1.0.0 | API 24 Debug HAP 构建成功且无 ArkTS 警告；版本取值与更新检查复用同一 BundleInfo 来源 |
 | 2026-07-15 | 本地单元测试基线 | 将语义版本比较提取为无平台依赖的纯函数，应用更新继续通过同一入口调用；删除 Entry 默认 `abc` 示例测试，在 `feature_update` 与 `core_model` 各自模块内覆盖版本升级/相等/回退/非法标签和课程字段转换 | `feature_update` 与 `core_model` 的 Hvigor Test 均构建并执行成功，合计 4 个测试用例全部通过；报告生成于对应模块 `.test/default/outputs/test/reports` |
 | 2026-07-15 | 禁用应用数据备份 | 对齐 Android Manifest 的 `allowBackup=false`，删除 HarmonyOS 工程模板的空 `EntryBackupAbility`、备份配置及扩展声明，避免课表、成绩、校园卡等本地缓存离开应用数据边界 | API 24 Debug 与 Release HAP 构建成功且无 ArkTS 警告；构建配置中不再注册 BackupExtensionAbility |
+| 2026-07-15 | 会话失效即时重登 | 将会话状态升级为可订阅事件；教务与门户客户端仅在自动认证恢复失败或重试仍被拒绝时发布过期，AppLaunchGate 收到后立即切换登录页；登录/恢复成功重置状态，普通退出走同一事件；移除通用公共 HTTP 对任意 401/403 的全局会话副作用 | API 24 Debug HAP 构建成功且无 ArkTS 警告；新增会话事件订阅、去重、取消和重复过期单测通过；无真实账号设备，待验证线上 Cookie 过期时的页面切换 |

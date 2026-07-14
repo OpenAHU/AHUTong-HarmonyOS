@@ -1,6 +1,6 @@
 import { http } from '@kit.NetworkKit';
 import { BusinessError } from '@kit.BasicServicesKit';
-import { AppErrorKind, AppResult, AppResults } from 'core_common';
+import { AppErrorKind, AppResult, AppResults, AppSessionState } from 'core_common';
 import { CrawlerSession } from './CrawlerSession';
 
 export class PortalCrawlerClient {
@@ -29,8 +29,11 @@ export class PortalCrawlerClient {
 
   async getJson<T>(url: string): Promise<AppResult<T>> {
     let result = await this.requestOnce(url);
-    if (!result.isSuccess && result.error?.kind === AppErrorKind.AUTHENTICATION && await CrawlerSession.reauthenticatePortal())
-      result = await this.requestOnce(url);
+    if (!result.isSuccess && result.error?.kind === AppErrorKind.AUTHENTICATION) {
+      if (await CrawlerSession.reauthenticatePortal()) result = await this.requestOnce(url);
+      if (!result.isSuccess && result.error?.kind === AppErrorKind.AUTHENTICATION) AppSessionState.expire();
+      else if (result.isSuccess) AppSessionState.activate();
+    }
     if (!result.isSuccess || result.data === undefined)
       return AppResults.failure<T>(result.error?.kind ?? AppErrorKind.UNKNOWN, result.error?.message ?? '门户请求失败', result.error?.code);
     try { return AppResults.success<T>(JSON.parse(result.data) as T); }
@@ -39,8 +42,12 @@ export class PortalCrawlerClient {
 
   async postJson<T>(url: string, body: string): Promise<AppResult<T>> {
     let result = await this.requestOnce(url, http.RequestMethod.POST, body, 'application/json; charset=UTF-8');
-    if (!result.isSuccess && result.error?.kind === AppErrorKind.AUTHENTICATION && await CrawlerSession.reauthenticatePortal())
-      result = await this.requestOnce(url, http.RequestMethod.POST, body, 'application/json; charset=UTF-8');
+    if (!result.isSuccess && result.error?.kind === AppErrorKind.AUTHENTICATION) {
+      if (await CrawlerSession.reauthenticatePortal())
+        result = await this.requestOnce(url, http.RequestMethod.POST, body, 'application/json; charset=UTF-8');
+      if (!result.isSuccess && result.error?.kind === AppErrorKind.AUTHENTICATION) AppSessionState.expire();
+      else if (result.isSuccess) AppSessionState.activate();
+    }
     if (!result.isSuccess || result.data === undefined)
       return AppResults.failure<T>(result.error?.kind ?? AppErrorKind.UNKNOWN, result.error?.message ?? '门户请求失败', result.error?.code);
     try { return AppResults.success<T>(JSON.parse(result.data) as T); }
@@ -50,9 +57,13 @@ export class PortalCrawlerClient {
   async postForm<T>(url: string, body: string): Promise<AppResult<T>> {
     let result = await this.requestOnce(url, http.RequestMethod.POST, body,
       'application/x-www-form-urlencoded; charset=UTF-8');
-    if (!result.isSuccess && result.error?.kind === AppErrorKind.AUTHENTICATION && await CrawlerSession.reauthenticatePortal())
-      result = await this.requestOnce(url, http.RequestMethod.POST, body,
-        'application/x-www-form-urlencoded; charset=UTF-8');
+    if (!result.isSuccess && result.error?.kind === AppErrorKind.AUTHENTICATION) {
+      if (await CrawlerSession.reauthenticatePortal())
+        result = await this.requestOnce(url, http.RequestMethod.POST, body,
+          'application/x-www-form-urlencoded; charset=UTF-8');
+      if (!result.isSuccess && result.error?.kind === AppErrorKind.AUTHENTICATION) AppSessionState.expire();
+      else if (result.isSuccess) AppSessionState.activate();
+    }
     if (!result.isSuccess || result.data === undefined)
       return AppResults.failure<T>(result.error?.kind ?? AppErrorKind.UNKNOWN, result.error?.message ?? '门户请求失败', result.error?.code);
     try { return AppResults.success<T>(JSON.parse(result.data) as T); }
