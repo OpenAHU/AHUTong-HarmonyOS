@@ -24,6 +24,7 @@
     "feature_notification": "file:../feature/notification",
     "feature_widget": "file:../feature/widget",
     "feature_update": "file:../feature/update",
+    "feature_debug": "file:../feature/debug",
     "core_designsystem": "file:../core/designsystem",
     "core_datastore": "file:../core/datastore",
     "core_network": "file:../core/network",

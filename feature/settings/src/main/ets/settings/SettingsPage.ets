@@ -12,10 +12,22 @@ export struct SettingsPage {
   @State showClear: boolean = false;
   @State clearing: boolean = false;
   @State checkingUpdate: boolean = false;
+  @State debugTapCount: number = 0;
+  private lastDebugTap: number = 0;
   onLogout: () => Promise<void> = async () => {};
   onClearAllData: () => Promise<void> = async () => {};
   onReminderChange: (enabled: boolean) => Promise<boolean> = async (_enabled: boolean) => true;
   onCheckUpdate: () => Promise<string> = async () => '检查更新失败';
+  debugEnabled: boolean = false;
+  onOpenDebug: () => void = () => {};
+
+  private debugTap(): void {
+    if (!this.debugEnabled) return;
+    const now = Date.now();
+    this.debugTapCount = now - this.lastDebugTap <= 1_000 ? this.debugTapCount + 1 : 1;
+    this.lastDebugTap = now;
+    if (this.debugTapCount >= 8) { this.debugTapCount = 0; this.onOpenDebug(); }
+  }
 
   private async checkUpdate(): Promise<void> {
     if (this.checkingUpdate) return;
@@ -78,7 +90,7 @@ export struct SettingsPage {
             Text(AhuCache.getCurrentUser()?.name ?? '未登录').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold);
             Text(`${AhuCache.getSchoolYear() ?? '--'} 学年 · 第 ${AhuCache.getSchoolTerm() ?? '--'} 学期`)
               .fontColor(AhuColors.onSurfaceSecondary);
-          }.width('100%').alignItems(HorizontalAlign.Start);
+          }.width('100%').alignItems(HorizontalAlign.Start).onClick(() => this.debugTap());
         }
         AhuInsetCard() {
           Row() { Text('退出登录').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium).layoutWeight(1);

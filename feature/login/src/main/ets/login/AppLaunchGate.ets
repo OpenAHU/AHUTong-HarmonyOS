@@ -2,6 +2,7 @@ import { AhuColors, AhuLoading } from 'core_designsystem';
 import { AuthRepositoryProvider, AuthSession } from 'data_auth';
 import { LaunchConsentGate } from './LaunchConsentGate';
 import { LoginPage } from './LoginPage';
+import { AhuCache } from 'core_datastore';
 
 @Component
 export struct AppLaunchGate {
@@ -17,6 +18,11 @@ export struct AppLaunchGate {
 
   async aboutToAppear(): Promise<void> {
     if (!AuthSession.isLoggedIn()) {
+      this.restoring = false;
+      return;
+    }
+    if (AhuCache.getMockData()) {
+      this.loggedIn = true;
       this.restoring = false;
       return;
     }

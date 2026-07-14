@@ -253,6 +253,20 @@ export class AhuCache {
     return AhuPreferences.getString(AhuCache.userKey(PreferencesKeys.ELECTRICITY_ROOM_HISTORY));
   }
 
+  static setMockData(enabled: boolean): void { AhuPreferences.putBoolean(PreferencesKeys.MOCK_DATA, enabled); }
+  static getMockData(): boolean { return AhuPreferences.getBoolean(PreferencesKeys.MOCK_DATA); }
+  static saveMockScenario(id: string): void { AhuPreferences.putString(PreferencesKeys.MOCK_SCENARIO, id); }
+  static getMockScenario(): string { return AhuPreferences.getString(PreferencesKeys.MOCK_SCENARIO, 'standard_student'); }
+  static saveMockCurrentTimeMillis(value: number): void {
+    AhuPreferences.putNumber(PreferencesKeys.MOCK_CURRENT_TIME, value);
+  }
+  static getMockCurrentTimeMillis(): number | undefined {
+    return AhuPreferences.contains(PreferencesKeys.MOCK_CURRENT_TIME)
+      ? AhuPreferences.getNumber(PreferencesKeys.MOCK_CURRENT_TIME) : undefined;
+  }
+  static clearMockCurrentTimeMillis(): void { AhuPreferences.remove(PreferencesKeys.MOCK_CURRENT_TIME); }
+  static now(): Date { return new Date(AhuCache.getMockCurrentTimeMillis() ?? Date.now()); }
+
   static logout(): void {
     AhuCache.clearCurrentUser();
   }

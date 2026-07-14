@@ -309,6 +309,11 @@
       "name": "feature_update",
       "srcPath": "./feature/update",
       "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "feature_debug",
+      "srcPath": "./feature/debug",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
     }
   ]
 }

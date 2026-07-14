@@ -23,7 +23,7 @@ export class ScheduleWidgetData {
 }
 
 export class ScheduleWidgetDataBuilder {
-  static build(now: Date = new Date()): ScheduleWidgetData {
+  static build(now: Date = AhuCache.now()): ScheduleWidgetData {
     const data = new ScheduleWidgetData();
     data.dateText = `${ScheduleWidgetDataBuilder.two(now.getMonth() + 1)}-${ScheduleWidgetDataBuilder.two(now.getDate())} / ${WEEKDAYS[now.getDay()]}`;
     const theme = AhuCache.themeColor();

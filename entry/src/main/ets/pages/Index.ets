@@ -18,6 +18,8 @@ import { SettingsPage } from 'feature_settings';
 import { CourseReminderManager } from 'feature_notification';
 import { AppUpdateDialog, AppUpdateManager, AppUpdateStatus } from 'feature_update';
 import type { AppUpdateInfo } from 'feature_update';
+import { DebugPage } from 'feature_debug';
+import BuildProfile from 'BuildProfile';
 import { AuthRepositoryProvider } from 'data_auth';
 import { AhuCache } from 'core_datastore';
 import { fileIo as fs } from '@kit.CoreFileKit';
@@ -136,7 +138,9 @@ struct Index {
             const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
             return CourseReminderManager.setEnabled(context, enabled);
           },
-          onCheckUpdate: () => this.checkUpdate(true)
+          onCheckUpdate: () => this.checkUpdate(true),
+          debugEnabled: BuildProfile.DEBUG,
+          onOpenDebug: () => { this.activePage = 'debug'; }
         });
       }
       .tabBar(new BottomTabBarStyle({
@@ -183,6 +187,20 @@ struct Index {
         WeatherPage({ onBack: () => { this.activePage = ''; } });
       } else if (this.activePage === 'repository') {
         RepositoryPage({ onBack: () => { this.activePage = ''; } });
+      } else if (this.activePage === 'debug' && BuildProfile.DEBUG) {
+        DebugPage({
+          onBack: () => { this.activePage = ''; },
+          onDataChanged: () => {
+            this.setupComplete = this.scheduleSetupRepository.hasCompletedSetup();
+            const revision = AppStorage.get<number>('ahu_mock_revision') ?? 0;
+            AppStorage.setOrCreate('ahu_mock_revision', revision + 1);
+          },
+          onClearData: () => this.logout(true),
+          onTestReminder: (seconds: number) => {
+            const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+            return CourseReminderManager.scheduleDebug(context, seconds);
+          }
+        });
       } else {
         this.mainContent();
       }

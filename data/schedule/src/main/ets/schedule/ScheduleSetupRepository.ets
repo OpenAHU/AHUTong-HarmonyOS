@@ -31,7 +31,7 @@ export class ScheduleSetupRepository {
     };
   }
 
-  displayConfig(now: Date = new Date()): ScheduleDisplayConfig | undefined {
+  displayConfig(now: Date = AhuCache.now()): ScheduleDisplayConfig | undefined {
     const schoolYear = AhuCache.getSchoolYear();
     const schoolTerm = this.cachedTerm();
     if (!schoolYear || !schoolTerm) {

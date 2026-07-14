@@ -72,6 +72,22 @@ export class CourseReminderManager {
     return count;
   }
 
+  static async scheduleDebug(context: common.UIAbilityContext, seconds: number): Promise<boolean> {
+    try {
+      await notificationManager.requestEnableNotification(context);
+      const request: reminderAgentManager.ReminderRequestTimer = {
+        reminderType: reminderAgentManager.ReminderType.REMINDER_TYPE_TIMER,
+        triggerTimeInSeconds: Math.max(1, seconds),
+        title: '安大通测试提醒', content: 'Debug 通知链路工作正常', expiredContent: 'Debug 通知链路工作正常',
+        notificationId: 2_000_000_001 + Math.max(1, seconds), groupId: 'ahu_debug_reminder',
+        slotType: notificationManager.SlotType.SERVICE_INFORMATION, tapDismissed: true,
+        wantAgent: { pkgName: 'com.openahu.ahutong', abilityName: 'EntryAbility', parameters: { source: 'debug_reminder' } }
+      };
+      await reminderAgentManager.publishReminder(request);
+      return true;
+    } catch (_) { return false; }
+  }
+
   private static notificationId(trigger: Date, course: Course): number {
     const value = `${trigger.getTime()}-${course.courseId ?? course.name ?? ''}`;
     let hash = 0;

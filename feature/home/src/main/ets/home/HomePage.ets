@@ -133,14 +133,14 @@ export struct HomePage {
   }
 
   private todayCourses(): Array<Course> {
-    const weekday = ((new Date().getDay() + 6) % 7) + 1;
+    const weekday = ((AhuCache.now().getDay() + 6) % 7) + 1;
     return this.courses.filter((course: Course): boolean =>
       courseWeekday(course) === weekday && (course.weekIndexes ?? []).includes(this.currentWeek))
       .sort((left: Course, right: Course): number => courseStartTime(left) - courseStartTime(right));
   }
 
   private currentMinutes(): number {
-    const now = new Date();
+    const now = AhuCache.now();
     return now.getHours() * 60 + now.getMinutes();
   }
 
@@ -164,7 +164,7 @@ export struct HomePage {
   }
 
   private dateLabel(): string {
-    const now = new Date();
+    const now = AhuCache.now();
     const weekdays = ['日', '一', '二', '三', '四', '五', '六'];
     return `${now.getMonth() + 1}`.padStart(2, '0') + '-' + `${now.getDate()}`.padStart(2, '0') +
       ` / 周${weekdays[now.getDay()]}`;

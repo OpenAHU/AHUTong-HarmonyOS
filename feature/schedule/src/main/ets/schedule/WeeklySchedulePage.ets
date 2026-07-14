@@ -11,6 +11,7 @@ import {
   ScheduleRepositoryProvider,
   ScheduleSetupRepository
 } from 'data_schedule';
+import { AhuCache } from 'core_datastore';
 
 const WEEKDAYS: Array<string> = ['一', '二', '三', '四', '五', '六', '日'];
 const COURSE_COLORS: Array<string> = [
@@ -192,17 +193,17 @@ export struct WeeklySchedulePage {
             Text(weekday)
               .fontSize(12)
               .fontWeight(FontWeight.Bold)
-              .fontColor(this.selectedWeek === this.currentWeek && index + 1 === ((new Date().getDay() + 6) % 7) + 1
+              .fontColor(this.selectedWeek === this.currentWeek && index + 1 === ((AhuCache.now().getDay() + 6) % 7) + 1
                 ? AhuColors.onPrimaryAction : AhuColors.onSurface);
             Text(this.dateLabel(index + 1))
               .fontSize(9)
-              .fontColor(this.selectedWeek === this.currentWeek && index + 1 === ((new Date().getDay() + 6) % 7) + 1
+              .fontColor(this.selectedWeek === this.currentWeek && index + 1 === ((AhuCache.now().getDay() + 6) % 7) + 1
                 ? AhuColors.onPrimaryAction : AhuColors.onSurfaceSecondary);
           }
           .height(52)
           .layoutWeight(1)
           .justifyContent(FlexAlign.Center)
-          .backgroundColor(this.selectedWeek === this.currentWeek && index + 1 === ((new Date().getDay() + 6) % 7) + 1
+          .backgroundColor(this.selectedWeek === this.currentWeek && index + 1 === ((AhuCache.now().getDay() + 6) % 7) + 1
             ? AhuColors.primaryAction : Color.Transparent)
           .borderRadius(8);
         }, (weekday: string) => weekday);
