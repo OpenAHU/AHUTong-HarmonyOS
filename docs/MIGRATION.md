@@ -145,7 +145,7 @@ entry (HAP / composition root)
 | --- | --- | --- | --- | --- |
 | 校园卡信息与余额 | `data:campuscard` / Home | `data/campuscard` + `feature/home` | 进行中 | 新增门户业务会话客户端与失效重登，迁移 `/xzxcard/yue` 余额与 `/xzxcard/qrcode` 动态校园码；支持余额缓存/刷新、卡片正反切换、码刷新、全屏放大及亮度恢复；API 24 Debug HAP 构建通过，真实余额和动态码待真机账号验证 |
 | 校园卡余额充值 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移首页入口、金额校验、身份确认/复制、支付宝 Scheme/网页降级；银行卡路径已接入 YCard CAS 票据换 OAuth 令牌、账户余额、安全随机数与 SHA-256 签名、创建订单、支付结果及防重复提交；API 24 Debug HAP 构建通过，涉及真实资金，未经测试账号和真机成功小额验证前不标记完成 |
-| 电费充值 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移校区→楼栋→楼层→房间四级选择、电量信息、金额与 6 位密码校验、第三方房间载荷、动态密码映射、SHA-256 签名订单/支付和结果；API 24 Debug HAP 构建通过，历史房间快捷入口待补，真实支付待测试账号真机小额验证 |
+| 电费充值 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移校区→楼栋→楼层→房间四级选择、电量信息、金额与 6 位密码校验、第三方房间载荷、动态密码映射、SHA-256 签名订单/支付和结果；成功支付后按用户保存并去重最近 2 个房间，单条历史自动恢复、双条提供快捷选择；API 24 Debug HAP 构建通过，真实支付待测试账号真机小额验证 |
 | 浴室缴费 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移竹园/龙河、桔园/蕙园选择，手机号账户查询，现金/赠送余额，金额校验，6 位密码确认与映射加密，YCard 订单/支付与成功失败状态；API 24 Debug HAP 构建通过，涉及真实资金，待测试账号真机小额验证 |
 | 浴室开放信息 | `feature:home` | `feature/home` | 不适用 | 当前 Android 基线已注释开放状态 UI，`CrawlerCampusCardSource.fetchBathrooms()` 固定返回空列表，仅保留浴室缴费卡片；2022 年历史接口 `https://ahuer.cn/api/bathroom/open` 已不可连接，因此 HarmonyOS 保持当前基线行为，不恢复过期静态状态 |
 | 失物招领 | `feature:portal` + `data:portal` | 对应同名域 | 已完成 | 双状态列表、缓存、刷新、分页、详情、发布/删除、本人帖子管理、全字段搜索、校区/类别筛选、结果计数和多图全屏浏览均已迁移；API 24 Debug HAP 构建通过，无真实账号与连接设备，接口、图片加载和视觉待运行验收 |
@@ -261,3 +261,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 课表服务卡片 | 新增 `feature_widget` 与动态 `ScheduleFormAbility`，将 Android Glance/RemoteViews 两套课表微件合并为 HarmonyOS 服务卡片；支持 `2×2` / `2×4`、浅深色、主题强调色、日期与剩余课程、上课中高亮、空状态、教室缩写、手动/30 分钟系统刷新、课表变更主动同步和点击直达课表，并在工具页说明系统桌面添加方式 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无签名与连接设备，卡片安装添加、两种尺寸、刷新托管及点击路由待真机验收 |
 | 2026-07-15 | 空闲教室日期范围 | 对齐 Android `FreeClassroomDatePicker`，在今天/明天快捷筛选外接入 HarmonyOS 原生日期选择对话框，支持独立选择开始/结束日期、禁止过去日期、五年范围和起止顺序自动修正，并将日期范围原样提交至教务空闲教室接口 | API 24 Debug HAP 构建成功后记录；无真实账号与连接设备，日期对话框及跨日接口结果待真机验收 |
 | 2026-07-15 | 校历查看与保存 | 对齐 Android 校历预览交互，新增 0.5–5 倍双指缩放、单指平移和双击复位；保存时下载当前校历到缓存，并通过 PhotoAccessHelper 系统资产创建确认对话框写入图库，不申请常驻媒体写权限 | API 24 Debug HAP 构建成功后记录；无连接设备，手势冲突、图库确认和保存结果待真机验收 |
+| 2026-07-15 | 电费历史房间 | 对齐 Android 的用户隔离房间历史，在支付成功后保存完整校区/楼栋/楼层/房间选择，按路径去重并保留最近 2 条；仅一条时进入页面自动逐级恢复，两条时展示快捷房间入口，选择后重新获取当前房间电量，避免使用陈旧余额 | API 24 Debug HAP 构建成功后记录；不执行真实资金操作，无测试账号与连接设备，成功后写入及恢复链路待小额真机验收 |

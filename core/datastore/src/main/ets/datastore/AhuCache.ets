@@ -246,6 +246,12 @@ export class AhuCache {
     if (raw.length === 0) return [];
     try { return JSON.parse(raw) as Array<string>; } catch (_) { return []; }
   }
+  static saveElectricityRoomHistory(value: string): void {
+    AhuPreferences.putString(AhuCache.userKey(PreferencesKeys.ELECTRICITY_ROOM_HISTORY), value);
+  }
+  static getElectricityRoomHistory(): string {
+    return AhuPreferences.getString(AhuCache.userKey(PreferencesKeys.ELECTRICITY_ROOM_HISTORY));
+  }
 
   static logout(): void {
     AhuCache.clearCurrentUser();

@@ -2,6 +2,12 @@ import { AhuColors, AhuInsetCard, AhuScreen, AhuTypography } from 'core_designsy
 import {
   CardPaymentRepository, CardPaymentRepositoryProvider, ElectricityOption, ElectricityRoomInfo
 } from 'data_payment';
+import { AhuCache } from 'core_datastore';
+
+interface ElectricitySelection {
+  campus: ElectricityOption; building: ElectricityOption; floor: ElectricityOption; room: ElectricityOption;
+}
+interface ElectricityHistory { selection: ElectricitySelection; label: string; updatedAt: number; }
 
 @Component
 export struct ElectricityRechargePage {
@@ -22,10 +28,44 @@ export struct ElectricityRechargePage {
   @State error: string = '';
   @State result: string = '';
   @State showConfirm: boolean = false;
+  @State history: Array<ElectricityHistory> = [];
   onBack: () => void = () => {};
 
-  aboutToAppear(): void { this.loadCampuses(); }
+  aboutToAppear(): void {
+    this.history = this.readHistory();
+    if (this.history.length === 1) this.restore(this.history[0]); else this.loadCampuses();
+  }
   private validAmount(value: string): boolean { return /^\d*\.?\d{0,2}$/.test(value); }
+
+  private readHistory(): Array<ElectricityHistory> {
+    const raw = AhuCache.getElectricityRoomHistory();
+    if (raw.length === 0) return [];
+    try { return (JSON.parse(raw) as Array<ElectricityHistory>).slice(0, 2); } catch (_) { return []; }
+  }
+
+  private saveCurrentHistory(): void {
+    if (!this.campus || !this.building || !this.floor || !this.room) return;
+    const selection: ElectricitySelection = { campus: this.campus, building: this.building, floor: this.floor, room: this.room };
+    const current: ElectricityHistory = { selection: selection,
+      label: (this.roomInfo?.data.roomName ?? this.room.name).replace(/^房间\s*/, '').trim(), updatedAt: Date.now() };
+    const key = `${this.campus.value}/${this.building.value}/${this.floor.value}/${this.room.value}`;
+    this.history = [current, ...this.history.filter((item: ElectricityHistory) => {
+      const saved = item.selection; return `${saved.campus.value}/${saved.building.value}/${saved.floor.value}/${saved.room.value}` !== key;
+    })].slice(0, 2);
+    AhuCache.saveElectricityRoomHistory(JSON.stringify(this.history));
+  }
+
+  private async restore(item: ElectricityHistory): Promise<void> {
+    this.error = ''; this.loading = true;
+    try {
+      this.campuses = (await this.repository.getElectricityOptions(0)).data ?? [];
+      await this.selectCampus(item.selection.campus);
+      await this.selectBuilding(item.selection.building);
+      await this.selectFloor(item.selection.floor);
+      await this.selectRoom(item.selection.room);
+    } catch (error) { this.error = (error as Error).message ?? '历史房间恢复失败'; }
+    finally { this.loading = false; }
+  }
 
   private async loadCampuses(): Promise<void> {
     this.loading = true; this.error = '';
@@ -79,6 +119,7 @@ export struct ElectricityRechargePage {
     const response = await this.repository.chargeElectricity(this.amount, this.password, this.roomInfo);
     if (response.isSuccess) {
       this.result = `充值成功，订单号：${response.data ?? '--'}`;
+      this.saveCurrentHistory();
       if (this.room) await this.selectRoom(this.room);
     } else this.error = response.error?.message ?? '电费充值失败';
     this.password = ''; this.showConfirm = false; this.paying = false;
@@ -129,6 +170,18 @@ export struct ElectricityRechargePage {
         AhuInsetCard() {
           Column({ space: 12 }) {
             Text('选择宿舍').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold);
+            if (this.history.length > 0) {
+              Column({ space: 7 }) {
+                Text('最近房间').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary);
+                Flex({ wrap: FlexWrap.Wrap }) {
+                  ForEach(this.history, (item: ElectricityHistory) => {
+                    Button(item.label, { type: ButtonType.Capsule }).margin({ right: 8, bottom: 6 })
+                      .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.chipUnselected)
+                      .onClick(() => this.restore(item));
+                  }, (item: ElectricityHistory) => `${item.updatedAt}`);
+                }.width('100%');
+              }.width('100%').alignItems(HorizontalAlign.Start);
+            }
             this.optionGroup('校区', this.campuses, this.campus, (item: ElectricityOption) => this.selectCampus(item));
             this.optionGroup('楼栋', this.buildings, this.building, (item: ElectricityOption) => this.selectBuilding(item));
             this.optionGroup('楼层', this.floors, this.floor, (item: ElectricityOption) => this.selectFloor(item));
