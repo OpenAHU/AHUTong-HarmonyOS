@@ -17,6 +17,9 @@ export struct RepositoryPage {
   @State downloadedPaths: Array<string> = [];
   @State showDownloads: boolean = false;
   @State downloads: Array<DownloadedFile> = [];
+  @State managingDownloads: boolean = false;
+  @State selectedDownloadPaths: Array<string> = [];
+  @State pendingDeletePaths: Array<string> = [];
   private manager?: RepositoryManager;
   onBack: () => void = () => {};
 
@@ -28,6 +31,8 @@ export struct RepositoryPage {
   private refreshDownloads(): void {
     this.downloads = this.manager?.downloadedFiles() ?? [];
     this.downloadedPaths = this.downloads.map((item: DownloadedFile) => item.path);
+    this.selectedDownloadPaths = this.selectedDownloadPaths.filter((path: string) =>
+      this.downloadedPaths.includes(path));
   }
 
   private selectRepo(repoId: string): void {
@@ -57,6 +62,9 @@ export struct RepositoryPage {
   }
 
   private back(): void {
+    if (this.showDownloads && this.managingDownloads) {
+      this.managingDownloads = false; this.selectedDownloadPaths = []; return;
+    }
     if (this.showDownloads) { this.showDownloads = false; return; }
     if (this.pathStack.length > 0) {
       const parent = this.pathStack[this.pathStack.length - 1];
@@ -82,10 +90,35 @@ export struct RepositoryPage {
     if (!await this.manager.open(file)) this.error = '没有可打开该文件的系统应用';
   }
 
-  private delete(path: string): void { this.manager?.delete(path); this.refreshDownloads(); }
+  private delete(path: string): void {
+    this.pendingDeletePaths = [path];
+  }
+
+  private toggleDownloadSelection(path: string): void {
+    if (this.selectedDownloadPaths.includes(path)) {
+      this.selectedDownloadPaths = this.selectedDownloadPaths.filter((selected: string) => selected !== path);
+    } else {
+      this.selectedDownloadPaths = this.selectedDownloadPaths.concat([path]);
+    }
+  }
+
+  private toggleSelectAllDownloads(): void {
+    this.selectedDownloadPaths = this.selectedDownloadPaths.length === this.downloads.length ? [] :
+      this.downloads.map((file: DownloadedFile) => file.path);
+  }
+
+  private confirmBatchDelete(): void {
+    if (this.selectedDownloadPaths.length > 0) this.pendingDeletePaths = this.selectedDownloadPaths.slice();
+  }
+
+  private performDelete(): void {
+    this.pendingDeletePaths.forEach((path: string) => this.manager?.delete(path));
+    this.pendingDeletePaths = []; this.selectedDownloadPaths = []; this.refreshDownloads();
+  }
 
   private title(): string {
-    if (this.showDownloads) return '已下载';
+    if (this.showDownloads && this.managingDownloads) return `已选择 ${this.selectedDownloadPaths.length} 项`;
+    if (this.showDownloads) return '已下载文件';
     if (this.selectedRepoId.length === 0) return '学习资料';
     if (this.currentPath.length > 0) return this.currentPath.substring(this.currentPath.lastIndexOf('/') + 1);
     return this.manager?.repo(this.selectedRepoId).name ?? '学习资料';
@@ -187,6 +220,15 @@ export struct RepositoryPage {
       ForEach(this.downloads, (file: DownloadedFile) => {
         AhuInsetCard() {
           Row({ space: 12 }) {
+            if (this.managingDownloads) {
+              Text(this.selectedDownloadPaths.includes(file.path) ? '✓' : '')
+                .fontSize(16).fontWeight(FontWeight.Bold).fontColor(Color.White)
+                .width(24).height(24).textAlign(TextAlign.Center)
+                .backgroundColor(this.selectedDownloadPaths.includes(file.path) ?
+                  AhuColors.primaryAction : Color.Transparent)
+                .border({ width: 1.5, color: this.selectedDownloadPaths.includes(file.path) ?
+                  AhuColors.primaryAction : AhuColors.onSurfaceSecondary }).borderRadius(6);
+            }
             Text(RepositoryManager.typeLabel(file.name)).fontSize(11).fontWeight(FontWeight.Bold).fontColor(Color.White)
               .width(38).height(32).textAlign(TextAlign.Center).backgroundColor('#607D8B').borderRadius(7);
             Column({ space: 3 }) {
@@ -194,18 +236,57 @@ export struct RepositoryPage {
               Text(`${this.formatSize(file.size)} · ${file.path}`).fontSize(AhuTypography.label)
                 .fontColor(AhuColors.onSurfaceSecondary).maxLines(1);
             }.alignItems(HorizontalAlign.Start).layoutWeight(1);
-            Button('打开', { type: ButtonType.Capsule }).height(34).fontSize(AhuTypography.label)
-              .onClick(() => this.openByPath(file.path));
-            Button('删除', { type: ButtonType.Capsule }).height(34).fontSize(AhuTypography.label)
-              .backgroundColor(AhuColors.error).onClick(() => this.delete(file.path));
-          }.width('100%');
+            if (!this.managingDownloads) {
+              Button('打开', { type: ButtonType.Capsule }).height(34).fontSize(AhuTypography.label)
+                .onClick(() => this.openByPath(file.path));
+              Button('删除', { type: ButtonType.Capsule }).height(34).fontSize(AhuTypography.label)
+                .backgroundColor(AhuColors.error).onClick(() => this.delete(file.path));
+            }
+          }.width('100%').onClick(() => {
+            if (this.managingDownloads) this.toggleDownloadSelection(file.path);
+          });
         }
       }, (file: DownloadedFile) => file.path);
+      if (this.managingDownloads && this.downloads.length > 0) {
+        Row() {
+          Button(this.selectedDownloadPaths.length === this.downloads.length ? '取消全选' : '全选',
+            { type: ButtonType.Capsule })
+            .backgroundColor(AhuColors.card).fontColor(AhuColors.onSurface)
+            .onClick(() => this.toggleSelectAllDownloads());
+          Blank();
+          Button(`删除所选 (${this.selectedDownloadPaths.length})`, { type: ButtonType.Capsule })
+            .enabled(this.selectedDownloadPaths.length > 0).backgroundColor(AhuColors.error)
+            .onClick(() => this.confirmBatchDelete());
+        }.width('100%').padding({ top: 4, bottom: 16 });
+      }
     }.padding({ left: 16, right: 16 });
   }
 
+  @Builder
+  private deleteConfirmation() {
+    Stack({ alignContent: Alignment.Center }) {
+      Column().width('100%').height('100%').backgroundColor('#66000000')
+        .onClick(() => { this.pendingDeletePaths = []; });
+      Column({ space: 16 }) {
+        Text(this.pendingDeletePaths.length > 1 ? '批量删除' : '删除文件')
+          .fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold).width('100%');
+        Text(this.pendingDeletePaths.length > 1 ?
+          `确定要删除选中的 ${this.pendingDeletePaths.length} 个文件吗？` : '确定要删除这个已下载文件吗？')
+          .fontSize(AhuTypography.body).fontColor(AhuColors.onSurfaceSecondary).width('100%');
+        Row({ space: 12 }) {
+          Button('取消', { type: ButtonType.Capsule }).layoutWeight(1)
+            .backgroundColor(AhuColors.card).fontColor(AhuColors.onSurface)
+            .onClick(() => { this.pendingDeletePaths = []; });
+          Button('删除', { type: ButtonType.Capsule }).layoutWeight(1).backgroundColor(AhuColors.error)
+            .onClick(() => this.performDelete());
+        }.width('100%');
+      }.width('86%').padding(22).backgroundColor(AhuColors.cardStrong).borderRadius(20);
+    }.width('100%').height('100%');
+  }
+
   build() {
-    AhuScreen({ scrollable: true }) {
+    Stack({ alignContent: Alignment.Center }) {
+      AhuScreen({ scrollable: true }) {
       Row() {
         Button('‹', { type: ButtonType.Circle }).width(40).height(40).fontSize(28)
           .backgroundColor(AhuColors.card).fontColor(AhuColors.onSurface).onClick(() => this.back());
@@ -215,9 +296,19 @@ export struct RepositoryPage {
           Button('刷新', { type: ButtonType.Capsule }).enabled(!this.loading && !this.refreshing)
             .backgroundColor(AhuColors.card).fontColor(AhuColors.onSurface).onClick(() => this.load(this.currentPath, true));
         }
+        if (this.showDownloads && this.downloads.length > 0) {
+          Button(this.managingDownloads ? '完成' : '管理', { type: ButtonType.Capsule })
+            .backgroundColor(AhuColors.card).fontColor(AhuColors.onSurface).onClick(() => {
+              this.managingDownloads = !this.managingDownloads;
+              if (!this.managingDownloads) this.selectedDownloadPaths = [];
+            });
+        }
         Button(this.showDownloads ? '浏览' : `已下载 ${this.downloads.length}`, { type: ButtonType.Capsule })
           .backgroundColor(AhuColors.card).fontColor(AhuColors.onSurface)
-          .onClick(() => { this.showDownloads = !this.showDownloads; this.refreshDownloads(); });
+          .onClick(() => {
+            this.showDownloads = !this.showDownloads; this.managingDownloads = false;
+            this.selectedDownloadPaths = []; this.refreshDownloads();
+          });
       }.width('100%').padding({ left: 16, right: 12, top: 24 });
       if (this.error.length > 0) {
         Row() {
@@ -228,6 +319,8 @@ export struct RepositoryPage {
       if (this.showDownloads) this.downloadedList();
       else if (this.selectedRepoId.length === 0) this.repositorySelector();
       else this.browser();
-    }
+      }
+      if (this.pendingDeletePaths.length > 0) this.deleteConfirmation();
+    }.width('100%').height('100%');
   }
 }

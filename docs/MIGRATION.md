@@ -157,7 +157,7 @@ entry (HAP / composition root)
 | 功能 | Android 来源 | HarmonyOS 目标 | 状态 | 验证/备注 |
 | --- | --- | --- | --- | --- |
 | 工具页 | `feature:tools` | `feature/tools` | 已完成 | 新增 `feature_tools`，正式替换工具 Tab 占位页；按首页 8 槽位持久化状态过滤已固定工具，以双列卡片展示其余入口并复用业务路由；API 24 Debug HAP 构建通过，待真机视觉验证 |
-| 仓库资源与下载 | `feature:repository` | `feature/repository` | 已完成 | 已迁移 6 个学院仓库、目录分层与返回、缓存优先/后台同步、刷新、文件类型/大小、CDN→GitHub Raw 双源下载、应用沙箱记录、已下载列表、删除与系统查看；6 个仓库根目录线上实测成功，API 24 构建通过，系统文件打开待真机验收 |
+| 仓库资源与下载 | `feature:repository` | `feature/repository` | 已完成 | 已迁移 6 个学院仓库、目录分层与返回、缓存优先/后台同步、刷新、文件类型/大小、CDN→GitHub Raw 双源下载、应用沙箱记录、已下载列表、单文件删除确认、管理模式、多选/全选与批量删除确认、系统查看；6 个仓库根目录线上实测成功，API 24 构建通过，系统文件打开待真机验收 |
 | 设置与偏好 | `feature:settings` | `feature/settings` | 已完成 | 已用真实设置页替换 Tab 占位页，迁移账户/学期摘要、课前提醒意图、实验性倒计时、液态玻璃、13 组主题色与自定义 ARGB Hex；主题色经全局状态驱动设计系统 53 处主操作色，液态玻璃实时控制底栏材质并支持冷启动恢复；API 24 构建通过，通知授权/调度归入 M10 |
 | 关于、贡献者、开源许可 | `feature:settings` | `feature/settings` | 已完成 | 已迁移应用图标/版本、加入我们、5 位 Android 内置开发者及职责/QQ/头像、QQ 联系与反馈失败提示，以及 Android 第三方许可清单；补充 HarmonyOS SDK 许可，外部项目链接使用系统隐式打开；API 24 构建通过，QQ 与浏览器拉起待真机验收 |
 | 清除数据与退出登录 | `feature:settings` | `feature/settings` | 已完成 | 普通退出清除 Asset Store 凭据、原生/爬虫会话、门户/教务内存 Cookie 与当前用户但保留偏好；清除数据经二次确认后额外清空 Preferences、全部业务缓存和学习资料沙箱文件，重置学期初始化并立即回到登录页；API 24 构建通过，真机 Asset Store 删除与导航待验收 |
@@ -284,3 +284,4 @@ entry (HAP / composition root)
 | 2026-07-15 | Release 构建基线 | 对齐 Android Release 压缩策略，开启 ArkTS 压缩和 `console.*` 日志移除；为避免校园 API JSON 与跨 HAR 导出被改名，明确不启用属性/导出/文件名混淆；统一 Ability 正式日志域与标签，删除 DevEco 默认 `abc` 设备测试；新增构建、单测、签名、真机和发布清单并由 README 引用 | API 24 Debug 与 Release HAP 构建验证；签名材料不入库，正式签名、安装升级和真机冒烟仍需发布环境完成 |
 | 2026-07-15 | Debug 代码发布隔离 | 对齐 Android `debugImplementation`：Entry 拆为共享应用根组件及 Debug/Release 目标入口，只有 Debug 目标引用并注入 `feature_debug`；跨入口的清除数据复用同一维护协调器，Mock、灰度和返回状态通过 AppStorage 修订信号同步 | 分别构建 `entry@debug` 与 `entry@release`；扫描 Release HAP 的 `modules.abc` 和源码映射，必须不存在 `feature_debug`、`DebugPage`、`MockScenarioController` 与 Mock 数据文本 |
 | 2026-07-15 | 全量源码迁移收口 | 逐项复核 Android 全部导航路由、功能台账、设置项与 HarmonyOS 模块；确认 Android 二维码首页偏好当前为注释代码，不额外恢复；将源码完成与外部验收分离，M4-M7/M11 转为明确阻塞状态 | `core_common`、`core_model`、`data_crawler`、`feature_update` 四模块测试全部通过；`entry@debug` Debug HAP、`entry@release` Release HAP 构建通过；Release 源码映射及字节码不含 Debug 模块；HDC 无设备 |
+| 2026-07-15 | 已下载文件管理 | 对照 Android 独立下载管理页补齐鸿蒙端交互：标题显示选中计数，支持管理/完成、逐项选择、全选/取消全选、删除所选，并为单文件和批量删除提供一致的二次确认；返回键优先退出管理模式 | API 24 Debug HAP 构建成功；新增代码无 ArkTS 告警，仅保留工程未配置签名的既有提示；无连接设备，选择态与确认层视觉待真机验收 |
