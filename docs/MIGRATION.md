@@ -163,7 +163,7 @@ entry (HAP / composition root)
 | 清除数据与退出登录 | `feature:settings` | `feature/settings` | 已完成 | 普通退出清除 Asset Store 凭据、原生/爬虫会话、门户/教务内存 Cookie 与当前用户但保留偏好；清除数据经二次确认后额外清空 Preferences、全部业务缓存和学习资料沙箱文件，重置学期初始化并立即回到登录页；API 24 构建通过，真机 Asset Store 删除与导航待验收 |
 | 课前通知与提醒 | `feature:notification` | `feature/notification` | 已完成 | 已声明提醒代理权限并接入系统通知授权；按课表登记未来 21 天、上课前 10 分钟的系统日历提醒，包含课程、地点和节次，点击返回应用；关闭开关会取消全部提醒，课表刷新、学期变更和冷启动会自动重排；Android 16 的 promoted ongoing 倒计时没有可直接移植的第三方接口，统一由 HarmonyOS ReminderAgent 决定系统展示样式；API 24 构建通过，待真机授权、到时触发和重启持久化验证 |
 | 课表服务卡片 | `feature:widget` | `feature/widget` | 已完成 | 新增动态 FormExtensionAbility 与 `feature_widget`，支持 HarmonyOS `2×2` / `2×4` 两种尺寸、浅深色与用户主题强调色；按当前学期/周次/星期筛选当天尚未结束课程，显示日期、剩余节数、节次、缩写教室并突出正在上课；支持卡片内手动刷新、系统每 30 分钟刷新、课表/学期变更与应用启动主动同步，点击课程区直达课表 Tab；工具页提供桌面添加指引。API 24 Debug HAP 构建通过且无 ArkTS 警告，无连接设备，卡片添加、尺寸布局、系统托管刷新和点击待真机验收 |
-| 应用更新 | `feature:update` | `feature/update` | 已完成 | 启动及设置页手动检查本仓库最新 GitHub Release，按应用自身语义版本比较，展示版本/更新日志/可选或强制提示；提供 AppGallery 与可信项目发行页入口，不下载 Android APK；API 24 构建通过，仓库当前无 Release，待首个发行版及真机外部跳转验收 |
+| 应用更新 | `feature:update` | `feature/update` | 已完成 | 启动及设置页手动检查本仓库最新 GitHub Release，按应用自身语义版本比较，展示版本/更新日志/可选或强制提示；设置页保留独立“更新介绍”，无新版本或暂无 Release 时仍显示当前版本/开发构建状态；提供 AppGallery 与可信项目发行页入口，不下载 Android APK；API 24 构建通过，待首个发行版及真机外部跳转验收 |
 | Debug / Mock 工具 | `feature:debug` | `feature/debug` | 已完成 | Debug 构建设置页应用卡连续点击 8 次进入；提供与 Android 对齐的 12 个场景、课表/成绩/考试/余额/失物招领样例、真实/Mock 切换、影响首页/课表/服务卡片的时间偏移、缓存清理及 10/50 秒系统提醒；release 构建隐藏入口；API 24 Debug/Release HAP 均构建通过，待真机交互与通知验收 |
 
 功能台账若发现缺项，应先补充条目再开始实现；不得因为台账未列出而忽略 Android 已有能力。
@@ -265,3 +265,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 应用更新 | 新增 `feature_update`，将 Android APK 自更新替换为 HarmonyOS 安全分发流程：启动自动检查、设置页手动检查 GitHub 最新正式 Release，严格比较语义版本并校验发行链接主机，展示更新日志及可选/强制提示，提供 AppGallery 与项目发行页入口；发行说明含 `<!-- ahutong-force-update -->` 时启用强制提示 | 线上确认 Android 更新接口当前仅返回 3.1.9 APK，HarmonyOS 仓库暂无 Release；OHPM 全模块依赖同步，API 24 Debug HAP 构建成功且无 ArkTS 警告；待首个 HarmonyOS Release 与真机应用市场/浏览器拉起验收 |
 | 2026-07-15 | Debug / Mock 工具 | 新增 `feature_debug`，迁移设置应用卡 8 连击隐藏入口、12 个业务场景、课程/成绩/考试/余额/失物招领缓存样例、Mock 数据开关、时间偏移、缓存清理及通知测试；核心时钟接入首页、课表当前日/周和服务卡片；入口以生成的 `BuildProfile.DEBUG` 门控，release 构建不可进入 | OHPM 全模块依赖同步；API 24 Debug 与 Release HAP 均构建成功且无 ArkTS 警告；无连接设备，连续点击、场景刷新和通知触发待真机验收 |
 | 2026-07-15 | 校历数据层对齐 | 新增 `data_calendar` 并将远程地址、沙箱文件缓存、原子替换、强制刷新与失败回退从 UI 下沉到仓库；校历页面改为显示仓库本地文件，图库保存复用同一缓存，恢复 Android `data:calendar → feature:calendar` 依赖方向 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，文件 URI 显示、离线回退与图库确认待真机验收 |
+| 2026-07-15 | 更新介绍 | 对齐 Android 设置页独立入口，读取 HarmonyOS 仓库最新正式 Release 的名称、版本与发行说明；没有 Release 时显示当前应用版本和开发构建状态，网络失败给出可恢复提示，不与“检查更新”结果混用 | API 24 Debug HAP 构建成功且无 ArkTS 警告；仓库当前无 Release，首个发行说明展示待发布后验收 |

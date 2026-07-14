@@ -12,12 +12,15 @@ export struct SettingsPage {
   @State showClear: boolean = false;
   @State clearing: boolean = false;
   @State checkingUpdate: boolean = false;
+  @State showUpdateIntro: boolean = false;
+  @State updateIntro: string = '';
   @State debugTapCount: number = 0;
   private lastDebugTap: number = 0;
   onLogout: () => Promise<void> = async () => {};
   onClearAllData: () => Promise<void> = async () => {};
   onReminderChange: (enabled: boolean) => Promise<boolean> = async (_enabled: boolean) => true;
   onCheckUpdate: () => Promise<string> = async () => '检查更新失败';
+  onLoadUpdateIntro: () => Promise<string> = async () => '暂无更新介绍';
   debugEnabled: boolean = false;
   onOpenDebug: () => void = () => {};
 
@@ -35,6 +38,12 @@ export struct SettingsPage {
     this.message = '';
     try { this.message = await this.onCheckUpdate(); }
     finally { this.checkingUpdate = false; }
+  }
+
+  private async loadUpdateIntro(): Promise<void> {
+    this.showUpdateIntro = true; this.updateIntro = '正在加载…';
+    try { this.updateIntro = await this.onLoadUpdateIntro(); }
+    catch (_) { this.updateIntro = '更新介绍加载失败，请稍后重试。'; }
   }
 
   private async feedback(): Promise<void> {
@@ -108,6 +117,12 @@ export struct SettingsPage {
           .width('100%').enabled(!this.checkingUpdate).onClick(() => this.checkUpdate());
         }
         AhuInsetCard() {
+          Row() { Column({ space: 3 }) { Text('更新介绍').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium);
+            Text('查看当前 HarmonyOS 发行说明').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary); }
+            .alignItems(HorizontalAlign.Start).layoutWeight(1); Text('›').fontSize(26); }
+          .width('100%').onClick(() => this.loadUpdateIntro());
+        }
+        AhuInsetCard() {
           Row() { Column({ space: 3 }) { Text('意见反馈').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium);
             Text('加入安大通反馈群').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary); }
             .alignItems(HorizontalAlign.Start).layoutWeight(1); Text('›').fontSize(26); }
@@ -130,6 +145,15 @@ export struct SettingsPage {
               Button(this.clearing ? '清除中' : '清除', { type: ButtonType.Capsule }).enabled(!this.clearing)
                 .backgroundColor(AhuColors.error).onClick(() => this.clearAll());
             }.width('100%').justifyContent(FlexAlign.End);
+          }.width('86%').padding(24).backgroundColor(AhuColors.card).borderRadius(24)
+            .shadow({ radius: 24, color: '#44000000' });
+        }
+        if (this.showUpdateIntro) {
+          Column({ space: 16 }) {
+            Text('更新介绍').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold);
+            Scroll() { Text(this.updateIntro).fontSize(AhuTypography.body).fontColor(AhuColors.onSurfaceSecondary).width('100%'); }
+              .constraintSize({ maxHeight: 360 }).width('100%');
+            Button('关闭', { type: ButtonType.Capsule }).onClick(() => { this.showUpdateIntro = false; });
           }.width('86%').padding(24).backgroundColor(AhuColors.card).borderRadius(24)
             .shadow({ radius: 24, color: '#44000000' });
         }

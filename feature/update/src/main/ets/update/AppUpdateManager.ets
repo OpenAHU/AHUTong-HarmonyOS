@@ -115,6 +115,26 @@ export class AppUpdateManager {
     };
   }
 
+  static async introduction(): Promise<string> {
+    const currentVersion = AppUpdateManager.currentVersion();
+    const response = await AppUpdateManager.client.request<GitHubRelease>({
+      url: LATEST_RELEASE_API,
+      headers: { 'Accept': 'application/vnd.github+json', 'User-Agent': `AHUTong/${currentVersion} (HarmonyOS)`,
+        'X-GitHub-Api-Version': '2022-11-28' },
+      connectTimeout: 10_000, readTimeout: 15_000
+    });
+    if (response.error?.code === 404) {
+      return `当前版本：${currentVersion}\n\nHarmonyOS 迁移版尚未发布首个 GitHub Release，当前为开发构建。`;
+    }
+    if (!response.isSuccess || !response.data) {
+      throw new Error(response.error?.message ?? '获取更新介绍失败');
+    }
+    const release = response.data;
+    const version = release.tag_name?.replace(/^[vV]/, '') ?? currentVersion;
+    const body = release.body?.replace(FORCE_MARKER, '').trim() ?? '';
+    return `${release.name?.trim() || `安大通 ${version}`}\n版本：${version}\n\n${body.length > 0 ? body : '本次更新暂无详细说明。'}`;
+  }
+
   static async openAppGallery(context: common.UIAbilityContext): Promise<boolean> {
     try {
       await context.startAbility({ action: 'ohos.want.action.viewData', uri: APP_GALLERY_URI });

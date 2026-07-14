@@ -139,6 +139,7 @@ struct Index {
             return CourseReminderManager.setEnabled(context, enabled);
           },
           onCheckUpdate: () => this.checkUpdate(true),
+          onLoadUpdateIntro: () => AppUpdateManager.introduction(),
           debugEnabled: BuildProfile.DEBUG,
           onOpenDebug: () => { this.activePage = 'debug'; }
         });
