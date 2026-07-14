@@ -40,6 +40,14 @@ export function courseEndWeek(course: Course): number {
   return parseCourseNumber(course.endWeek);
 }
 
+export function courseOccursInWeek(course: Course, week: number): boolean {
+  const startWeek = courseStartWeek(course);
+  const endWeek = courseEndWeek(course);
+  if (week < startWeek || week > endWeek) return false;
+  if ((course.weekIndexes ?? []).includes(week)) return true;
+  return week % 2 === startWeek % 2;
+}
+
 export function courseLength(course: Course): number {
   return parseCourseNumber(course.length);
 }

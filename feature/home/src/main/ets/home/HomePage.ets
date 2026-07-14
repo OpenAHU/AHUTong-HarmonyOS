@@ -1,6 +1,6 @@
 import { AhuColors, AhuInsetCard, AhuLoading, AhuScreen, AhuTypography } from 'core_designsystem';
 import { AhuCache } from 'core_datastore';
-import { Course, HourlyForecast, WeatherResponse, courseLength, courseStartTime, courseWeekday } from 'core_model';
+import { Course, HourlyForecast, WeatherResponse, courseLength, courseOccursInWeek, courseStartTime, courseWeekday } from 'core_model';
 import { ScheduleRepository, ScheduleRepositoryProvider, ScheduleSetupRepository } from 'data_schedule';
 import { LengthMetrics } from '@kit.ArkUI';
 import { CampusCardRepository, CampusCardRepositoryProvider } from 'data_campuscard';
@@ -89,7 +89,9 @@ export struct HomePage {
   private startPeriodicRefresh(): void {
     if (this.refreshTimer >= 0) clearInterval(this.refreshTimer);
     this.refreshTimer = setInterval(() => {
+      if (!this.active) return;
       this.clockRevision++;
+      this.currentWeek = this.setupRepository.displayConfig()?.currentWeek ?? 1;
       this.loadBalance(true);
     }, 30_000);
   }
@@ -178,8 +180,8 @@ export struct HomePage {
 
   private todayCourses(): Array<Course> {
     const weekday = ((AhuCache.now().getDay() + 6) % 7) + 1;
-    return this.courses.filter((course: Course): boolean =>
-      courseWeekday(course) === weekday && (course.weekIndexes ?? []).includes(this.currentWeek))
+      return this.courses.filter((course: Course): boolean =>
+        courseWeekday(course) === weekday && courseOccursInWeek(course, this.currentWeek))
       .sort((left: Course, right: Course): number => courseStartTime(left) - courseStartTime(right));
   }
 

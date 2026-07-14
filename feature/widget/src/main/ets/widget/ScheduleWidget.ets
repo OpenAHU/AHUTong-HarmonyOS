@@ -1,5 +1,5 @@
 import { AhuCache } from 'core_datastore';
-import { Course, courseLength, courseStartTime, courseWeekday } from 'core_model';
+import { Course, courseLength, courseOccursInWeek, courseStartTime, courseWeekday } from 'core_model';
 import { formBindingData, formProvider } from '@kit.FormKit';
 
 const START_MINUTES: Array<number> = [0, 480, 530, 590, 640, 690, 840, 890, 950, 1000, 1050, 1140, 1190, 1240];
@@ -40,7 +40,7 @@ export class ScheduleWidgetDataBuilder {
     const weekday = ((now.getDay() + 6) % 7) + 1;
     const minutes = now.getHours() * 60 + now.getMinutes();
     const remaining = AhuCache.getSchedule(year, term)
-      .filter((course: Course) => courseWeekday(course) === weekday && (course.weekIndexes ?? []).includes(week))
+      .filter((course: Course) => courseWeekday(course) === weekday && courseOccursInWeek(course, week))
       .filter((course: Course) => ScheduleWidgetDataBuilder.endMinutes(course) >= minutes)
       .sort((left: Course, right: Course) => courseStartTime(left) - courseStartTime(right));
     data.remainingText = remaining.length === 0 ? '暂无课程' : `还剩 ${remaining.length} 节`;

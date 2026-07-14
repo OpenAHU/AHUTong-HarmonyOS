@@ -2,7 +2,7 @@ export { CORE_MODEL_VERSION } from './src/main/ets/model/CommonModels';
 export { UserType, getSchoolYears } from './src/main/ets/model/UserModels';
 export type { User } from './src/main/ets/model/UserModels';
 export type { Course, ScheduleConfig } from './src/main/ets/model/ScheduleModels';
-export { courseEndWeek, courseLength, courseStartTime, courseStartWeek, courseWeekday } from './src/main/ets/model/ScheduleModels';
+export { courseEndWeek, courseLength, courseOccursInWeek, courseStartTime, courseStartWeek, courseWeekday } from './src/main/ets/model/ScheduleModels';
 export type {
   CourseGrade,
   Exam,

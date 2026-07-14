@@ -3,6 +3,7 @@ import {
   Course,
   courseEndWeek,
   courseLength,
+  courseOccursInWeek,
   courseStartTime,
   courseStartWeek,
   courseWeekday
@@ -24,6 +25,14 @@ export default function localUnitTest() {
       expect(courseWeekday(course)).assertEqual(0);
       expect(courseStartTime(course)).assertEqual(0);
       expect(courseLength(course)).assertEqual(0);
+    });
+
+    it('matchesExplicitAndLegacyParityWeeks', 0, () => {
+      const course: Course = { startWeek: '2', endWeek: '8', weekIndexes: [2, 4, 8] };
+      expect(courseOccursInWeek(course, 4)).assertTrue();
+      expect(courseOccursInWeek(course, 6)).assertTrue();
+      expect(courseOccursInWeek(course, 5)).assertFalse();
+      expect(courseOccursInWeek(course, 10)).assertFalse();
     });
   });
 }
