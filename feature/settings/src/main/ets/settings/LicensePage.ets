@@ -12,8 +12,12 @@ const LICENSES: Array<LicenseItem> = [
   { name: 'Jsoup', author: 'jsoup.org', url: 'https://jsoup.org/', license: 'MIT License' },
   { name: 'MMKV', author: 'Tencent', url: 'https://github.com/Tencent/MMKV', license: 'BSD 3-Clause License' },
   { name: 'Coil', author: 'Coil Contributors', url: 'https://github.com/coil-kt/coil', license: 'Apache License 2.0' },
+  { name: 'PersistentCookieJar', author: 'Fran Montiel', url: 'https://github.com/franmontiel/PersistentCookieJar', license: 'Apache License 2.0' },
   { name: 'ZXing Android Embedded', author: 'JourneyApps', url: 'https://github.com/journeyapps/zxing-android-embedded', license: 'Apache License 2.0' },
-  { name: 'Monet / Backdrop / Capsule', author: 'Kyant0', url: 'https://github.com/Kyant0', license: 'Apache License 2.0' }
+  { name: 'Monet', author: 'Kyant0', url: 'https://github.com/Kyant0/Monet', license: 'Apache License 2.0' },
+  { name: 'Backdrop', author: 'Kyant0', url: 'https://github.com/Kyant0/AndroidLiquidGlass', license: 'Apache License 2.0' },
+  { name: 'Capsule', author: 'Kyant0', url: 'https://github.com/Kyant0/Capsule', license: 'Apache License 2.0' },
+  { name: 'More...', author: 'Various Developers', url: 'https://github.com/', license: '...' }
 ];
 
 @Component

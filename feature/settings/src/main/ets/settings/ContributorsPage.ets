@@ -31,7 +31,8 @@ export struct ContributorsPage {
       Text('加入我们').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold).padding({ left: 20 });
       AhuInsetCard() {
         Column({ space: 4 }) { Text('Hello~').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold);
-          Text('We are waiting for you!\nGet connection with us now!').fontColor(AhuColors.onSurfaceSecondary); }
+          Text('We are waiting for you!\nGet connection with us now!\nClick me for more info!')
+            .fontColor(AhuColors.onSurfaceSecondary); }
         .width('100%').alignItems(HorizontalAlign.Start).onClick(() => { this.message = '请联系任意一位小伙伴'; });
       }
       Text('开发者').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold).padding({ left: 20 });
