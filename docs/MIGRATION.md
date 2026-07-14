@@ -147,7 +147,7 @@ entry (HAP / composition root)
 | 校园卡余额充值 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移首页入口、金额校验、身份确认/复制、支付宝 Scheme/网页降级；银行卡路径已接入 YCard CAS 票据换 OAuth 令牌、账户余额、安全随机数与 SHA-256 签名、创建订单、支付结果及防重复提交；API 24 Debug HAP 构建通过，涉及真实资金，未经测试账号和真机成功小额验证前不标记完成 |
 | 电费充值 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移校区→楼栋→楼层→房间四级选择、电量信息、金额与 6 位密码校验、第三方房间载荷、动态密码映射、SHA-256 签名订单/支付和结果；API 24 Debug HAP 构建通过，历史房间快捷入口待补，真实支付待测试账号真机小额验证 |
 | 浴室缴费 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移竹园/龙河、桔园/蕙园选择，手机号账户查询，现金/赠送余额，金额校验，6 位密码确认与映射加密，YCard 订单/支付与成功失败状态；API 24 Debug HAP 构建通过，涉及真实资金，待测试账号真机小额验证 |
-| 浴室开放信息 | `feature:home` | `feature/home` | 待开始 | 开放状态及异常降级 |
+| 浴室开放信息 | `feature:home` | `feature/home` | 不适用 | 当前 Android 基线已注释开放状态 UI，`CrawlerCampusCardSource.fetchBathrooms()` 固定返回空列表，仅保留浴室缴费卡片；2022 年历史接口 `https://ahuer.cn/api/bathroom/open` 已不可连接，因此 HarmonyOS 保持当前基线行为，不恢复过期静态状态 |
 | 失物招领 | `feature:portal` + `data:portal` | 对应同名域 | 已完成 | 双状态列表、缓存、刷新、分页、详情、发布/删除、本人帖子管理、全字段搜索、校区/类别筛选、结果计数和多图全屏浏览均已迁移；API 24 Debug HAP 构建通过，无真实账号与连接设备，接口、图片加载和视觉待运行验收 |
 | 校园电话本 | `feature:tools` | `feature/tools` | 已完成 | 已迁移九类、全部 2025/2026 更新内置号码、磬苑/龙河标识、跨目录名称/号码搜索、单号码直接拨号和双号码校区选择；使用系统隐式拨号器，不申请直接通话权限；API 24 Debug HAP 构建通过，待真机验证拨号器拉起 |
 | 天气 | `feature:weather` | `data/weather` + `feature/weather` | 已完成 | 已迁移完整模型、城市/IP/区划码查询、系统定位与逆地理编码、缓存/失败回退、实况、预警、7 日/24 小时预报、AQI、带伞建议和生活指数；首页显示开关与位置/温度/天气/AQI/短时降雨卡已接入；线上合肥接口及 API 24 构建通过，定位权限流程待真机验收 |
@@ -252,3 +252,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 首页天气卡 | 扩展天气仓库的首页显示偏好并在详情页提供持久化开关；`feature_home` 复用同一仓库与缓存，按开关展示位置、温度、天气、空气质量或近 6 小时降水提醒，点击进入详情，关闭或失败时不占据首页内容 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，开关返回首页刷新与卡片视觉待真机验收 |
 | 2026-07-15 | 天气定位 | 为 Entry 模块声明模糊/精确定位运行时权限，天气页请求授权后调用系统定位与逆地理编码取得城市并刷新天气；拒绝授权、定位或编码失败时自动回退到缓存区划码，再回退到 IP 定位 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，授权弹窗、定位精度及逆地理编码结果待真机验收 |
 | 2026-07-15 | 仓库资源与下载 | 新增 `feature_repository`，对齐 Android 的 6 个学院资料源、学院选择、目录栈、缓存优先与后台同步、强制刷新、文件类型/大小；文件使用 jsDelivr CDN 与 GitHub Raw 双源回退下载到应用沙箱，持久化已下载记录并支持系统打开和删除 | 6 个 GitHub 仓库根目录线上逐一实测成功（17–49 项）；OHPM 全模块依赖同步，API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，沙箱 URI 跨应用打开与大文件下载待真机验收 |
+| 2026-07-15 | 浴室开放信息基线审计 | 对照 Android 当前源码、历史提交 `87d38da` 与线上旧接口：当前 `getBathrooms()` 明确返回空列表，首页开放状态 UI 已注释，仅有浴室缴费入口；HarmonyOS 已具备相同缴费入口，不恢复历史静态男女开放信息 | `https://ahuer.cn/api/bathroom/open` 线上 TLS/连接失败；此项按当前 Android 产品行为标记为不适用，浴室缴费功能仍按独立台账继续保留真机资金验收状态 |
