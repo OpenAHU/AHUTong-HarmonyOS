@@ -87,6 +87,18 @@
       ]
     },
     {
+      "name": "core_network",
+      "srcPath": "./core/network",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
       "name": "data_schedule",
       "srcPath": "./data/schedule",
       "targets": [

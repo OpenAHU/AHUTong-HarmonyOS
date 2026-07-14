@@ -1,0 +1,10 @@
+{
+  "name": "core_network",
+  "version": "1.0.0",
+  "description": "HTTP, JSON, cookie and error handling for AHUTong.",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "core_common": "file:../common"
+  }
+}

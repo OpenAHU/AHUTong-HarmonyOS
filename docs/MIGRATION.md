@@ -50,8 +50,8 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`data_schedule`、`feature_schedule` HAR
-- 当前实现：已建立分层依赖链、跨层业务模型、按用户隔离的 Preferences 存储和 ArkUI 基础设计系统，业务功能尚未迁移
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`data_schedule`、`feature_schedule` HAR
+- 当前实现：已建立分层依赖链、统一结果与网络层、跨层业务模型、按用户隔离的 Preferences 存储和 ArkUI 基础设计系统，业务功能尚未迁移
 
 ## 3. 架构映射
 
@@ -214,3 +214,4 @@ entry (HAP / composition root)
 | 2026-07-14 | 应用壳 | 替换默认页面，建立与 Android 一致的主页、课表、工具、设置四入口底部 Tabs 和迁移占位页 | API 24 Debug HAP 构建成功；HDC 无连接设备，未执行真机视觉验证 |
 | 2026-07-14 | 模型 | 新增 `core_model` HAR，迁移账户、课程、成绩、考试、校园卡、缴费和失物招领等跨层模型及课表数值转换 | 由 `data_schedule` 实际导入；API 24 Debug HAP 构建成功 |
 | 2026-07-14 | 存储 | 新增 `core_datastore` HAR，在 UIAbility 启动时初始化 Preferences，迁移用户、协议、学期、课表与显示偏好的按用户隔离缓存 | API 24 Debug HAP 构建成功且无 ArkTS 警告；敏感凭据不写入普通 Preferences |
+| 2026-07-14 | 网络 | 新增 `core_network` HAR 与统一 `AppResult`，实现超时、JSON、HTTP/认证错误、主机 Cookie 会话及请求资源释放，并声明 INTERNET 权限 | API 24 Debug HAP 构建成功且无 ArkTS 警告；Cookie 仅驻留内存，待认证层接安全存储 |
