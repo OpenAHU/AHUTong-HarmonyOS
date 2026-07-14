@@ -47,6 +47,10 @@
     {
       "name": "settings_migration_description",
       "value": "账户、偏好、提醒、关于与数据管理功能将在此提供。"
+    },
+    {
+      "name": "location_reason",
+      "value": "用于按所在城市获取本地天气；拒绝后仍可使用城市搜索或 IP 定位。"
     }
   ]
 }

@@ -1,6 +1,8 @@
 import { AhuColors, AhuInsetCard, AhuScreen, AhuTypography } from 'core_designsystem';
 import { ForecastDay, HourlyForecast, LifeIndexItem, WeatherAlert, WeatherResponse } from 'core_model';
 import { WeatherRepository, WeatherRepositoryProvider } from 'data_weather';
+import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
+import { geoLocationManager } from '@kit.LocationKit';
 
 interface NamedLifeIndex { name: string; value?: LifeIndexItem; }
 
@@ -13,6 +15,8 @@ export struct WeatherPage {
   @State city: string = '';
   @State searching: boolean = false;
   @State showOnHome: boolean = false;
+  @State locating: boolean = false;
+  @State locationMessage: string = '';
   onBack: () => void = () => {};
 
   aboutToAppear(): void { this.showOnHome = this.repository.showOnHome(); this.load(); }
@@ -24,6 +28,28 @@ export struct WeatherPage {
     if (result.isSuccess && result.data) this.weather = result.data;
     else this.error = result.error?.message ?? '天气加载失败';
     this.loading = false;
+  }
+
+  private async locate(): Promise<void> {
+    if (this.locating) return;
+    this.locating = true; this.locationMessage = '';
+    try {
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      const permissions: Array<Permissions> = ['ohos.permission.APPROXIMATELY_LOCATION', 'ohos.permission.LOCATION'];
+      const result = await abilityAccessCtrl.createAtManager().requestPermissionsFromUser(context, permissions);
+      if (!result.authResults.some((value: number) => value === 0)) throw new Error('定位权限未授予');
+      const location = await geoLocationManager.getCurrentLocation();
+      const addresses = await geoLocationManager.getAddressesFromLocation({ latitude: location.latitude,
+        longitude: location.longitude, maxItems: 1, locale: 'zh' });
+      const address = addresses.length > 0 ? addresses[0] : undefined;
+      const city = address?.locality ?? address?.subAdministrativeArea ?? address?.subLocality;
+      if (!city || city.length === 0) throw new Error('无法识别所在城市');
+      this.locationMessage = `已定位到 ${city}`;
+      await this.load(city);
+    } catch (error) {
+      this.locationMessage = `${(error as Error).message ?? '定位失败'}，已使用缓存或 IP 定位`;
+      await this.load();
+    } finally { this.locating = false; }
   }
 
   private location(): string {
@@ -60,6 +86,8 @@ export struct WeatherPage {
         Text(this.location()).fontSize(28).fontWeight(FontWeight.Bold).layoutWeight(1);
         Button(this.searching ? '取消' : '城市', { type: ButtonType.Capsule }).backgroundColor(AhuColors.card)
           .fontColor(AhuColors.onSurface).onClick(() => { this.searching = !this.searching; this.city = ''; });
+        Button(this.locating ? '定位中' : '定位', { type: ButtonType.Capsule }).enabled(!this.locating && !this.loading)
+          .backgroundColor(AhuColors.card).fontColor(AhuColors.onSurface).onClick(() => this.locate());
         Button('刷新', { type: ButtonType.Capsule }).enabled(!this.loading).backgroundColor(AhuColors.card)
           .fontColor(AhuColors.onSurface).onClick(() => this.load());
       }.width('100%').padding({ left: 16, right: 16, top: 20 });
@@ -71,6 +99,8 @@ export struct WeatherPage {
             .onClick(() => { this.load(this.city); this.searching = false; });
         }.padding({ left: 16, right: 16 });
       }
+      if (this.locationMessage.length > 0) Text(this.locationMessage).fontSize(AhuTypography.label)
+        .fontColor(AhuColors.onSurfaceSecondary).padding({ left: 20, right: 20 });
       Row() {
         Column({ space: 3 }) { Text('在首页显示天气').fontWeight(FontWeight.Medium);
           Text('展示位置、温度、天气和空气质量').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary); }
