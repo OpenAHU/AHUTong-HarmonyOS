@@ -37,6 +37,7 @@ export class PreferencesKeys {
   static readonly WEATHER_SHOW_AQI: string = 'weather_show_aqi';
   static readonly SCHEDULE_WIDGET_IDS: string = 'schedule_widget_ids';
   static readonly ELECTRICITY_ROOM_HISTORY: string = 'electricity_room_history';
+  static readonly ELECTRICITY_CHARGE_INFO: string = 'electricity_charge_info';
   static readonly BATHROOM_LAST_PHONE: string = 'bathroom_last_phone';
 }
 

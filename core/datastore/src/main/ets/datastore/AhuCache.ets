@@ -1,4 +1,4 @@
-import { CampusItem, Course, Exam, GpaRankInfo, Grade, GradeStudentProfile, LostFoundItem, LostFoundType, User, WeatherResponse } from 'core_model';
+import { CampusItem, Course, ElectricityChargeInfo, Exam, GpaRankInfo, Grade, GradeStudentProfile, LostFoundItem, LostFoundType, User, WeatherResponse } from 'core_model';
 import { AhuPreferences, PreferencesKeys } from './AhuPreferences';
 
 export class AhuCache {
@@ -310,6 +310,18 @@ export class AhuCache {
   }
   static getElectricityRoomHistory(): string {
     return AhuPreferences.getString(AhuCache.userKey(PreferencesKeys.ELECTRICITY_ROOM_HISTORY));
+  }
+
+  static saveElectricityChargeInfo(value: ElectricityChargeInfo): void {
+    AhuPreferences.putString(AhuCache.userKey(PreferencesKeys.ELECTRICITY_CHARGE_INFO), JSON.stringify(value));
+  }
+  static getElectricityChargeInfo(): ElectricityChargeInfo | undefined {
+    const raw = AhuPreferences.getString(AhuCache.userKey(PreferencesKeys.ELECTRICITY_CHARGE_INFO));
+    if (raw.length === 0) return undefined;
+    try { return JSON.parse(raw) as ElectricityChargeInfo; } catch (_) { return undefined; }
+  }
+  static clearElectricityChargeInfo(): void {
+    AhuPreferences.remove(AhuCache.userKey(PreferencesKeys.ELECTRICITY_CHARGE_INFO));
   }
 
   static saveBathroomLastPhone(value: string): void {

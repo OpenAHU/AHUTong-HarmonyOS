@@ -29,6 +29,9 @@ export struct ElectricityRechargePage {
   @State result: string = '';
   @State showConfirm: boolean = false;
   @State history: Array<ElectricityHistory> = [];
+  @State infoClickCount: number = 0;
+  @State infoMessage: string = '';
+  @State showResetRecord: boolean = false;
   onBack: () => void = () => {};
 
   aboutToAppear(): void {
@@ -36,6 +39,24 @@ export struct ElectricityRechargePage {
     if (this.history.length === 1) this.restore(this.history[0]); else this.loadCampuses();
   }
   private validAmount(value: string): boolean { return /^\d*\.?\d{0,2}$/.test(value); }
+
+  private currentDateLabel(): string {
+    const now = AhuCache.now();
+    return `${now.getFullYear()}年${`${now.getMonth() + 1}`.padStart(2, '0')}月${`${now.getDate()}`.padStart(2, '0')}日`;
+  }
+
+  private revealChargeInfo(): void {
+    this.infoClickCount++;
+    if (this.infoClickCount === 1) this.infoMessage = '点击五次查看累计充值记录，长按清空记录';
+    else if (this.infoClickCount === 2) this.infoMessage = '再点击三次即可查看累计充值记录';
+    else if (this.infoClickCount === 3) this.infoMessage = '再点击两次即可查看累计充值记录';
+    else if (this.infoClickCount === 4) this.infoMessage = '再点击一次即可查看累计充值记录';
+    else {
+      const info = AhuCache.getElectricityChargeInfo();
+      this.infoMessage = info ? `从${info.firstChargeDate}起累计电费充值金额为：${info.totalAmount.toFixed(2)}元` :
+        '暂无充值记录';
+    }
+  }
 
   private readHistory(): Array<ElectricityHistory> {
     const raw = AhuCache.getElectricityRoomHistory();
@@ -119,6 +140,10 @@ export struct ElectricityRechargePage {
     const response = await this.repository.chargeElectricity(this.amount, this.password, this.roomInfo);
     if (response.isSuccess) {
       this.result = `充值成功，订单号：${response.data ?? '--'}`;
+      const paid = Number(this.amount);
+      const saved = AhuCache.getElectricityChargeInfo();
+      AhuCache.saveElectricityChargeInfo({ totalAmount: (saved?.totalAmount ?? 0) + paid,
+        firstChargeDate: saved?.firstChargeDate ?? this.currentDateLabel() });
       this.saveCurrentHistory();
       if (this.room) await this.selectRoom(this.room);
     } else this.error = response.error?.message ?? '电费充值失败';
@@ -159,6 +184,25 @@ export struct ElectricityRechargePage {
     }.width('88%').padding(24).backgroundColor(AhuColors.card).borderRadius(28);
   }
 
+  @Builder
+  private resetRecordPanel() {
+    Column({ space: 16 }) {
+      Text('确认操作').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold).width('100%');
+      Text('您确定要将累计充值金额清零吗？此操作不可撤销。').fontSize(AhuTypography.body)
+        .fontColor(AhuColors.onSurfaceSecondary).width('100%');
+      Row({ space: 12 }) {
+        Button('取消', { type: ButtonType.Capsule }).layoutWeight(1)
+          .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.card)
+          .onClick(() => { this.showResetRecord = false; });
+        Button('确认', { type: ButtonType.Capsule }).layoutWeight(1).backgroundColor(AhuColors.error)
+          .onClick(() => {
+            AhuCache.clearElectricityChargeInfo(); this.infoMessage = '累计记录已清零';
+            this.infoClickCount = 0; this.showResetRecord = false;
+          });
+      }.width('100%');
+    }.width('88%').padding(24).backgroundColor(AhuColors.card).borderRadius(28);
+  }
+
   build() {
     Stack({ alignContent: Alignment.Center }) {
       AhuScreen({ scrollable: true }) {
@@ -187,8 +231,18 @@ export struct ElectricityRechargePage {
             this.optionGroup('楼层', this.floors, this.floor, (item: ElectricityOption) => this.selectFloor(item));
             this.optionGroup('房间', this.rooms, this.room, (item: ElectricityOption) => this.selectRoom(item));
             if (this.loading) LoadingProgress().width(28).height(28).color(AhuColors.primaryAction);
-            if (this.roomInfo) Text(this.roomInfo.info.length > 0 ? this.roomInfo.info : '已获取当前房间信息')
-              .fontSize(AhuTypography.body).fontColor(AhuColors.onSurface);
+            if (this.roomInfo) {
+              Row({ space: 12 }) {
+                Text('信息').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium);
+                Text(this.roomInfo.info.length > 0 ? this.roomInfo.info : '已获取当前房间信息')
+                  .fontSize(AhuTypography.body).fontColor(AhuColors.onSurface).layoutWeight(1);
+              }.width('100%').onClick(() => this.revealChargeInfo())
+                .gesture(LongPressGesture({ repeat: false, duration: 500 })
+                  .onAction(() => { this.showResetRecord = true; }));
+              if (this.infoMessage.length > 0) {
+                Text(this.infoMessage).fontSize(AhuTypography.label).fontColor(AhuColors.primaryAction).width('100%');
+              }
+            }
           }.width('100%').alignItems(HorizontalAlign.Start);
         }
         AhuInsetCard() {
@@ -206,6 +260,10 @@ export struct ElectricityRechargePage {
       }
       if (this.showConfirm) {
         Column() { this.confirmPanel(); }.width('100%').height('100%')
+          .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).backgroundColor('#66000000');
+      }
+      if (this.showResetRecord) {
+        Column() { this.resetRecordPanel(); }.width('100%').height('100%')
           .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).backgroundColor('#66000000');
       }
     }.width('100%').height('100%');
