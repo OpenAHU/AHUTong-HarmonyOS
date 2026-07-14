@@ -51,7 +51,7 @@
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
 - 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`feature_login`、`feature_schedule` HAR
-- 当前实现：M1-M3 基础架构已完成，M4 已完成首次启动协议门、登录页面与认证状态流，并接入安大门户验证码 OCR 和教务 CAS 联合登录；Cookie 持久化与安全凭据存储仍待迁移
+- 当前实现：M1-M3 基础架构已完成，M4 已完成首次启动协议门、登录页面、门户与教务联合登录，并使用 Asset Store 安全保存凭据以支持冷启动会话重建；真实账号真机验证仍待补齐
 
 ## 3. 架构映射
 
@@ -123,7 +123,7 @@ entry (HAP / composition root)
 | 四入口主导航 | App / BottomNavBar | `entry` | 已完成 | 主页、课表、工具、设置 Tabs；API 24 Debug HAP 构建通过；无连接设备，待补真机视觉验证 |
 | 启动与协议确认 | `feature:login` / Splash | `feature/login` | 已完成 | 免责声明、隐私政策、商业合作依次确认并分别持久化；拒绝即终止 UIAbility；API 24 Debug HAP 构建通过，无连接设备，待补真机视觉与重启持久化验证 |
 | 统一身份认证登录 | `feature:login` + `data:auth` | `feature/login` + `data/auth` | 进行中 | 已迁移 UI、状态、Repository、门户验证码/OCR/5 次重试，以及教务 CAS `lt`、设备校验、兼容加密、登录和主页验证；固定向量、无凭据端点及 API 24 构建通过；尚缺真实账号真机端到端验证，故未标记完成 |
-| 登录态恢复与失效重登 | `core:common` + `data:auth` | `core/common` + `data/auth` | 待开始 | 冷启动、Cookie、会话过期 |
+| 登录态恢复与失效重登 | `core:common` + `data:auth` | `core/common` + `data/auth` | 进行中 | 已用 Asset Store（首次解锁后可访问、禁止同步）安全保存凭据，冷启动显示恢复状态并重建门户/CAS 内存 Cookie，失败清除用户并回登录页；API 24 构建通过；业务请求遇到会话过期后的自动重登待接入 |
 | 个人与学期初始化 | Setup / Info | `feature/login` + `data/schedule` | 待开始 | 首次配置及重新配置 |
 
 ### 6.2 首页与教学服务
@@ -201,7 +201,7 @@ entry (HAP / composition root)
 - 校园系统接口、Cookie、WebView 和证书策略需要在 HarmonyOS 网络栈上逐项验证。
 - Android 原生 SDK / Rust 或 JNI 能力不能直接假定可用，需要确定 ArkTS、NAPI 或重新实现方案。
 - Android 仓库仅含 `arm64-v8a/libahutong_rs.so` 成品而无 Rust 源码，不能直接作为 HarmonyOS NAPI 库复用；当前按业务域迁移 ArkTS 爬虫路径。
-- Android 登录成功会缓存智慧安大密码供爬虫自动重登；HarmonyOS 版暂不把密码写入普通 Preferences，须接入系统安全凭据存储后再恢复该能力。
+- Android 登录成功会缓存智慧安大密码供爬虫自动重登；HarmonyOS 版改用系统 Asset Store，凭据首次解锁后可访问、禁止跨设备同步，且不会进入普通 Preferences。
 - 后台任务、开机恢复、通知、课表微件和应用更新均存在平台语义差异，应按 HarmonyOS 官方能力设计。
 - UI 一致不等于照搬 Android 系统控件；涉及系统权限、窗口和返回行为时优先满足 HarmonyOS 规范。
 - 隐私政策末段的“安卓存储隔离”已按目标平台改为“HarmonyOS 应用数据隔离”，其余协议内容与 Android 基线一致。
@@ -223,3 +223,4 @@ entry (HAP / composition root)
 | 2026-07-14 | 登录界面与状态 | 对照 Android 恢复账号/密码胶囊输入、四张焦点表情、密码显隐与动态登录状态条；新增可注入认证 Repository、会话门和成功用户持久化 | API 24 Debug HAP 构建成功且无 ArkTS 警告；原生 SDK 当前明确返回不可用，未使用假成功，真实账号认证待后续数据源提交 |
 | 2026-07-14 | 门户认证数据源 | 新增 `data_crawler`，迁移安大门户验证码、OpenAHU OCR、表单登录、Cookie 会话与 5 次验证码重试；认证仓库在 Native 不可用时自动降级到该真实数据源 | 验证码端点返回 200 和会话 Cookie，OCR 返回 4 位结果；API 24 Debug HAP 构建成功且无 ArkTS 警告；未使用或记录真实账号，教务 CAS 会话仍待迁移 |
 | 2026-07-14 | 教务 CAS 认证 | 忠实移植 Android `DES.strEnc` 兼容算法，新增多 Cookie 内存会话、CAS `lt` 提取、设备校验、登录重定向和教务主页登录态验证，并与门户登录串联 | ArkTS 加密结果与 Android 固定向量完全一致；匿名访问最终到达 CAS 页面、返回 45 字符 `lt` 及 3 个 Cookie；API 24 Debug HAP 构建成功且无 ArkTS 警告；缺真实账号真机验证 |
+| 2026-07-14 | 安全凭据与冷启动恢复 | 新增 Asset Store 凭据封装；登录成功后安全保存账号密码，冷启动用凭据重建门户/CAS Cookie，会话恢复失败时清除缓存用户并回到登录页，退出时删除安全资产 | API 24 Debug HAP 构建成功且无 ArkTS 警告；Asset Store 与冷启动流程因无设备未做运行验证，业务请求会话过期自动重登待后续仓库接入 |

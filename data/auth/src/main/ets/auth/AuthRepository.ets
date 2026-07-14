@@ -1,21 +1,25 @@
 import { AppErrorKind, AppResult, AppResults } from 'core_common';
-import { AhuCache } from 'core_datastore';
+import { AhuCache, SecureCredentialStore } from 'core_datastore';
 import { User } from 'core_model';
 import { CampusNativeGateway } from 'core_sdk_api';
 import { CrawlerAuthenticator, PortalCrawlerAuthenticator } from 'data_crawler';
 
 export interface AuthRepository {
   login(username: string, password: string): Promise<AppResult<User>>;
-  logout(): void;
+  restoreSession(): Promise<AppResult<User>>;
+  logout(): Promise<void>;
 }
 
 export class DefaultAuthRepository implements AuthRepository {
   private readonly gateway: CampusNativeGateway;
   private readonly crawler: CrawlerAuthenticator;
+  private readonly credentialStore: SecureCredentialStore;
 
-  constructor(gateway: CampusNativeGateway, crawler: CrawlerAuthenticator = new PortalCrawlerAuthenticator()) {
+  constructor(gateway: CampusNativeGateway, crawler: CrawlerAuthenticator = new PortalCrawlerAuthenticator(),
+    credentialStore: SecureCredentialStore = new SecureCredentialStore()) {
     this.gateway = gateway;
     this.crawler = crawler;
+    this.credentialStore = credentialStore;
   }
 
   async login(username: string, password: string): Promise<AppResult<User>> {
@@ -41,13 +45,42 @@ export class DefaultAuthRepository implements AuthRepository {
     AhuCache.setAgreementAccepted();
     AhuCache.setPrivacyAccepted();
     AhuCache.setBusinessAccepted();
+    try {
+      await this.credentialStore.save(normalizedUsername, password);
+    } catch (_) {
+      this.gateway.clearSession();
+      this.crawler.clearSession();
+      AhuCache.clearCurrentUser();
+      return AppResults.failure<User>(AppErrorKind.UNKNOWN, '安全保存登录凭据失败');
+    }
     return result;
   }
 
-  logout(): void {
+  async restoreSession(): Promise<AppResult<User>> {
+    const cachedUser = AhuCache.getCurrentUser();
+    const credential = await this.credentialStore.load();
+    if (!cachedUser || !credential) {
+      AhuCache.clearCurrentUser();
+      return AppResults.failure<User>(AppErrorKind.AUTHENTICATION, '没有可恢复的登录会话');
+    }
+    this.gateway.clearSession();
+    this.crawler.clearSession();
+    const result = this.gateway.isNativeLoaded()
+      ? await this.gateway.login(credential.username, credential.password)
+      : await this.crawler.login(credential.username, credential.password);
+    if (!result.isSuccess || !result.data) {
+      AhuCache.clearCurrentUser();
+      return result;
+    }
+    AhuCache.saveCurrentUser(result.data);
+    return result;
+  }
+
+  async logout(): Promise<void> {
     this.gateway.clearSession();
     this.crawler.clearSession();
     AhuCache.logout();
+    await this.credentialStore.remove();
   }
 }
 

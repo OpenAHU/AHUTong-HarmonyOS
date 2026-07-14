@@ -1,10 +1,12 @@
-import { AuthSession } from 'data_auth';
+import { AhuColors, AhuLoading } from 'core_designsystem';
+import { AuthRepositoryProvider, AuthSession } from 'data_auth';
 import { LaunchConsentGate } from './LaunchConsentGate';
 import { LoginPage } from './LoginPage';
 
 @Component
 export struct AppLaunchGate {
   @State loggedIn: boolean = false;
+  @State restoring: boolean = true;
   rejectAction: () => void = () => {};
 
   @Builder
@@ -12,13 +14,27 @@ export struct AppLaunchGate {
 
   @BuilderParam content: () => void = this.emptyContent;
 
-  aboutToAppear(): void {
-    this.loggedIn = AuthSession.isLoggedIn();
+  async aboutToAppear(): Promise<void> {
+    if (!AuthSession.isLoggedIn()) {
+      this.restoring = false;
+      return;
+    }
+    const result = await AuthRepositoryProvider.get().restoreSession();
+    this.loggedIn = result.isSuccess;
+    this.restoring = false;
   }
 
   @Builder
   private authenticatedContent() {
-    if (this.loggedIn) {
+    if (this.restoring) {
+      Column() {
+        AhuLoading({ message: $r('app.string.login_restoring_session') });
+      }
+      .width('100%')
+      .height('100%')
+      .justifyContent(FlexAlign.Center)
+      .backgroundColor(AhuColors.pageBackground);
+    } else if (this.loggedIn) {
       this.content();
     } else {
       LoginPage({

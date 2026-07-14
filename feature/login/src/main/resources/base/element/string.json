@@ -29,6 +29,10 @@
       "value": "登录中"
     },
     {
+      "name": "login_restoring_session",
+      "value": "正在恢复登录状态"
+    },
+    {
       "name": "login_agreement_title",
       "value": "温馨提示与免责声明"
     },
