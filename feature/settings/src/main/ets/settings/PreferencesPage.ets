@@ -1,5 +1,7 @@
 import { AhuColors, AhuInsetCard, AhuTypography } from 'core_designsystem';
 import { AhuCache } from 'core_datastore';
+import { common } from '@kit.AbilityKit';
+import { notificationManager } from '@kit.NotificationKit';
 
 interface ThemeOption { name: string; color: string; }
 const THEME_OPTIONS: Array<ThemeOption> = [
@@ -50,6 +52,16 @@ export struct PreferencesPage {
     if (enabled && !applied) this.reminderMessage = '未获得通知权限，课前提醒未开启';
   }
 
+  private async openReminderSettings(): Promise<void> {
+    this.reminderMessage = '';
+    try {
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      await notificationManager.openNotificationSettings(context);
+    } catch (_) {
+      this.reminderMessage = '暂时无法打开系统通知设置，请前往系统设置中管理安大通通知';
+    }
+  }
+
   build() {
     Stack() {
       Scroll() {
@@ -82,6 +94,9 @@ export struct PreferencesPage {
                 Toggle({ type: ToggleType.Switch, isOn: this.liveCountdown }).enabled(this.reminder)
                   .onChange((enabled: boolean) => { this.liveCountdown = enabled; AhuCache.setLiveCountdownEnabled(enabled); });
               }.width('100%');
+              Button('管理提醒权限', { type: ButtonType.Normal })
+                .backgroundColor(Color.Transparent).fontColor(AhuColors.primaryAction)
+                .alignSelf(ItemAlign.End).onClick(() => this.openReminderSettings());
             }.width('100%').alignItems(HorizontalAlign.Start);
           }
 
