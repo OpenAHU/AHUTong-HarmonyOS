@@ -17,7 +17,7 @@
 # -keep-property-name: specifies property names that you want to keep
 # -keep-global-name: specifies names that you want to keep in the global scope
 
--enable-property-obfuscation
--enable-toplevel-obfuscation
--enable-filename-obfuscation
--enable-export-obfuscation
+# Campus API payloads and HAR public exports depend on stable names. Keep them intact
+# while still shrinking release source and stripping console diagnostics.
+-compact
+-remove-log

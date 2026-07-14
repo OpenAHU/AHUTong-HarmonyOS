@@ -25,6 +25,8 @@
 
 详细进度见[《Android 到 HarmonyOS 迁移文档》](docs/MIGRATION.md)。
 
+开发环境、命令行构建、测试、签名和发布检查见[《构建与发布指南》](docs/RELEASE.md)。
+
 ## 技术栈
 
 - ArkTS
