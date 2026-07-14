@@ -43,7 +43,13 @@
       "srcPath": "./core/common",
       "targets": [
         {
-          "name": "default",
+          "name": "debug",
+          "applyToProducts": [
+            "default"
+          ]
+        },
+        {
+          "name": "release",
           "applyToProducts": [
             "default"
           ]

@@ -21,10 +21,10 @@ ohpm install --all
 
 ```powershell
 # Debug HAP
-hvigorw --mode module -p module=entry@default -p product=default -p requiredDeviceType=phone -p buildMode=debug assembleHap
+hvigorw --mode module -p module=entry@debug -p product=default -p requiredDeviceType=phone -p buildMode=debug assembleHap
 
 # Release HAP
-hvigorw --mode module -p module=entry@default -p product=default -p requiredDeviceType=phone -p buildMode=release assembleHap
+hvigorw --mode module -p module=entry@release -p product=default -p requiredDeviceType=phone -p buildMode=release assembleHap
 
 # 当前纯逻辑测试模块
 hvigorw -p module=core_common@default test

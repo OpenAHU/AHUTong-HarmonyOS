@@ -24,7 +24,12 @@
   ],
   "targets": [
     {
-      "name": "default"
+      "name": "debug",
+      "source": { "pages": ["pages/Index"], "sourceRoots": ["./src/debug"] }
+    },
+    {
+      "name": "release",
+      "source": { "pages": ["pages/Index"], "sourceRoots": ["./src/release"] }
     }
   ]
 }
