@@ -55,6 +55,7 @@ export struct HomePage {
   @State dragOffsetY: number = 0;
   @State clockRevision: number = 0;
   @StorageLink('ahu_home_edit_request') @Watch('onEditRequestChanged') homeEditRequest: number = 0;
+  @StorageLink('ahu_schedule_config_revision') @Watch('onScheduleConfigChanged') scheduleConfigRevision: number = 0;
   private originalBrightness: number = -1;
   private refreshTimer: number = -1;
   onOpenSchedule: () => void = () => {};
@@ -65,6 +66,11 @@ export struct HomePage {
 
   private onEditRequestChanged(): void {
     if (this.homeEditEnabled) this.isEditing = true;
+  }
+
+  private onScheduleConfigChanged(): void {
+    this.currentWeek = this.setupRepository.displayConfig()?.currentWeek ?? 1;
+    this.load();
   }
 
   aboutToAppear(): void {

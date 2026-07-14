@@ -30,6 +30,7 @@ export default class EntryAbility extends UIAbility {
     AppStorage.setOrCreate('ahu_logout_revision', 0);
     AppStorage.setOrCreate('ahu_home_edit_request', 0);
     AppStorage.setOrCreate('ahu_mock_revision', 0);
+    AppStorage.setOrCreate('ahu_schedule_config_revision', 0);
     AppStorage.setOrCreate('ahu_gray_revision', 0);
     AppStorage.setOrCreate('ahu_debug_close_revision', 0);
     CampusGatewayProvider.initialize();

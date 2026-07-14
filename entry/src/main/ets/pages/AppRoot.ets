@@ -80,6 +80,14 @@ export struct AppRoot {
     this.homeEditEnabled = (await GrayReleaseManager.state()).enabled;
   }
 
+  private async syncScheduleConfig(): Promise<void> {
+    if (!this.scheduleSetupRepository.hasCompletedSetup()) return;
+    const config = await this.scheduleSetupRepository.syncRemoteConfig();
+    if (!config) return;
+    const revision = AppStorage.get<number>('ahu_schedule_config_revision') ?? 0;
+    AppStorage.setOrCreate('ahu_schedule_config_revision', revision + 1);
+  }
+
   private requestHomeEdit(): void {
     this.selectedIndex = 0;
     const revision = AppStorage.get<number>('ahu_home_edit_request') ?? 0;
@@ -239,6 +247,7 @@ export struct AppRoot {
       ScheduleSetupPage({
         onSetup: () => {
           this.setupComplete = true;
+          this.syncScheduleConfig();
         }
       });
     }
@@ -248,6 +257,7 @@ export struct AppRoot {
     Stack() {
       AppLaunchGate({
         rejectAction: () => this.terminateApplication(),
+        onAuthenticated: () => this.syncScheduleConfig(),
         content: this.postLoginContent
       });
       if (this.updateInfo) {

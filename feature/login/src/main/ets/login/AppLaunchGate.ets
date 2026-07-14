@@ -11,6 +11,7 @@ export struct AppLaunchGate {
   @State restoring: boolean = true;
   @StorageLink('ahu_logout_revision') logoutRevision: number = 0;
   rejectAction: () => void = () => {};
+  onAuthenticated: () => void = () => {};
   private readonly sessionExpiredListener: () => void = (): void => {
     this.loggedIn = false;
   };
@@ -33,6 +34,7 @@ export struct AppLaunchGate {
     }
     const result = await AuthRepositoryProvider.get().restoreSession();
     this.loggedIn = result.isSuccess;
+    if (result.isSuccess) this.onAuthenticated();
     this.restoring = false;
   }
 
@@ -56,6 +58,7 @@ export struct AppLaunchGate {
       LoginPage({
         onLoggedIn: () => {
           this.loggedIn = true;
+          this.onAuthenticated();
         }
       });
     }

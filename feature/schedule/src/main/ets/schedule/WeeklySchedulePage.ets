@@ -33,6 +33,7 @@ export struct WeeklySchedulePage {
   @State overviewSchedule: boolean = false;
   @State previewNextSemester: boolean = false;
   @State settingsVisible: boolean = false;
+  @StorageLink('ahu_schedule_config_revision') @Watch('onScheduleConfigChanged') scheduleConfigRevision: number = 0;
   active: boolean = false;
 
   aboutToAppear(): void {
@@ -45,6 +46,12 @@ export struct WeeklySchedulePage {
   }
 
   aboutToDisappear(): void { BackPressDispatcher.unregister('weekly_schedule'); }
+
+  private onScheduleConfigChanged(): void {
+    const config = this.setupRepository.displayConfig();
+    if (config) this.applyConfig(config);
+    this.load(false);
+  }
 
   private handleBackPress(): boolean {
     if (!this.active) return false;
