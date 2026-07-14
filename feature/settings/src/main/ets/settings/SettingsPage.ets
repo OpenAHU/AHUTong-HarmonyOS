@@ -65,6 +65,14 @@ export struct SettingsPage {
     try { await this.onClearAllData(); this.showClear = false; } finally { this.clearing = false; }
   }
 
+  private termLabel(): string {
+    const schoolYear = AhuCache.getSchoolYear() ?? '--';
+    const storedTerm = AhuCache.getSchoolTerm() ?? '';
+    const parts = storedTerm.split('-');
+    const term = parts.length >= 3 ? parts[parts.length - 1] : storedTerm;
+    return `${schoolYear} 学年 · 第 ${term.length > 0 ? term : '--'} 学期`;
+  }
+
   @Builder private item(title: string, subtitle: string, route: string) {
     AhuInsetCard() {
       Row() {
@@ -99,7 +107,7 @@ export struct SettingsPage {
         AhuInsetCard() {
           Column({ space: 5 }) {
             Text(AhuCache.getCurrentUser()?.name ?? '未登录').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold);
-            Text(`${AhuCache.getSchoolYear() ?? '--'} 学年 · 第 ${AhuCache.getSchoolTerm() ?? '--'} 学期`)
+            Text(this.termLabel())
               .fontColor(AhuColors.onSurfaceSecondary);
           }.width('100%').alignItems(HorizontalAlign.Start).onClick(() => this.debugTap());
         }
