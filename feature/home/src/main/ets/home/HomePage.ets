@@ -48,6 +48,10 @@ export struct HomePage {
   @State qrcodeLoading: boolean = false;
   @State showFullscreenQrcode: boolean = false;
   @State weather?: WeatherResponse = undefined;
+  @State dragIndex: number = -1;
+  @State dragTarget: number = -1;
+  @State dragOffsetX: number = 0;
+  @State dragOffsetY: number = 0;
   private originalBrightness: number = -1;
   onOpenSchedule: () => void = () => {};
   onOpenWidget: (route: string) => void = (_: string) => {};
@@ -215,6 +219,24 @@ export struct HomePage {
     next[index] = next[target];
     next[target] = value;
     this.saveSlots(next);
+  }
+
+  private updateDrag(index: number, offsetX: number, offsetY: number): void {
+    if (this.dragIndex !== index) return;
+    this.dragOffsetX = offsetX; this.dragOffsetY = offsetY;
+    const sourceRow = Math.floor(index / 2); const sourceColumn = index % 2;
+    const row = Math.max(0, Math.min(3, sourceRow + Math.round(offsetY / 92)));
+    const column = Math.max(0, Math.min(1, sourceColumn + Math.round(offsetX / 170)));
+    this.dragTarget = row * 2 + column;
+  }
+
+  private finishDrag(): void {
+    if (this.dragIndex >= 0 && this.dragTarget >= 0 && this.dragIndex !== this.dragTarget) {
+      const next = this.slots.slice(); const value = next[this.dragIndex];
+      next[this.dragIndex] = next[this.dragTarget]; next[this.dragTarget] = value;
+      this.saveSlots(next);
+    }
+    this.dragIndex = -1; this.dragTarget = -1; this.dragOffsetX = 0; this.dragOffsetY = 0;
   }
 
   @Builder
@@ -406,6 +428,18 @@ export struct HomePage {
             }
             .width('100%').height('100%')
             .backgroundColor(AhuColors.card).borderRadius(24)
+            .opacity(this.dragIndex === index ? 0.55 : 1)
+            .translate({ x: this.dragIndex === index ? this.dragOffsetX : 0,
+              y: this.dragIndex === index ? this.dragOffsetY : 0 })
+            .border({ width: this.dragTarget === index ? 2 : 0, color: AhuColors.primaryAction })
+            .gesture(GestureGroup(GestureMode.Sequence,
+              LongPressGesture({ repeat: false, duration: 350 }).onAction(() => {
+                this.isEditing = true; this.dragIndex = index; this.dragTarget = index;
+              }),
+              PanGesture({ fingers: 1 }).onActionUpdate((event: GestureEvent) => {
+                this.updateDrag(index, event.offsetX, event.offsetY);
+              }).onActionEnd(() => this.finishDrag()).onActionCancel(() => this.finishDrag())
+            ))
             .onClick(() => {
               if (!this.isEditing) {
                 this.onOpenWidget(id);
@@ -420,6 +454,7 @@ export struct HomePage {
             .width('100%').height('100%')
             .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
             .border({ width: this.isEditing ? 1 : 0, color: AhuColors.divider, style: BorderStyle.Dashed })
+            .backgroundColor(this.dragTarget === index ? AhuColors.accentSurface : Color.Transparent)
             .borderRadius(24);
           }
         }
@@ -438,6 +473,8 @@ export struct HomePage {
       Column({ space: 14 }) {
         Text('已添加工具')
           .fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).fontColor(AhuColors.onSurface);
+        Text('长按上方卡片并拖到目标槽位；也可使用下方按钮精确排序')
+          .fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary);
         ForEach(this.slots, (id: string, index: number) => {
           if (id.length > 0 && this.widgetById(id)) {
             Row({ space: 8 }) {
