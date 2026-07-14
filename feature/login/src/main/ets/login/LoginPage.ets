@@ -2,6 +2,8 @@ import { AppResult } from 'core_common';
 import { AhuColors, AhuDimens, AhuPageHeader, AhuTypography } from 'core_designsystem';
 import { User } from 'core_model';
 import { AuthRepositoryProvider } from 'data_auth';
+import { common } from '@kit.AbilityKit';
+import { window } from '@kit.ArkUI';
 
 export enum LoginState {
   IDLE = 'idle',
@@ -18,6 +20,22 @@ export struct LoginPage {
   @State state: LoginState = LoginState.IDLE;
   @State statusMessage: string = '';
   onLoggedIn: () => void = () => {};
+
+  aboutToAppear(): void {
+    this.setPrivacyMode(true);
+  }
+
+  aboutToDisappear(): void {
+    this.setPrivacyMode(false);
+  }
+
+  private async setPrivacyMode(enabled: boolean): Promise<void> {
+    try {
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      const appWindow = await window.getLastWindow(context);
+      await appWindow.setWindowPrivacyMode(enabled);
+    } catch (_) {}
+  }
 
   private async submit(): Promise<void> {
     if (this.state === LoginState.IN_PROGRESS) {
@@ -126,6 +144,8 @@ export struct LoginPage {
             .backgroundColor(AhuColors.card)
             .borderRadius(32)
             .type(InputType.Normal)
+            .contentType(ContentType.USER_NAME)
+            .enableAutoFill(true)
             .onFocus(() => {
               this.focusIndex = 0;
             })
@@ -143,6 +163,8 @@ export struct LoginPage {
             .backgroundColor(AhuColors.card)
             .borderRadius(32)
             .type(InputType.Password)
+            .contentType(ContentType.PASSWORD)
+            .enableAutoFill(true)
             .showPasswordIcon(true)
             .onFocus(() => {
               this.focusIndex = 1;
