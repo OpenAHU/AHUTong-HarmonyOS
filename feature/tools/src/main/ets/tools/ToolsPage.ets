@@ -20,6 +20,8 @@ const TOOL_ENTRIES: Array<ToolEntry> = [
 export struct ToolsPage {
   @State entries: Array<ToolEntry> = [];
   @State cardTip: string = '';
+  homeEditEnabled: boolean = false;
+  onEditHome: () => void = () => {};
   onOpenWidget: (route: string) => void = (_: string) => {};
 
   aboutToAppear(): void { this.refresh(); }
@@ -29,9 +31,16 @@ export struct ToolsPage {
     this.entries = TOOL_ENTRIES.filter((item: ToolEntry) => !placed.includes(item.id));
   }
 
+  @Builder private headerActions() {
+    if (this.homeEditEnabled) {
+      Button('编辑首页', { type: ButtonType.Capsule }).fontSize(AhuTypography.label)
+        .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.card).onClick(() => this.onEditHome());
+    }
+  }
+
   build() {
     AhuScreen({ scrollable: true }) {
-      AhuPageHeader({ title: '工具' });
+      AhuPageHeader({ title: '工具', actions: this.headerActions });
       AhuInsetCard({ containerColor: AhuColors.accentSurface }) {
         Row({ space: 14 }) {
           SymbolGlyph($r('sys.symbol.calendar')).fontSize(34).fontColor([AhuColors.primaryAction]);

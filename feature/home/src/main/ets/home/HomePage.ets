@@ -52,10 +52,16 @@ export struct HomePage {
   @State dragTarget: number = -1;
   @State dragOffsetX: number = 0;
   @State dragOffsetY: number = 0;
+  @StorageLink('ahu_home_edit_request') @Watch('onEditRequestChanged') homeEditRequest: number = 0;
   private originalBrightness: number = -1;
   onOpenSchedule: () => void = () => {};
   onOpenWidget: (route: string) => void = (_: string) => {};
   onOpenRecharge: () => void = () => {};
+  homeEditEnabled: boolean = false;
+
+  private onEditRequestChanged(): void {
+    if (this.homeEditEnabled) this.isEditing = true;
+  }
 
   aboutToAppear(): void {
     const config = this.setupRepository.displayConfig();
@@ -247,12 +253,12 @@ export struct HomePage {
         .fontWeight(FontWeight.Bold)
         .fontColor(AhuColors.onSurface)
         .layoutWeight(1);
-      Button(this.isEditing ? '完成' : '编辑', { type: ButtonType.Capsule })
-        .fontColor(this.isEditing ? AhuColors.onPrimaryAction : AhuColors.onSurface)
-        .backgroundColor(this.isEditing ? AhuColors.primaryAction : AhuColors.card)
-        .onClick(() => {
-          this.isEditing = !this.isEditing;
-        });
+      if (this.homeEditEnabled || this.isEditing) {
+        Button(this.isEditing ? '完成' : '编辑', { type: ButtonType.Capsule })
+          .fontColor(this.isEditing ? AhuColors.onPrimaryAction : AhuColors.onSurface)
+          .backgroundColor(this.isEditing ? AhuColors.primaryAction : AhuColors.card)
+          .onClick(() => { this.isEditing = !this.isEditing; });
+      }
     }
     .width('100%')
     .padding({ left: 24, right: 16, top: 24 });
@@ -434,7 +440,9 @@ export struct HomePage {
             .border({ width: this.dragTarget === index ? 2 : 0, color: AhuColors.primaryAction })
             .gesture(GestureGroup(GestureMode.Sequence,
               LongPressGesture({ repeat: false, duration: 350 }).onAction(() => {
-                this.isEditing = true; this.dragIndex = index; this.dragTarget = index;
+                if (this.homeEditEnabled) {
+                  this.isEditing = true; this.dragIndex = index; this.dragTarget = index;
+                }
               }),
               PanGesture({ fingers: 1 }).onActionUpdate((event: GestureEvent) => {
                 this.updateDrag(index, event.offsetX, event.offsetY);

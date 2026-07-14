@@ -22,6 +22,7 @@ import { DebugPage } from 'feature_debug';
 import BuildProfile from 'BuildProfile';
 import { AuthRepositoryProvider } from 'data_auth';
 import { AhuCache } from 'core_datastore';
+import { GrayReleaseManager } from 'data_crawler';
 import { fileIo as fs } from '@kit.CoreFileKit';
 
 @Entry
@@ -32,6 +33,7 @@ struct Index {
   @State activePage: string = '';
   @State updateInfo: AppUpdateInfo | undefined = undefined;
   @State updateMessage: string = '';
+  @State homeEditEnabled: boolean = false;
   @StorageLink('ahu_liquid_glass') useLiquidGlass: boolean = true;
   @StorageLink('ahu_launch_route') @Watch('onLaunchRouteChanged') launchRoute: string = '';
   private readonly scheduleSetupRepository: ScheduleSetupRepository = new ScheduleSetupRepository();
@@ -58,6 +60,17 @@ struct Index {
     this.setupComplete = this.scheduleSetupRepository.hasCompletedSetup();
     this.onLaunchRouteChanged();
     this.checkUpdate(false);
+    this.loadGrayState();
+  }
+
+  private async loadGrayState(): Promise<void> {
+    this.homeEditEnabled = (await GrayReleaseManager.state()).enabled;
+  }
+
+  private requestHomeEdit(): void {
+    this.selectedIndex = 0;
+    const revision = AppStorage.get<number>('ahu_home_edit_request') ?? 0;
+    AppStorage.setOrCreate('ahu_home_edit_request', revision + 1);
   }
 
   private async checkUpdate(manual: boolean): Promise<string> {
@@ -96,6 +109,7 @@ struct Index {
     Tabs({ barPosition: BarPosition.End, index: this.selectedIndex }) {
       TabContent() {
         HomePage({
+          homeEditEnabled: this.homeEditEnabled,
           onOpenSchedule: () => {
             this.selectedIndex = 1;
           },
@@ -123,7 +137,8 @@ struct Index {
       }, $r('app.string.nav_schedule')));
 
       TabContent() {
-        ToolsPage({ onOpenWidget: (route: string) => { this.activePage = route; } });
+        ToolsPage({ homeEditEnabled: this.homeEditEnabled, onEditHome: () => this.requestHomeEdit(),
+          onOpenWidget: (route: string) => { this.activePage = route; } });
       }
       .tabBar(new BottomTabBarStyle({
         normal: new SymbolGlyphModifier($r('sys.symbol.wrench_and_screwdriver')),
@@ -200,6 +215,7 @@ struct Index {
             const revision = AppStorage.get<number>('ahu_mock_revision') ?? 0;
             AppStorage.setOrCreate('ahu_mock_revision', revision + 1);
           },
+          onGrayStateChanged: () => this.loadGrayState(),
           onClearData: () => this.logout(true),
           onTestReminder: (seconds: number) => {
             const context = this.getUIContext().getHostContext() as common.UIAbilityContext;

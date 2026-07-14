@@ -131,7 +131,7 @@ entry (HAP / composition root)
 | 功能 | Android 来源 | HarmonyOS 目标 | 状态 | 验证/备注 |
 | --- | --- | --- | --- | --- |
 | 首页与卡片编排 | `feature:home` | `feature/home` | 进行中 | 已迁移日期与当前/下节/今日课程概览、今日课程列表、8 槽位工具网格及课表联动，并接入校园卡余额/动态码与天气真实数据卡；API 24 构建通过，待设备视觉验证及其余首页模块审计 |
-| 首页卡片编辑 | `feature:home` | `feature/home` | 进行中 | 支持进入/完成编辑、8 槽位添加与隐藏、长按卡片跨行/列拖拽交换、目标槽高亮、上移/下移无障碍备选、满槽禁用，以及按用户即时持久化；API 24 构建通过，拖拽阈值与触控视觉待设备验收 |
+| 首页卡片编辑 | `feature:home` | `feature/home` | 进行中 | 支持进入/完成编辑、8 槽位添加与隐藏、长按卡片跨行/列拖拽交换、目标槽高亮、上移/下移无障碍备选、满槽禁用，以及按用户即时持久化；对齐 Android `home_edit` 灰度，服务端优先、本地 0% 稳定分桶回退，启用后工具页显示编辑入口；API 24 构建通过，拖拽阈值与触控视觉待设备验收 |
 | 电子课表 | `feature:schedule` + `data:schedule` | 对应同名域 | 进行中 | 已迁移数据源、用户/学期隔离缓存、20 周切换、回到当前周、强制刷新、星期日期与 1–13 节网格、课程色块及加载/空/错状态；API 24 构建通过，真实课表与视觉仍待账号设备验证 |
 | 课程详情 | `feature:schedule` | `feature/schedule` | 进行中 | 点击课程色块显示名称、连续/单双/离散周次、星期与节次、地点、教师，支持遮罩和按钮关闭；API 24 构建通过，待设备交互与视觉验收 |
 | 成绩查询 | `feature:grade` + `data:grade` | 对应同名域 | 进行中 | 已迁移多学籍资料识别与切换、各学籍独立成绩/排名缓存、成绩 JSON 聚合、学期筛选、跨学期搜索、学期/总 GPA、学分、总专业排名、学期排名、更新时间、刷新与空错状态；排名从 `semester-index/{profileId}` 的 `gpaSemesterModel` 安全提取；API 24 构建通过，真实账号接口待设备验证 |
@@ -164,7 +164,7 @@ entry (HAP / composition root)
 | 课前通知与提醒 | `feature:notification` | `feature/notification` | 已完成 | 已声明提醒代理权限并接入系统通知授权；按课表登记未来 21 天、上课前 10 分钟的系统日历提醒，包含课程、地点和节次，点击返回应用；关闭开关会取消全部提醒，课表刷新、学期变更和冷启动会自动重排；Android 16 的 promoted ongoing 倒计时没有可直接移植的第三方接口，统一由 HarmonyOS ReminderAgent 决定系统展示样式；API 24 构建通过，待真机授权、到时触发和重启持久化验证 |
 | 课表服务卡片 | `feature:widget` | `feature/widget` | 已完成 | 新增动态 FormExtensionAbility 与 `feature_widget`，支持 HarmonyOS `2×2` / `2×4` 两种尺寸、浅深色与用户主题强调色；按当前学期/周次/星期筛选当天尚未结束课程，显示日期、剩余节数、节次、缩写教室并突出正在上课；支持卡片内手动刷新、系统每 30 分钟刷新、课表/学期变更与应用启动主动同步，点击课程区直达课表 Tab；工具页提供桌面添加指引。API 24 Debug HAP 构建通过且无 ArkTS 警告，无连接设备，卡片添加、尺寸布局、系统托管刷新和点击待真机验收 |
 | 应用更新 | `feature:update` | `feature/update` | 已完成 | 启动及设置页手动检查本仓库最新 GitHub Release，按应用自身语义版本比较，展示版本/更新日志/可选或强制提示；设置页保留独立“更新介绍”，无新版本或暂无 Release 时仍显示当前版本/开发构建状态；提供 AppGallery 与可信项目发行页入口，不下载 Android APK；API 24 构建通过，待首个发行版及真机外部跳转验收 |
-| Debug / Mock 工具 | `feature:debug` | `feature/debug` | 已完成 | Debug 构建设置页应用卡连续点击 8 次进入；提供与 Android 对齐的 12 个场景、课表/成绩/考试/余额/失物招领样例、真实/Mock 切换、影响首页/课表/服务卡片的时间偏移、缓存清理及 10/50 秒系统提醒；release 构建隐藏入口；API 24 Debug/Release HAP 均构建通过，待真机交互与通知验收 |
+| Debug / Mock 工具 | `feature:debug` | `feature/debug` | 已完成 | Debug 构建设置页应用卡连续点击 8 次进入；提供与 Android 对齐的 12 个场景、课表/成绩/考试/余额/失物招领样例、真实/Mock 切换、影响首页/课表/服务卡片的时间偏移、缓存清理及 10/50 秒系统提醒；调试页说明文字再点 8 次解锁首页编辑灰度状态、服务端刷新与跟随/强开/强关覆盖；release 构建隐藏入口；API 24 Debug/Release HAP 均构建通过，待真机交互与通知验收 |
 | 应用元数据与版本展示 | App Manifest / About | `AppScope` + `feature/settings` | 已完成 | 应用名统一为“安大通”，厂商改为 OpenAHU，模块与 Ability 使用正式描述；设置页从 BundleInfo 读取实际版本，不再硬编码；清理未使用的迁移占位文案；API 24 Debug HAP 构建通过 |
 | 本地单元测试基线 | Android JVM tests | `core/model/src/test` + `feature/update/src/test` | 已完成 | 删除工程模板示例断言，测试与被测代码同模块放置；覆盖语义版本升级/相等/回退/非法标签，以及课程星期、周次、节次和长度的正常与异常转换；两模块 Hvigor Test 4 项通过 |
 | 应用数据备份策略 | Android `allowBackup=false` | `entry` | 已完成 | 与 Android 隐私基线一致，移除模板空 BackupExtensionAbility 及备份配置，不向系统声明应用数据备份恢复能力，防止课表及校园业务缓存进入备份；Asset Store 凭据原本即不可跨设备同步；API 24 Debug/Release HAP 构建通过 |
@@ -277,3 +277,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 本地单元测试基线 | 将语义版本比较提取为无平台依赖的纯函数，应用更新继续通过同一入口调用；删除 Entry 默认 `abc` 示例测试，在 `feature_update` 与 `core_model` 各自模块内覆盖版本升级/相等/回退/非法标签和课程字段转换 | `feature_update` 与 `core_model` 的 Hvigor Test 均构建并执行成功，合计 4 个测试用例全部通过；报告生成于对应模块 `.test/default/outputs/test/reports` |
 | 2026-07-15 | 禁用应用数据备份 | 对齐 Android Manifest 的 `allowBackup=false`，删除 HarmonyOS 工程模板的空 `EntryBackupAbility`、备份配置及扩展声明，避免课表、成绩、校园卡等本地缓存离开应用数据边界 | API 24 Debug 与 Release HAP 构建成功且无 ArkTS 警告；构建配置中不再注册 BackupExtensionAbility |
 | 2026-07-15 | 会话失效即时重登 | 将会话状态升级为可订阅事件；教务与门户客户端仅在自动认证恢复失败或重试仍被拒绝时发布过期，AppLaunchGate 收到后立即切换登录页；登录/恢复成功重置状态，普通退出走同一事件；移除通用公共 HTTP 对任意 401/403 的全局会话副作用 | API 24 Debug HAP 构建成功且无 ArkTS 警告；新增会话事件订阅、去重、取消和重复过期单测通过；无真实账号设备，待验证线上 Cookie 过期时的页面切换 |
+| 2026-07-15 | 首页编辑灰度 | 在 `data_crawler` 迁移 Android `GrayReleaseManager` 的 `home_edit` 注册、账号 SHA-256 匿名 subject、0–99 稳定分桶、0% 本地失败回退、OpenAHU 远程决策及 Debug 覆盖；未登录时使用 guest 摘要，避免申请受限设备标识；首页长按/编辑按钮和工具页入口均服从开关，Debug 隐藏区支持刷新与三态覆盖 | Android 同源分桶边界测试移植后 Hvigor Test 通过；API 24 Debug HAP 构建成功后记录；远端超时安全回退关闭，待真机验证工具页到首页编辑跳转 |
