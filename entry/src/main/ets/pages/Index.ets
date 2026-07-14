@@ -12,6 +12,7 @@ import { ScheduleSetupPage, WeeklySchedulePage } from 'feature_schedule';
 import { HomePage } from 'feature_home';
 import { GradePage } from 'feature_grade';
 import { ExamPage } from 'feature_exam';
+import { SchoolCalendarPage } from 'feature_calendar';
 import { ScheduleSetupRepository } from 'data_schedule';
 
 @Component
@@ -69,7 +70,7 @@ struct Index {
             this.selectedIndex = 1;
           },
           onOpenWidget: (route: string) => {
-            if (route === 'grade' || route === 'exam') {
+            if (route === 'grade' || route === 'exam' || route === 'school_calendar') {
               this.activePage = route;
             }
           }
@@ -131,6 +132,8 @@ struct Index {
         GradePage({ onBack: () => { this.activePage = ''; } });
       } else if (this.activePage === 'exam') {
         ExamPage({ onBack: () => { this.activePage = ''; } });
+      } else if (this.activePage === 'school_calendar') {
+        SchoolCalendarPage({ onBack: () => { this.activePage = ''; } });
       } else {
         this.mainContent();
       }

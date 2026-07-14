@@ -227,6 +227,11 @@
       "name": "feature_exam",
       "srcPath": "./feature/exam",
       "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "feature_calendar",
+      "srcPath": "./feature/calendar",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
     }
   ]
 }
