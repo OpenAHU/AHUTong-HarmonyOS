@@ -51,7 +51,7 @@
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
 - 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`feature_login`、`feature_schedule` HAR
-- 当前实现：M1-M3 基础架构已完成，M4 已完成首次启动协议门、登录页面与认证状态流，并接入安大门户验证码 OCR 登录；教务 CAS 会话和安全凭据存储仍待迁移
+- 当前实现：M1-M3 基础架构已完成，M4 已完成首次启动协议门、登录页面与认证状态流，并接入安大门户验证码 OCR 和教务 CAS 联合登录；Cookie 持久化与安全凭据存储仍待迁移
 
 ## 3. 架构映射
 
@@ -122,7 +122,7 @@ entry (HAP / composition root)
 | --- | --- | --- | --- | --- |
 | 四入口主导航 | App / BottomNavBar | `entry` | 已完成 | 主页、课表、工具、设置 Tabs；API 24 Debug HAP 构建通过；无连接设备，待补真机视觉验证 |
 | 启动与协议确认 | `feature:login` / Splash | `feature/login` | 已完成 | 免责声明、隐私政策、商业合作依次确认并分别持久化；拒绝即终止 UIAbility；API 24 Debug HAP 构建通过，无连接设备，待补真机视觉与重启持久化验证 |
-| 统一身份认证登录 | `feature:login` + `data:auth` | `feature/login` + `data/auth` | 进行中 | 已迁移 UI、状态、Repository、安大门户验证码获取、OpenAHU OCR、最多 5 次表单认证与成功用户持久化；端点/OCR 无凭据冒烟及 API 24 构建通过；尚缺教务 CAS 联合会话与真实账号真机验证 |
+| 统一身份认证登录 | `feature:login` + `data:auth` | `feature/login` + `data/auth` | 进行中 | 已迁移 UI、状态、Repository、门户验证码/OCR/5 次重试，以及教务 CAS `lt`、设备校验、兼容加密、登录和主页验证；固定向量、无凭据端点及 API 24 构建通过；尚缺真实账号真机端到端验证，故未标记完成 |
 | 登录态恢复与失效重登 | `core:common` + `data:auth` | `core/common` + `data/auth` | 待开始 | 冷启动、Cookie、会话过期 |
 | 个人与学期初始化 | Setup / Info | `feature/login` + `data/schedule` | 待开始 | 首次配置及重新配置 |
 
@@ -222,3 +222,4 @@ entry (HAP / composition root)
 | 2026-07-14 | 首次启动 | 新增 `data_auth` / `feature_login`，迁移免责声明、隐私政策与商业合作三段顺序确认、本地持久化和拒绝退出，并接入应用入口 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无签名及连接设备，未执行安装、视觉和冷启动验证 |
 | 2026-07-14 | 登录界面与状态 | 对照 Android 恢复账号/密码胶囊输入、四张焦点表情、密码显隐与动态登录状态条；新增可注入认证 Repository、会话门和成功用户持久化 | API 24 Debug HAP 构建成功且无 ArkTS 警告；原生 SDK 当前明确返回不可用，未使用假成功，真实账号认证待后续数据源提交 |
 | 2026-07-14 | 门户认证数据源 | 新增 `data_crawler`，迁移安大门户验证码、OpenAHU OCR、表单登录、Cookie 会话与 5 次验证码重试；认证仓库在 Native 不可用时自动降级到该真实数据源 | 验证码端点返回 200 和会话 Cookie，OCR 返回 4 位结果；API 24 Debug HAP 构建成功且无 ArkTS 警告；未使用或记录真实账号，教务 CAS 会话仍待迁移 |
+| 2026-07-14 | 教务 CAS 认证 | 忠实移植 Android `DES.strEnc` 兼容算法，新增多 Cookie 内存会话、CAS `lt` 提取、设备校验、登录重定向和教务主页登录态验证，并与门户登录串联 | ArkTS 加密结果与 Android 固定向量完全一致；匿名访问最终到达 CAS 页面、返回 45 字符 `lt` 及 3 个 Cookie；API 24 Debug HAP 构建成功且无 ArkTS 警告；缺真实账号真机验证 |

@@ -2,6 +2,8 @@ import { http } from '@kit.NetworkKit';
 import { BusinessError } from '@kit.BasicServicesKit';
 import { AppErrorKind, AppResult, AppResults } from 'core_common';
 import { User } from 'core_model';
+import { CasAuthenticator } from './CasAuthenticator';
+import { CrawlerSession } from './CrawlerSession';
 
 interface OcrResponse {
   result: string;
@@ -32,16 +34,10 @@ export class PortalCrawlerAuthenticator implements CrawlerAuthenticator {
   private static readonly CAPTCHA_URL: string = 'https://adwmh.ahu.edu.cn/remind/authcode';
   private static readonly OCR_URL: string = 'https://openahu.org/ocr/captcha';
   private static readonly LOGIN_URL: string = 'https://adwmh.ahu.edu.cn/user/login';
-  private cookie: string = '';
+  private readonly casAuthenticator: CasAuthenticator = new CasAuthenticator();
 
   private mergeCookie(responseCookies: string): void {
-    if (responseCookies.length === 0) {
-      return;
-    }
-    const firstCookie = responseCookies.split(';')[0].trim();
-    if (firstCookie.length > 0) {
-      this.cookie = firstCookie;
-    }
+    CrawlerSession.portalCookies.save(responseCookies);
   }
 
   private headers(contentType?: string): Record<string, string> {
@@ -53,8 +49,9 @@ export class PortalCrawlerAuthenticator implements CrawlerAuthenticator {
     if (contentType) {
       headers['Content-Type'] = contentType;
     }
-    if (this.cookie.length > 0) {
-      headers['Cookie'] = this.cookie;
+    const cookie = CrawlerSession.portalCookies.header();
+    if (cookie.length > 0) {
+      headers['Cookie'] = cookie;
     }
     return headers;
   }
@@ -170,7 +167,12 @@ export class PortalCrawlerAuthenticator implements CrawlerAuthenticator {
       }
       const result = await this.portalLogin(username, password, captcha.data);
       if (result.isSuccess) {
-        return result;
+        const casResult = await this.casAuthenticator.login(username, password);
+        if (casResult.isSuccess) {
+          return result;
+        }
+        return AppResults.failure<User>(casResult.error?.kind ?? AppErrorKind.AUTHENTICATION,
+          casResult.error?.message ?? '智慧安大认证失败', casResult.error?.code);
       }
       lastError = result;
     }
@@ -178,6 +180,6 @@ export class PortalCrawlerAuthenticator implements CrawlerAuthenticator {
   }
 
   clearSession(): void {
-    this.cookie = '';
+    CrawlerSession.clearAll();
   }
 }

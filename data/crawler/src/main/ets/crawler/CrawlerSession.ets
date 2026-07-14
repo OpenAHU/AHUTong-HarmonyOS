@@ -1,0 +1,53 @@
+const COOKIE_ATTRIBUTES: Array<string> = [
+  'path', 'domain', 'expires', 'max-age', 'secure', 'httponly', 'samesite', 'priority'
+];
+
+export class MemoryCookieJar {
+  private values: Map<string, string> = new Map<string, string>();
+
+  save(responseCookies: string): void {
+    if (responseCookies.length === 0) {
+      return;
+    }
+    const segments = responseCookies.split(/[;,]/);
+    for (let index = 0; index < segments.length; index++) {
+      const segment = segments[index].trim();
+      const equals = segment.indexOf('=');
+      if (equals <= 0) {
+        continue;
+      }
+      const name = segment.substring(0, equals).trim();
+      const value = segment.substring(equals + 1).trim();
+      if (COOKIE_ATTRIBUTES.includes(name.toLowerCase())) {
+        continue;
+      }
+      if (value.length === 0) {
+        this.values.delete(name);
+      } else {
+        this.values.set(name, value);
+      }
+    }
+  }
+
+  header(): string {
+    const pairs: Array<string> = [];
+    this.values.forEach((value: string, name: string) => {
+      pairs.push(`${name}=${value}`);
+    });
+    return pairs.join('; ');
+  }
+
+  clear(): void {
+    this.values.clear();
+  }
+}
+
+export class CrawlerSession {
+  static readonly portalCookies: MemoryCookieJar = new MemoryCookieJar();
+  static readonly academicCookies: MemoryCookieJar = new MemoryCookieJar();
+
+  static clearAll(): void {
+    CrawlerSession.portalCookies.clear();
+    CrawlerSession.academicCookies.clear();
+  }
+}
