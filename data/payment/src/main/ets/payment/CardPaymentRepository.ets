@@ -2,6 +2,7 @@ import { http } from '@kit.NetworkKit';
 import { cryptoFramework } from '@kit.CryptoArchitectureKit';
 import { util } from '@kit.ArkTS';
 import { AppErrorKind, AppResult, AppResults } from 'core_common';
+import { AhuCache } from 'core_datastore';
 import { CrawlerSession, MemoryCookieJar } from 'data_crawler';
 
 export interface CardAccount { name: string; type: string; balance: number; }
@@ -153,7 +154,24 @@ class YcardClient {
 export class CardPaymentRepository {
   private readonly client: YcardClient = new YcardClient();
 
-  getAccount(): Promise<AppResult<CardAccount>> { return this.client.account(); }
+  private mockFailure<T>(paymentPhase: boolean = false): AppResult<T> | undefined {
+    if (!AhuCache.getMockData()) return undefined;
+    const scenario = AhuCache.getMockScenario();
+    if (scenario === 'network_error') return AppResults.failure<T>(AppErrorKind.HTTP, 'Mock 场景：接口返回 500', 500);
+    if (scenario === 'expired_login') return AppResults.failure<T>(AppErrorKind.AUTHENTICATION, 'Mock 场景：登录状态已过期', 401);
+    if (paymentPhase && scenario === 'payment_gateway_issue')
+      return AppResults.failure<T>(AppErrorKind.HTTP, 'Mock 场景：支付网关异常', 502);
+    return undefined;
+  }
+
+  getAccount(): Promise<AppResult<CardAccount>> {
+    const failure = this.mockFailure<CardAccount>();
+    if (failure) return Promise.resolve(failure);
+    if (AhuCache.getMockData()) return Promise.resolve(AppResults.success<CardAccount>({
+      name: 'Mock 同学', type: '校园卡', balance: AhuCache.getCardBalance() ?? 86.4
+    }));
+    return this.client.account();
+  }
 
   private jsonField(source: string, name: string): string {
     const match = source.match(new RegExp(`"${name}"\\s*:\\s*"([^"]*)"`));
@@ -161,6 +179,13 @@ export class CardPaymentRepository {
   }
 
   async getBathroomAccount(bathroom: string, phone: string): Promise<AppResult<BathroomAccount>> {
+    const failure = this.mockFailure<BathroomAccount>(); if (failure) return failure;
+    if (AhuCache.getMockData()) return AppResults.success<BathroomAccount>({
+      phone: phone, cashAmount: AhuCache.getMockScenario() === 'low_balance' ? '1.25' : '36.40', giftAmount: '0.00',
+      data: { projectId: 1, projectName: bathroom, accountId: 1, telPhone: phone, sex: '', statusId: 1,
+        accountMoney: AhuCache.getMockScenario() === 'low_balance' ? 125 : 3640, accountGivenMoney: 0,
+        isCard: 0, cardStatusId: 1, isUseCode: 0, tsmAbstract: 'Mock 浴室账户' }
+    });
     const feeItem = bathroom === '竹园/龙河' ? '409' : bathroom === '桔园/蕙园' ? '430' : '';
     if (feeItem.length === 0) return AppResults.failure<BathroomAccount>(AppErrorKind.PARSE, '暂不支持该浴室');
     const fields = new Map<string, string>();
@@ -184,6 +209,8 @@ export class CardPaymentRepository {
 
   async chargeBathroom(bathroom: string, amount: string, password: string,
     account: BathroomAccount): Promise<AppResult<string>> {
+    const failure = this.mockFailure<string>(true); if (failure) return failure;
+    if (AhuCache.getMockData()) return AppResults.success<string>(`mock-bathroom-${Date.now()}`);
     const feeItem = bathroom === '竹园/龙河' ? '409' : bathroom === '桔园/蕙园' ? '430' : '';
     if (feeItem.length === 0) return AppResults.failure<string>(AppErrorKind.PARSE, '暂不支持该浴室');
     account.data.myCustomInfo = `手机号：${account.data.telPhone}`;
@@ -222,6 +249,17 @@ export class CardPaymentRepository {
 
   async getElectricityOptions(level: number, campus: string = '', building: string = '',
     floor: string = ''): Promise<AppResult<Array<ElectricityOption>>> {
+    const failure = this.mockFailure<Array<ElectricityOption>>(); if (failure) return failure;
+    if (AhuCache.getMockData()) {
+      if (level === 1) return AppResults.success<Array<ElectricityOption>>([
+        { name: '磬苑校区', value: '磬苑校区' }, { name: '龙河校区', value: '龙河校区' }
+      ]);
+      if (level === 2) return AppResults.success<Array<ElectricityOption>>([
+        { name: campus.includes('龙河') ? '龙河一栋' : '桂园一栋', value: campus.includes('龙河') ? '龙河一栋' : '桂园一栋' }
+      ]);
+      if (level === 3) return AppResults.success<Array<ElectricityOption>>([{ name: '3 层', value: '3 层' }]);
+      return AppResults.success<Array<ElectricityOption>>([{ name: '301', value: '301' }, { name: '302', value: '302' }]);
+    }
     const fields = new Map<string, string>();
     fields.set('feeitemid', '488'); fields.set('type', 'select'); fields.set('level', `${level}`);
     if (campus.length > 0) fields.set('campus', campus);
@@ -240,6 +278,12 @@ export class CardPaymentRepository {
 
   async getElectricityRoom(campus: string, building: string, floor: string,
     room: string): Promise<AppResult<ElectricityRoomInfo>> {
+    const failure = this.mockFailure<ElectricityRoomInfo>(); if (failure) return failure;
+    if (AhuCache.getMockData()) return AppResults.success<ElectricityRoomInfo>({
+      info: AhuCache.getMockScenario() === 'low_balance' ? '剩余电量 3.2 度' : '剩余电量 48.6 度',
+      data: { areaName: campus, buildingName: building, floorName: floor, roomName: room,
+        area: campus, building: building, floor: floor, room: room, account: 'mock-electricity' }
+    });
     const fields = new Map<string, string>();
     fields.set('feeitemid', '488'); fields.set('type', 'IEC'); fields.set('level', '4');
     fields.set('campus', campus); fields.set('building', building); fields.set('floor', floor); fields.set('room', room);
@@ -275,6 +319,8 @@ export class CardPaymentRepository {
 
   async chargeElectricity(amount: string, password: string,
     room: ElectricityRoomInfo): Promise<AppResult<string>> {
+    const failure = this.mockFailure<string>(true); if (failure) return failure;
+    if (AhuCache.getMockData()) return AppResults.success<string>(`mock-electricity-${Date.now()}`);
     room.data.myCustomInfo = `${room.data.areaName ?? ''}${room.data.buildingName ?? ''}` +
       `${room.data.floorName ?? ''}${room.data.roomName ?? ''}`;
     const orderFields = new Map<string, string>();
@@ -353,6 +399,8 @@ export class CardPaymentRepository {
   }
 
   async charge(amount: string, cardType: string): Promise<AppResult<string>> {
+    const failure = this.mockFailure<string>(true); if (failure) return failure;
+    if (AhuCache.getMockData()) return AppResults.success<string>(`mock-card-${Date.now()}`);
     const time = this.timestamp();
     const nonce = this.nonce();
     const orderFields = new Map<string, string>();
