@@ -5,12 +5,21 @@ import { AppErrorKind, AppResult, AppResults } from 'core_common';
 import { CrawlerSession, MemoryCookieJar } from 'data_crawler';
 
 export interface CardAccount { name: string; type: string; balance: number; }
+export interface BathroomData {
+  projectId: number; projectName: string; accountId: number; telPhone: string; identifier?: string;
+  sex: string; name?: string; statusId: number; accountMoney: number; accountGivenMoney: number;
+  alias?: string; tags?: string; isCard: number; cardStatusId: number; isUseCode: number;
+  cardPhysicalId?: string; tsmAbstract: string; myCustomInfo?: string; message?: string;
+}
+export interface BathroomAccount { phone: string; cashAmount: string; giftAmount: string; data: BathroomData; }
 interface TokenResponse { access_token?: string; }
 interface AccountInfo { name: string; type: string; balance: number; }
 interface CardData { accinfo?: Array<AccountInfo>; }
 interface CardInfoData { card?: Array<CardData>; }
 interface CardInfoResponse { code: number; msg?: string; data?: CardInfoData; }
 interface PayResponse { code: number; msg?: string; data?: string; }
+interface BathroomMap { showData?: Object; data?: BathroomData; }
+interface BathroomResponse { code: number; msg?: string; message?: string; map?: BathroomMap; }
 interface RawResponse { status: number; body: string; location: string; }
 interface ResponseHeaders { location?: string; Location?: string; }
 
@@ -135,6 +144,71 @@ export class CardPaymentRepository {
   private readonly client: YcardClient = new YcardClient();
 
   getAccount(): Promise<AppResult<CardAccount>> { return this.client.account(); }
+
+  private jsonField(source: string, name: string): string {
+    const match = source.match(new RegExp(`"${name}"\\s*:\\s*"([^"]*)"`));
+    return match && match.length > 1 ? match[1] : '';
+  }
+
+  async getBathroomAccount(bathroom: string, phone: string): Promise<AppResult<BathroomAccount>> {
+    const feeItem = bathroom === '竹园/龙河' ? '409' : bathroom === '桔园/蕙园' ? '430' : '';
+    if (feeItem.length === 0) return AppResults.failure<BathroomAccount>(AppErrorKind.PARSE, '暂不支持该浴室');
+    const fields = new Map<string, string>();
+    fields.set('feeitemid', feeItem); fields.set('type', 'IEC'); fields.set('level', '1'); fields.set('telPhone', phone);
+    const response = await this.client.post('/charge/feeitem/getThirdData', fields);
+    if (!response.isSuccess || !response.data || response.data.status !== 200)
+      return AppResults.failure<BathroomAccount>(response.error?.kind ?? AppErrorKind.HTTP,
+        response.error?.message ?? '获取浴室账户失败', response.data?.status);
+    try {
+      const parsed = JSON.parse(response.data.body) as BathroomResponse;
+      if (!parsed.map?.data) return AppResults.failure<BathroomAccount>(AppErrorKind.PARSE,
+        parsed.message ?? parsed.msg ?? '未查询到浴室账户');
+      const showJson = parsed.map.showData ? JSON.stringify(parsed.map.showData) : '';
+      return AppResults.success<BathroomAccount>({
+        phone: this.jsonField(showJson, '手机号') || parsed.map.data.telPhone,
+        cashAmount: this.jsonField(showJson, '现金金额（单位：元）'),
+        giftAmount: this.jsonField(showJson, '赠送金额（单位：元）'), data: parsed.map.data
+      });
+    } catch (_) { return AppResults.failure<BathroomAccount>(AppErrorKind.PARSE, '浴室账户数据解析失败'); }
+  }
+
+  async chargeBathroom(bathroom: string, amount: string, password: string,
+    account: BathroomAccount): Promise<AppResult<string>> {
+    const feeItem = bathroom === '竹园/龙河' ? '409' : bathroom === '桔园/蕙园' ? '430' : '';
+    if (feeItem.length === 0) return AppResults.failure<string>(AppErrorKind.PARSE, '暂不支持该浴室');
+    account.data.myCustomInfo = `手机号：${account.data.telPhone}`;
+    const orderFields = new Map<string, string>();
+    orderFields.set('feeitemid', feeItem); orderFields.set('tranamt', amount); orderFields.set('flag', 'choose');
+    orderFields.set('source', 'app'); orderFields.set('paystep', '0'); orderFields.set('abstracts', '');
+    orderFields.set('third_party', JSON.stringify(account.data));
+    const order = await this.client.post('/blade-pay/pay', orderFields);
+    if (!order.isSuccess || !order.data || order.data.status !== 200)
+      return AppResults.failure<string>(order.error?.kind ?? AppErrorKind.HTTP,
+        order.error?.message ?? '创建浴室充值订单失败', order.data?.status);
+    const orderMatch = order.data.body.match(/"orderid"\s*:\s*"([^"]+)"/);
+    if (!orderMatch || orderMatch.length < 2)
+      return AppResults.failure<string>(AppErrorKind.PARSE, '未能获取浴室充值订单号');
+    const orderId = orderMatch[1];
+    const mapString = '1690457382';
+    let cipher = '';
+    for (let index = 0; index < password.length; index++) {
+      const mapped = mapString.indexOf(password.charAt(index));
+      cipher += mapped >= 0 ? `${mapped}` : password.charAt(index);
+    }
+    const payFields = new Map<string, string>();
+    payFields.set('orderid', orderId); payFields.set('paystep', '2'); payFields.set('paytype', 'ACCOUNTTSM');
+    payFields.set('paytypeid', '64'); payFields.set('userAgent', 'h5'); payFields.set('ccctype', '000');
+    payFields.set('password', cipher); payFields.set('uuid', 'da07e4442e4841cca1655cb29653a023'); payFields.set('isWX', '0');
+    const payment = await this.client.post('/blade-pay/pay', payFields);
+    if (!payment.isSuccess || !payment.data || payment.data.status !== 200)
+      return AppResults.failure<string>(payment.error?.kind ?? AppErrorKind.HTTP,
+        payment.error?.message ?? '浴室充值失败', payment.data?.status);
+    try {
+      const parsed = JSON.parse(payment.data.body) as PayResponse;
+      return parsed.code === 200 ? AppResults.success<string>(parsed.data ?? orderId) :
+        AppResults.failure<string>(AppErrorKind.HTTP, parsed.msg ?? '浴室充值失败', parsed.code);
+    } catch (_) { return AppResults.failure<string>(AppErrorKind.PARSE, '浴室支付结果解析失败'); }
+  }
 
   private timestamp(): string {
     const date = new Date();

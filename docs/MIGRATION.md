@@ -146,7 +146,7 @@ entry (HAP / composition root)
 | 校园卡信息与余额 | `data:campuscard` / Home | `data/campuscard` + `feature/home` | 进行中 | 新增门户业务会话客户端与失效重登，迁移 `/xzxcard/yue` 余额与 `/xzxcard/qrcode` 动态校园码；支持余额缓存/刷新、卡片正反切换、码刷新、全屏放大及亮度恢复；API 24 Debug HAP 构建通过，真实余额和动态码待真机账号验证 |
 | 校园卡余额充值 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移首页入口、金额校验、身份确认/复制、支付宝 Scheme/网页降级；银行卡路径已接入 YCard CAS 票据换 OAuth 令牌、账户余额、安全随机数与 SHA-256 签名、创建订单、支付结果及防重复提交；API 24 Debug HAP 构建通过，涉及真实资金，未经测试账号和真机成功小额验证前不标记完成 |
 | 电费充值 | `feature:payment` | `feature/payment` | 待开始 | 楼栋、房间、金额与结果 |
-| 浴室缴费 | `feature:payment` | `feature/payment` | 待开始 | 账户、金额与结果 |
+| 浴室缴费 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移竹园/龙河、桔园/蕙园选择，手机号账户查询，现金/赠送余额，金额校验，6 位密码确认与映射加密，YCard 订单/支付与成功失败状态；API 24 Debug HAP 构建通过，涉及真实资金，待测试账号真机小额验证 |
 | 浴室开放信息 | `feature:home` | `feature/home` | 待开始 | 开放状态及异常降级 |
 | 失物招领 | `feature:portal` + `data:portal` | 对应同名域 | 待开始 | 列表、加载、刷新与详情入口 |
 | 校园电话本 | `feature:tools` | `feature/tools` | 待开始 | 分类、拨号与权限 |
@@ -240,3 +240,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 动态校园码 | 迁移 `/xzxcard/qrcode` 成功码与载荷校验，使用 ArkUI 原生 `QRCode` 渲染可扫码图形；首页卡片支持余额/校园码切换、点击刷新、全屏放大，并在关闭或离页时恢复原窗口亮度 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，码内容、扫码成功率及亮度恢复待真机验收 |
 | 2026-07-15 | 校园卡支付宝充值 | 新增 `feature_payment`，从首页校园卡进入充值页；迁移金额格式校验、身份确认、剪贴板复制，并按 Android 原行为优先拉起支付宝校园卡小程序、失败时降级到网页 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功；支付宝 Scheme、剪贴板和网页降级因无连接设备待真机验收 |
 | 2026-07-15 | 校园卡银行卡充值 | 新增 `data_payment`，迁移 YCard CAS 重定向票据、OAuth 令牌、一卡通账户与余额查询；按 Android 协议恢复 11 位安全随机数、时间戳、SHA-256 订单/支付签名、订单号提取和支付结果，页面补充账户状态、进度、成功/失败及防重入 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；因涉及真实资金且无测试账号/连接设备，未执行真实充值 |
+| 2026-07-15 | 浴室缴费 | 扩展 `data_payment` 的费用项账户查询与 YCard 账户支付，迁移两组浴室、手机号、现金/赠送余额、第三方账户载荷、订单号、6 位密码映射加密和支付结果；新页面接入首页浴室工具入口 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；因涉及真实资金且无测试账号/连接设备，未执行真实缴费 |
