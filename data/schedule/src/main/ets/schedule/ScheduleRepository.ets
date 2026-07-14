@@ -32,6 +32,7 @@ interface CourseTableResponse {
 
 export interface ScheduleRepository {
   getSchedule(refresh?: boolean): Promise<AppResult<Array<Course>>>;
+  getNextSchedule(refresh?: boolean): Promise<AppResult<Array<Course>>>;
 }
 
 export class CrawlerScheduleSource {
@@ -83,7 +84,7 @@ export class CrawlerScheduleSource {
     return courses;
   }
 
-  async fetchSchedule(): Promise<AppResult<Array<Course>>> {
+  private async fetchScheduleOffset(offset: number): Promise<AppResult<Array<Course>>> {
     const page = await this.client.getText(`${CrawlerScheduleSource.BASE_URL}/student/for-std/course-table`);
     if (!page.isSuccess || page.data === undefined) {
       return AppResults.failure<Array<Course>>(
@@ -100,7 +101,8 @@ export class CrawlerScheduleSource {
       );
     }
     const id = semester.data.id;
-    const url = `${CrawlerScheduleSource.BASE_URL}/student/for-std/course-table/semester/${id}/print-data` +
+    const pathId = id + offset;
+    const url = `${CrawlerScheduleSource.BASE_URL}/student/for-std/course-table/semester/${pathId}/print-data` +
       `?semesterId=${id}&hasExperiment=false`;
     const response = await this.client.getJson<CourseTableResponse>(url);
     if (!response.isSuccess || !response.data) {
@@ -112,6 +114,9 @@ export class CrawlerScheduleSource {
     }
     return AppResults.success<Array<Course>>(this.mapCourses(response.data));
   }
+
+  async fetchSchedule(): Promise<AppResult<Array<Course>>> { return this.fetchScheduleOffset(0); }
+  async fetchNextSchedule(): Promise<AppResult<Array<Course>>> { return this.fetchScheduleOffset(20); }
 }
 
 export class DefaultScheduleRepository implements ScheduleRepository {
@@ -142,6 +147,19 @@ export class DefaultScheduleRepository implements ScheduleRepository {
       ScheduleReminderCoordinatorProvider.get().reschedule();
       ScheduleWidgetCoordinatorProvider.get().update();
     }
+    return remote;
+  }
+
+  async getNextSchedule(refresh: boolean = false): Promise<AppResult<Array<Course>>> {
+    if (!AhuCache.isLogin()) {
+      return AppResults.failure<Array<Course>>(AppErrorKind.AUTHENTICATION, '请先登录');
+    }
+    if (!refresh) {
+      const cached = AhuCache.getNextSchedule();
+      if (cached !== undefined) return AppResults.success<Array<Course>>(cached);
+    }
+    const remote = await this.source.fetchNextSchedule();
+    if (remote.isSuccess && remote.data) AhuCache.saveNextSchedule(remote.data);
     return remote;
   }
 }

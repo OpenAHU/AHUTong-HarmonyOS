@@ -29,6 +29,9 @@ export struct WeeklySchedulePage {
   @State isLoading: boolean = true;
   @State errorMessage: string = '';
   @State selectedCourse?: Course = undefined;
+  @State overviewSchedule: boolean = false;
+  @State previewNextSemester: boolean = false;
+  @State settingsVisible: boolean = false;
 
   aboutToAppear(): void {
     const config = this.setupRepository.displayConfig();
@@ -47,7 +50,8 @@ export struct WeeklySchedulePage {
   private async load(refresh: boolean): Promise<void> {
     this.isLoading = true;
     this.errorMessage = '';
-    const result = await this.repository.getSchedule(refresh);
+    const result = this.previewNextSemester ? await this.repository.getNextSchedule(refresh) :
+      await this.repository.getSchedule(refresh);
     if (result.isSuccess) {
       this.courses = result.data ?? [];
     } else {
@@ -58,7 +62,24 @@ export struct WeeklySchedulePage {
 
   private coursesOfDay(day: number): Array<Course> {
     return this.courses.filter((course: Course): boolean =>
-      courseWeekday(course) === day && (course.weekIndexes ?? []).includes(this.selectedWeek));
+      courseWeekday(course) === day && (this.overviewSchedule || (course.weekIndexes ?? []).includes(this.selectedWeek)));
+  }
+
+  private overviewGroups(day: number): Array<Array<Course>> {
+    const groups: Array<Array<Course>> = [];
+    this.coursesOfDay(day).forEach((course: Course) => {
+      const group = groups.find((items: Array<Course>) => courseStartTime(items[0]) === courseStartTime(course) &&
+        courseLength(items[0]) === courseLength(course));
+      if (group) group.push(course); else groups.push([course]);
+    });
+    return groups;
+  }
+
+  private async toggleNextSemester(enabled: boolean): Promise<void> {
+    if (this.previewNextSemester === enabled) return;
+    this.previewNextSemester = enabled;
+    this.selectedWeek = enabled ? 1 : this.currentWeek;
+    await this.load(false);
   }
 
   private colorOf(course: Course): string {
@@ -136,8 +157,12 @@ export struct WeeklySchedulePage {
         .fontColor(AhuColors.onSurface)
         .backgroundColor(AhuColors.card)
         .onClick(() => {
-          this.selectedWeek = this.currentWeek;
+          if (this.previewNextSemester) this.toggleNextSemester(false);
+          else this.selectedWeek = this.currentWeek;
         });
+      Button('⚙', { type: ButtonType.Circle }).width(40).height(40).fontSize(20)
+        .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.card)
+        .onClick(() => { this.settingsVisible = true; });
       Button('↻', { type: ButtonType.Circle })
         .width(40)
         .height(40)
@@ -184,6 +209,26 @@ export struct WeeklySchedulePage {
   }
 
   @Builder
+  private overviewCourseGroup(courses: Array<Course>) {
+    Column() {
+      ForEach(courses, (course: Course) => {
+        Column({ space: 2 }) {
+          Text(course.name ?? '未命名课程').fontSize(10).fontWeight(FontWeight.Bold).fontColor('#17202A')
+            .maxLines(courses.length <= 2 ? 2 : 1).textOverflow({ overflow: TextOverflow.Ellipsis });
+          Text(`${course.startWeek}-${course.endWeek}周`).fontSize(9).fontColor('#17202A').maxLines(1);
+          Text(this.shortLocation(course.location)).fontSize(9).fontWeight(FontWeight.Bold).fontColor('#17202A')
+            .maxLines(1).textOverflow({ overflow: TextOverflow.Ellipsis });
+        }.width('100%').layoutWeight(1).padding(3).justifyContent(FlexAlign.Center)
+          .backgroundColor(this.colorOf(course))
+          .opacity((course.weekIndexes ?? []).includes(this.selectedWeek) ? 1 : 0.5)
+          .onClick(() => { this.selectedCourse = course; });
+      }, (course: Course, index: number) => `${course.courseId}-${course.startTime}-${index}`);
+    }.width('100%').height(Math.max(48, courseLength(courses[0]) * 52 - 4))
+      .borderRadius(8).clip(true)
+      .position({ x: 0, y: Math.max(0, courseStartTime(courses[0]) - 1) * 52 });
+  }
+
+  @Builder
   private timetable() {
     Column() {
       Row() {
@@ -224,9 +269,15 @@ export struct WeeklySchedulePage {
         .width(36);
         ForEach(WEEKDAYS, (_: string, dayIndex: number) => {
           Stack() {
-            ForEach(this.coursesOfDay(dayIndex + 1), (course: Course) => {
-              this.courseCard(course);
-            }, (course: Course) => `${course.courseId}-${course.startTime}-${this.selectedWeek}`);
+            if (this.overviewSchedule) {
+              ForEach(this.overviewGroups(dayIndex + 1), (courses: Array<Course>) => {
+                this.overviewCourseGroup(courses);
+              }, (courses: Array<Course>) => `${courseStartTime(courses[0])}-${courseLength(courses[0])}`);
+            } else {
+              ForEach(this.coursesOfDay(dayIndex + 1), (course: Course) => {
+                this.courseCard(course);
+              }, (course: Course) => `${course.courseId}-${course.startTime}-${this.selectedWeek}`);
+            }
           }
           .height(676)
           .layoutWeight(1)
@@ -287,6 +338,36 @@ export struct WeeklySchedulePage {
     .height('100%');
   }
 
+  @Builder
+  private scheduleSetting(title: string, description: string, selected: boolean,
+    onChange: (value: boolean) => void) {
+    Row({ space: 12 }) {
+      Column({ space: 3 }) {
+        Text(title).fontSize(AhuTypography.body).fontWeight(FontWeight.Medium).width('100%');
+        Text(description).fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary).width('100%');
+      }.layoutWeight(1).alignItems(HorizontalAlign.Start);
+      Toggle({ type: ToggleType.Switch, isOn: selected }).onChange(onChange);
+    }.width('100%');
+  }
+
+  @Builder
+  private settingsOverlay() {
+    Stack({ alignContent: Alignment.Center }) {
+      Row().width('100%').height('100%').backgroundColor('#66000000')
+        .onClick(() => { this.settingsVisible = false; });
+      Column({ space: 18 }) {
+        Text('课表设置').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold).width('100%');
+        this.scheduleSetting('总览课表', '显示全部周次的课程，重叠课程会平分同一块时间区域',
+          this.overviewSchedule, (value: boolean) => { this.overviewSchedule = value; });
+        this.scheduleSetting('预览下学期课表', '切换到教务系统中的下学期课表',
+          this.previewNextSemester, (value: boolean) => { this.toggleNextSemester(value); });
+        Button('完成', { type: ButtonType.Capsule }).width('100%')
+          .fontColor(AhuColors.onPrimaryAction).backgroundColor(AhuColors.primaryAction)
+          .onClick(() => { this.settingsVisible = false; });
+      }.width('88%').padding(24).backgroundColor(AhuColors.card).borderRadius(28);
+    }.width('100%').height('100%');
+  }
+
   build() {
     Stack() {
       Column() {
@@ -326,6 +407,9 @@ export struct WeeklySchedulePage {
 
       if (this.selectedCourse) {
         this.detailOverlay(this.selectedCourse);
+      }
+      if (this.settingsVisible) {
+        this.settingsOverlay();
       }
     }
     .width('100%')

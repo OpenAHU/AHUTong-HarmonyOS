@@ -111,6 +111,16 @@ export class AhuCache {
     }
   }
 
+  static saveNextSchedule(schedule: Array<Course>): void {
+    AhuPreferences.putString(AhuCache.userKey(PreferencesKeys.NEXT_SCHEDULE), JSON.stringify(schedule));
+  }
+
+  static getNextSchedule(): Array<Course> | undefined {
+    const raw = AhuPreferences.getString(AhuCache.userKey(PreferencesKeys.NEXT_SCHEDULE));
+    if (raw.length === 0) return undefined;
+    try { return JSON.parse(raw) as Array<Course>; } catch (_) { return undefined; }
+  }
+
   static saveIsShowAllCourse(value: boolean): void {
     AhuPreferences.putBoolean(AhuCache.userKey(PreferencesKeys.SHOW_ALL_COURSE), value);
   }

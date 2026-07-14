@@ -9,6 +9,7 @@ export class PreferencesKeys {
   static readonly SCHOOL_TERM: string = 'default_school_term';
   static readonly SCHOOL_TERM_START_TIME: string = 'school_term_start_time';
   static readonly SHOW_ALL_COURSE: string = 'is_show_all_course';
+  static readonly NEXT_SCHEDULE: string = 'next_schedule';
   static readonly SHOW_QR_CODE: string = 'show_qr_code';
   static readonly USE_LIQUID_GLASS: string = 'use_liquid_glass';
   static readonly COURSE_REMINDER_ENABLED: string = 'course_reminder_enabled';
