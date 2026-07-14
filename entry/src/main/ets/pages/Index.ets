@@ -138,6 +138,7 @@ struct Index {
             const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
             return CourseReminderManager.setEnabled(context, enabled);
           },
+          onReconfigureTerm: () => { this.activePage = 'term_setup'; },
           onCheckUpdate: () => this.checkUpdate(true),
           onLoadUpdateIntro: () => AppUpdateManager.introduction(),
           debugEnabled: BuildProfile.DEBUG,
@@ -166,7 +167,9 @@ struct Index {
   @Builder
   private postLoginContent() {
     if (this.setupComplete) {
-      if (this.activePage === 'grade') {
+      if (this.activePage === 'term_setup') {
+        ScheduleSetupPage({ onSetup: () => { this.setupComplete = true; this.activePage = ''; } });
+      } else if (this.activePage === 'grade') {
         GradePage({ onBack: () => { this.activePage = ''; } });
       } else if (this.activePage === 'exam') {
         ExamPage({ onBack: () => { this.activePage = ''; } });

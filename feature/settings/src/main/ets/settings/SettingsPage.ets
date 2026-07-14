@@ -19,6 +19,7 @@ export struct SettingsPage {
   onLogout: () => Promise<void> = async () => {};
   onClearAllData: () => Promise<void> = async () => {};
   onReminderChange: (enabled: boolean) => Promise<boolean> = async (_enabled: boolean) => true;
+  onReconfigureTerm: () => void = () => {};
   onCheckUpdate: () => Promise<string> = async () => '检查更新失败';
   onLoadUpdateIntro: () => Promise<string> = async () => '暂无更新介绍';
   debugEnabled: boolean = false;
@@ -100,6 +101,12 @@ export struct SettingsPage {
             Text(`${AhuCache.getSchoolYear() ?? '--'} 学年 · 第 ${AhuCache.getSchoolTerm() ?? '--'} 学期`)
               .fontColor(AhuColors.onSurfaceSecondary);
           }.width('100%').alignItems(HorizontalAlign.Start).onClick(() => this.debugTap());
+        }
+        AhuInsetCard() {
+          Row() { Column({ space: 3 }) { Text('学期设置').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium);
+            Text('重新设置学年、学期和当前周').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary); }
+            .alignItems(HorizontalAlign.Start).layoutWeight(1); Text('›').fontSize(26); }
+          .width('100%').onClick(() => this.onReconfigureTerm());
         }
         AhuInsetCard() {
           Row() { Text('退出登录').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium).layoutWeight(1);
