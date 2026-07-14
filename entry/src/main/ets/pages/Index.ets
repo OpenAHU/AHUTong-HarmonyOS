@@ -1,10 +1,4 @@
-import {
-  AhuColors,
-  AhuInsetCard,
-  AhuPageHeader,
-  AhuScreen,
-  AhuTypography
-} from 'core_designsystem';
+import { AhuColors } from 'core_designsystem';
 import { SymbolGlyphModifier } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { AppLaunchGate } from 'feature_login';
@@ -20,32 +14,7 @@ import { LostFoundPage } from 'feature_portal';
 import { PhoneBookPage, ToolsPage } from 'feature_tools';
 import { WeatherPage } from 'feature_weather';
 import { RepositoryPage } from 'feature_repository';
-
-@Component
-struct MigrationPage {
-  @Prop title: ResourceStr = '';
-  @Prop description: ResourceStr = '';
-
-  build() {
-    AhuScreen({ scrollable: true }) {
-      AhuPageHeader({ title: this.title });
-      AhuInsetCard() {
-        Column({ space: 12 }) {
-          Text($r('app.string.migration_in_progress'))
-            .fontSize(AhuTypography.sectionTitle)
-            .fontWeight(FontWeight.Bold)
-            .fontColor(AhuColors.onSurface);
-          Text(this.description)
-            .fontSize(AhuTypography.body)
-            .fontColor(AhuColors.onSurfaceSecondary)
-            .lineHeight(24);
-        }
-        .width('100%')
-        .alignItems(HorizontalAlign.Start);
-      }
-    }
-  }
-}
+import { SettingsPage } from 'feature_settings';
 
 @Entry
 @Component
@@ -107,10 +76,7 @@ struct Index {
       }, $r('app.string.nav_tools')));
 
       TabContent() {
-        MigrationPage({
-          title: $r('app.string.nav_settings'),
-          description: $r('app.string.settings_migration_description')
-        });
+        SettingsPage();
       }
       .tabBar(new BottomTabBarStyle({
         normal: new SymbolGlyphModifier($r('sys.symbol.gearshape')),

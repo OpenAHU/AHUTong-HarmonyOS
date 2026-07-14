@@ -20,6 +20,7 @@
     "feature_tools": "file:../feature/tools",
     "feature_weather": "file:../feature/weather",
     "feature_repository": "file:../feature/repository",
+    "feature_settings": "file:../feature/settings",
     "core_designsystem": "file:../core/designsystem",
     "core_datastore": "file:../core/datastore",
     "core_network": "file:../core/network",

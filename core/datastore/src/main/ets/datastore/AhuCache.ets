@@ -226,6 +226,19 @@ export class AhuCache {
     return AhuPreferences.getBoolean(PreferencesKeys.WEATHER_SHOW_ON_HOME);
   }
 
+  static setUseLiquidGlass(enabled: boolean): void { AhuPreferences.putBoolean(PreferencesKeys.USE_LIQUID_GLASS, enabled); }
+  static useLiquidGlass(): boolean { return AhuPreferences.getBoolean(PreferencesKeys.USE_LIQUID_GLASS, true); }
+  static setCourseReminderEnabled(enabled: boolean): void {
+    AhuPreferences.putBoolean(PreferencesKeys.COURSE_REMINDER_ENABLED, enabled);
+  }
+  static courseReminderEnabled(): boolean { return AhuPreferences.getBoolean(PreferencesKeys.COURSE_REMINDER_ENABLED); }
+  static setLiveCountdownEnabled(enabled: boolean): void {
+    AhuPreferences.putBoolean(PreferencesKeys.LIVE_COUNTDOWN_ENABLED, enabled);
+  }
+  static liveCountdownEnabled(): boolean { return AhuPreferences.getBoolean(PreferencesKeys.LIVE_COUNTDOWN_ENABLED); }
+  static setThemeColor(value: string): void { AhuPreferences.putString(PreferencesKeys.THEME_COLOR, value); }
+  static themeColor(): string { return AhuPreferences.getString(PreferencesKeys.THEME_COLOR); }
+
   static logout(): void {
     AhuCache.clearCurrentUser();
   }
