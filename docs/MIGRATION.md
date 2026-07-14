@@ -4,7 +4,7 @@
 >
 > 当前分支：`migration/android-to-harmonyos`
 >
-> 当前阶段：M3 基础能力（待开始）
+> 当前阶段：M3 基础能力（进行中）
 
 本文档是安大通 HarmonyOS 迁移的唯一进度台账。每完成一个可独立验收的功能，必须在同一个提交中更新对应条目、验证结果和变更记录，然后将提交推送到远程迁移分支。
 
@@ -50,8 +50,8 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_designsystem`、`data_schedule`、`feature_schedule` HAR
-- 当前实现：已建立 `Core → Data → Feature → Entry` 可编译依赖链和 ArkUI 基础设计系统，业务功能尚未迁移
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`data_schedule`、`feature_schedule` HAR
+- 当前实现：已建立分层依赖链、跨层业务模型和 ArkUI 基础设计系统，业务功能尚未迁移
 
 ## 3. 架构映射
 
@@ -100,7 +100,7 @@ entry (HAP / composition root)
 | M0 | README、迁移文档、功能与架构基线 | 已完成 |
 | M1 | 多模块骨架、依赖规则、测试与构建基线 | 已完成 |
 | M2 | Design System、主题、通用页面骨架与导航 | 已完成 |
-| M3 | Model、Datastore、Network、SDK 基础能力 | 待开始 |
+| M3 | Model、Datastore、Network、SDK 基础能力 | 进行中 |
 | M4 | 协议确认、首次启动、登录与会话管理 | 待开始 |
 | M5 | 主页、课表、课程详情与周次配置 | 待开始 |
 | M6 | 成绩、考试、校历与空闲教室 | 待开始 |
@@ -212,3 +212,4 @@ entry (HAP / composition root)
 | 2026-07-14 | 架构 | 建立 `core_common → data_schedule → feature_schedule → entry` HAR/HAP 依赖链 | OHPM 依赖同步；API 24 Debug HAP 构建成功 |
 | 2026-07-14 | 设计系统 | 新增深浅色语义资源、尺寸与字体 token，以及页面、卡片、标题、按钮、Chip、加载和空状态组件 | 由 `feature_schedule` 实际导入；API 24 Debug HAP 构建成功；待后续页面实机视觉对照 |
 | 2026-07-14 | 应用壳 | 替换默认页面，建立与 Android 一致的主页、课表、工具、设置四入口底部 Tabs 和迁移占位页 | API 24 Debug HAP 构建成功；HDC 无连接设备，未执行真机视觉验证 |
+| 2026-07-14 | 模型 | 新增 `core_model` HAR，迁移账户、课程、成绩、考试、校园卡、缴费和失物招领等跨层模型及课表数值转换 | 由 `data_schedule` 实际导入；API 24 Debug HAP 构建成功 |

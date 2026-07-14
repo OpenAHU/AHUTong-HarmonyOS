@@ -1,0 +1,8 @@
+{
+  "name": "core_model",
+  "version": "1.0.0",
+  "description": "Cross-layer business and transport models for AHUTong.",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {}
+}

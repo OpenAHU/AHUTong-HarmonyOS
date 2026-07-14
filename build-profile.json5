@@ -51,6 +51,18 @@
       ]
     },
     {
+      "name": "core_model",
+      "srcPath": "./core/model",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
       "name": "core_designsystem",
       "srcPath": "./core/designsystem",
       "targets": [
