@@ -12,6 +12,12 @@ export interface BathroomData {
   cardPhysicalId?: string; tsmAbstract: string; myCustomInfo?: string; message?: string;
 }
 export interface BathroomAccount { phone: string; cashAmount: string; giftAmount: string; data: BathroomData; }
+export interface ElectricityOption { name: string; value: string; }
+export interface ElectricityRoomData {
+  area?: string; buildingName?: string; areaName?: string; floorName?: string; floor?: string;
+  aid?: string; account?: string; building?: string; room?: string; roomName?: string; myCustomInfo?: string;
+}
+export interface ElectricityRoomInfo { info: string; data: ElectricityRoomData; }
 interface TokenResponse { access_token?: string; }
 interface AccountInfo { name: string; type: string; balance: number; }
 interface CardData { accinfo?: Array<AccountInfo>; }
@@ -20,6 +26,10 @@ interface CardInfoResponse { code: number; msg?: string; data?: CardInfoData; }
 interface PayResponse { code: number; msg?: string; data?: string; }
 interface BathroomMap { showData?: Object; data?: BathroomData; }
 interface BathroomResponse { code: number; msg?: string; message?: string; map?: BathroomMap; }
+interface ElectricityListMap { data?: Array<ElectricityOption>; }
+interface ElectricityListResponse { code: number; msg?: string; map?: ElectricityListMap; }
+interface ElectricityRoomMap { showData?: Object; data?: ElectricityRoomData; }
+interface ElectricityRoomResponse { code: number; msg?: string; map?: ElectricityRoomMap; }
 interface RawResponse { status: number; body: string; location: string; }
 interface ResponseHeaders { location?: string; Location?: string; }
 
@@ -208,6 +218,106 @@ export class CardPaymentRepository {
       return parsed.code === 200 ? AppResults.success<string>(parsed.data ?? orderId) :
         AppResults.failure<string>(AppErrorKind.HTTP, parsed.msg ?? '浴室充值失败', parsed.code);
     } catch (_) { return AppResults.failure<string>(AppErrorKind.PARSE, '浴室支付结果解析失败'); }
+  }
+
+  async getElectricityOptions(level: number, campus: string = '', building: string = '',
+    floor: string = ''): Promise<AppResult<Array<ElectricityOption>>> {
+    const fields = new Map<string, string>();
+    fields.set('feeitemid', '488'); fields.set('type', 'select'); fields.set('level', `${level}`);
+    if (campus.length > 0) fields.set('campus', campus);
+    if (building.length > 0) fields.set('building', building);
+    if (floor.length > 0) fields.set('floor', floor);
+    const response = await this.client.post('/charge/feeitem/getThirdData', fields);
+    if (!response.isSuccess || !response.data || response.data.status !== 200)
+      return AppResults.failure<Array<ElectricityOption>>(response.error?.kind ?? AppErrorKind.HTTP,
+        response.error?.message ?? '加载宿舍选项失败', response.data?.status);
+    try {
+      const parsed = JSON.parse(response.data.body) as ElectricityListResponse;
+      return parsed.map?.data ? AppResults.success<Array<ElectricityOption>>(parsed.map.data) :
+        AppResults.failure<Array<ElectricityOption>>(AppErrorKind.PARSE, parsed.msg ?? '宿舍选项数据为空');
+    } catch (_) { return AppResults.failure<Array<ElectricityOption>>(AppErrorKind.PARSE, '宿舍选项解析失败'); }
+  }
+
+  async getElectricityRoom(campus: string, building: string, floor: string,
+    room: string): Promise<AppResult<ElectricityRoomInfo>> {
+    const fields = new Map<string, string>();
+    fields.set('feeitemid', '488'); fields.set('type', 'IEC'); fields.set('level', '4');
+    fields.set('campus', campus); fields.set('building', building); fields.set('floor', floor); fields.set('room', room);
+    const response = await this.client.post('/charge/feeitem/getThirdData', fields);
+    if (!response.isSuccess || !response.data || response.data.status !== 200)
+      return AppResults.failure<ElectricityRoomInfo>(response.error?.kind ?? AppErrorKind.HTTP,
+        response.error?.message ?? '获取宿舍电量失败', response.data?.status);
+    try {
+      const parsed = JSON.parse(response.data.body) as ElectricityRoomResponse;
+      if (!parsed.map?.data) return AppResults.failure<ElectricityRoomInfo>(AppErrorKind.PARSE,
+        parsed.msg ?? '未获取到宿舍电量');
+      const showJson = parsed.map.showData ? JSON.stringify(parsed.map.showData) : '';
+      return AppResults.success<ElectricityRoomInfo>({
+        info: this.jsonField(showJson, '信息'), data: parsed.map.data
+      });
+    } catch (_) { return AppResults.failure<ElectricityRoomInfo>(AppErrorKind.PARSE, '宿舍电量数据解析失败'); }
+  }
+
+  private signedFields(fields: Map<string, string>): Map<string, string> {
+    const time = this.timestamp(); const nonce = this.nonce();
+    const keys: Array<string> = [];
+    fields.forEach((value: string, key: string) => { if (value.length > 0) keys.push(key); });
+    keys.sort();
+    let source = `APP_ID=${APP_ID}&NONCE=${nonce}&SIGN_TYPE=SHA256&TIMESTAMP=${time}`;
+    keys.forEach((key: string) => source += `&${key}=${fields.get(key) ?? ''}`);
+    source += `&SECRET_KEY=${SECRET_KEY}`;
+    const result = new Map<string, string>();
+    fields.forEach((value: string, key: string) => result.set(key, value));
+    result.set('APP_ID', APP_ID); result.set('TIMESTAMP', time); result.set('SIGN_TYPE', 'SHA256');
+    result.set('NONCE', nonce); result.set('SIGN', this.sha256(source));
+    return result;
+  }
+
+  async chargeElectricity(amount: string, password: string,
+    room: ElectricityRoomInfo): Promise<AppResult<string>> {
+    room.data.myCustomInfo = `${room.data.areaName ?? ''}${room.data.buildingName ?? ''}` +
+      `${room.data.floorName ?? ''}${room.data.roomName ?? ''}`;
+    const orderFields = new Map<string, string>();
+    orderFields.set('feeitemid', '488'); orderFields.set('tranamt', amount); orderFields.set('flag', 'choose');
+    orderFields.set('source', 'app'); orderFields.set('paystep', '0'); orderFields.set('abstracts', '');
+    orderFields.set('redirect_url', 'https://ycard.ahu.edu.cn/plat');
+    orderFields.set('third_party', JSON.stringify(room.data));
+    const order = await this.client.post('/blade-pay/pay', this.signedFields(orderFields));
+    if (!order.isSuccess || !order.data || order.data.status !== 200)
+      return AppResults.failure<string>(order.error?.kind ?? AppErrorKind.HTTP,
+        order.error?.message ?? '创建电费订单失败', order.data?.status);
+    const orderMatch = order.data.body.match(/"orderid"\s*:\s*"([^"]+)"/);
+    if (!orderMatch || orderMatch.length < 2) return AppResults.failure<string>(AppErrorKind.PARSE, '未能获取电费订单号');
+    const orderId = orderMatch[1];
+    const infoFields = new Map<string, string>();
+    infoFields.set('paytypeid', '64'); infoFields.set('paytype', 'ACCOUNTTSM');
+    infoFields.set('paystep', '2'); infoFields.set('orderid', orderId);
+    const info = await this.client.post('/blade-pay/pay', this.signedFields(infoFields));
+    if (!info.isSuccess || !info.data || info.data.status !== 200)
+      return AppResults.failure<string>(info.error?.kind ?? AppErrorKind.HTTP,
+        info.error?.message ?? '获取支付密码映射失败', info.data?.status);
+    const passwordMap = info.data.body.match(/"passwordMap"\s*:\s*\{\s*"([^"]+)"\s*:\s*"([^"]+)"/);
+    if (!passwordMap || passwordMap.length < 3)
+      return AppResults.failure<string>(AppErrorKind.PARSE, '支付密码映射不可用');
+    const uuid = passwordMap[1]; const mapString = passwordMap[2];
+    let cipher = '';
+    for (let index = 0; index < password.length; index++) {
+      const mapped = mapString.indexOf(password.charAt(index));
+      cipher += mapped >= 0 ? `${mapped}` : password.charAt(index);
+    }
+    const finalFields = new Map<string, string>();
+    finalFields.set('orderid', orderId); finalFields.set('paystep', '2'); finalFields.set('paytype', 'ACCOUNTTSM');
+    finalFields.set('paytypeid', '64'); finalFields.set('userAgent', 'h5'); finalFields.set('ccctype', '000');
+    finalFields.set('password', cipher); finalFields.set('uuid', uuid); finalFields.set('isWX', '0');
+    const payment = await this.client.post('/blade-pay/pay', this.signedFields(finalFields));
+    if (!payment.isSuccess || !payment.data || payment.data.status !== 200)
+      return AppResults.failure<string>(payment.error?.kind ?? AppErrorKind.HTTP,
+        payment.error?.message ?? '电费充值失败', payment.data?.status);
+    try {
+      const parsed = JSON.parse(payment.data.body) as PayResponse;
+      return parsed.code === 200 ? AppResults.success<string>(parsed.data ?? orderId) :
+        AppResults.failure<string>(AppErrorKind.HTTP, parsed.msg ?? '电费充值失败', parsed.code);
+    } catch (_) { return AppResults.failure<string>(AppErrorKind.PARSE, '电费支付结果解析失败'); }
   }
 
   private timestamp(): string {

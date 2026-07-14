@@ -14,7 +14,7 @@ import { GradePage } from 'feature_grade';
 import { ExamPage } from 'feature_exam';
 import { SchoolCalendarPage } from 'feature_calendar';
 import { FreeClassroomPage } from 'feature_classroom';
-import { BathroomRechargePage, CardRechargePage } from 'feature_payment';
+import { BathroomRechargePage, CardRechargePage, ElectricityRechargePage } from 'feature_payment';
 import { ScheduleSetupRepository } from 'data_schedule';
 
 @Component
@@ -72,7 +72,7 @@ struct Index {
             this.selectedIndex = 1;
           },
           onOpenWidget: (route: string) => {
-            if (route === 'grade' || route === 'exam' || route === 'school_calendar' || route === 'free_classroom' || route === 'bathroom') {
+            if (route === 'grade' || route === 'exam' || route === 'school_calendar' || route === 'free_classroom' || route === 'bathroom' || route === 'electricity') {
               this.activePage = route;
             }
           },
@@ -145,6 +145,8 @@ struct Index {
         CardRechargePage({ onBack: () => { this.activePage = ''; } });
       } else if (this.activePage === 'bathroom') {
         BathroomRechargePage({ onBack: () => { this.activePage = ''; } });
+      } else if (this.activePage === 'electricity') {
+        ElectricityRechargePage({ onBack: () => { this.activePage = ''; } });
       } else {
         this.mainContent();
       }
