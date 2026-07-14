@@ -71,7 +71,7 @@ export struct HomePage {
     BackPressDispatcher.register('home_page', () => this.handleBackPress());
     const config = this.setupRepository.displayConfig();
     this.currentWeek = config?.currentWeek ?? 1;
-    this.slots = AhuCache.getHomeWidgetSlots();
+    this.slots = this.normalizeSlots(AhuCache.getHomeWidgetSlots());
     this.load();
     this.loadBalance(false);
     this.loadWeather();
@@ -226,9 +226,20 @@ export struct HomePage {
     return HOME_WIDGETS.find((widget: HomeWidget): boolean => widget.id === id);
   }
 
+  private normalizeSlots(slots: Array<string>): Array<string> {
+    const seen: Array<string> = [];
+    return Array.from({ length: 8 }, (_: Object, index: number): string => {
+      const id = slots[index] ?? '';
+      if (!this.widgetById(id) || seen.includes(id)) return '';
+      seen.push(id);
+      return id;
+    });
+  }
+
   private saveSlots(slots: Array<string>): void {
-    this.slots = slots;
-    AhuCache.saveHomeWidgetSlots(slots);
+    const normalized = this.normalizeSlots(slots);
+    this.slots = normalized;
+    AhuCache.saveHomeWidgetSlots(normalized);
   }
 
   private removeWidget(index: number): void {

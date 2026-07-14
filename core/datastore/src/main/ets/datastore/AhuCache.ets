@@ -1,5 +1,6 @@
 import { CampusItem, Course, ElectricityChargeInfo, Exam, GpaRankInfo, Grade, GradeStudentProfile, LostFoundItem, LostFoundType, User, WeatherResponse } from 'core_model';
 import { AhuPreferences, PreferencesKeys } from './AhuPreferences';
+import { normalizeHomeWidgetSlots } from './HomeWidgetSlots';
 
 export class AhuCache {
   private static sanitize(value: string): string {
@@ -136,14 +137,14 @@ export class AhuCache {
     }
     try {
       const slots = JSON.parse(raw) as Array<string>;
-      return Array.from({ length: 8 }, (_: Object, index: number) => slots[index] ?? '');
+      return normalizeHomeWidgetSlots(slots);
     } catch (_) {
       return ['bathroom', 'electricity', '', '', '', '', '', ''];
     }
   }
 
   static saveHomeWidgetSlots(slots: Array<string>): void {
-    const normalized = Array.from({ length: 8 }, (_: Object, index: number) => slots[index] ?? '');
+    const normalized = normalizeHomeWidgetSlots(slots);
     AhuPreferences.putString(AhuCache.userKey(PreferencesKeys.HOME_WIDGET_SLOTS), JSON.stringify(normalized));
   }
 
