@@ -16,6 +16,8 @@ import { WeatherPage } from 'feature_weather';
 import { RepositoryPage } from 'feature_repository';
 import { SettingsPage } from 'feature_settings';
 import { CourseReminderManager } from 'feature_notification';
+import { AppUpdateDialog, AppUpdateManager, AppUpdateStatus } from 'feature_update';
+import type { AppUpdateInfo } from 'feature_update';
 import { AuthRepositoryProvider } from 'data_auth';
 import { AhuCache } from 'core_datastore';
 import { fileIo as fs } from '@kit.CoreFileKit';
@@ -26,6 +28,8 @@ struct Index {
   @State selectedIndex: number = 0;
   @State setupComplete: boolean = false;
   @State activePage: string = '';
+  @State updateInfo: AppUpdateInfo | undefined = undefined;
+  @State updateMessage: string = '';
   @StorageLink('ahu_liquid_glass') useLiquidGlass: boolean = true;
   @StorageLink('ahu_launch_route') @Watch('onLaunchRouteChanged') launchRoute: string = '';
   private readonly scheduleSetupRepository: ScheduleSetupRepository = new ScheduleSetupRepository();
@@ -51,6 +55,26 @@ struct Index {
   aboutToAppear(): void {
     this.setupComplete = this.scheduleSetupRepository.hasCompletedSetup();
     this.onLaunchRouteChanged();
+    this.checkUpdate(false);
+  }
+
+  private async checkUpdate(manual: boolean): Promise<string> {
+    const result = await AppUpdateManager.check();
+    if (result.status === AppUpdateStatus.AVAILABLE && result.update) {
+      this.updateInfo = result.update;
+      this.updateMessage = '';
+    }
+    return manual ? result.message : '';
+  }
+
+  private async openAppGallery(): Promise<void> {
+    const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    if (!await AppUpdateManager.openAppGallery(context)) this.updateMessage = '未找到应用市场，请使用项目发行页。';
+  }
+
+  private async openReleasePage(): Promise<void> {
+    const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    if (!await AppUpdateManager.openReleasePage(context, this.updateInfo)) this.updateMessage = '无法打开项目发行页，请检查浏览器。';
   }
 
   private onLaunchRouteChanged(): void {
@@ -111,7 +135,8 @@ struct Index {
           onReminderChange: (enabled: boolean) => {
             const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
             return CourseReminderManager.setEnabled(context, enabled);
-          }
+          },
+          onCheckUpdate: () => this.checkUpdate(true)
         });
       }
       .tabBar(new BottomTabBarStyle({
@@ -176,6 +201,15 @@ struct Index {
         rejectAction: () => this.terminateApplication(),
         content: this.postLoginContent
       });
+      if (this.updateInfo) {
+        AppUpdateDialog({
+          info: this.updateInfo,
+          message: this.updateMessage,
+          onAppGallery: () => this.openAppGallery(),
+          onReleasePage: () => this.openReleasePage(),
+          onDismiss: () => { this.updateInfo = undefined; this.updateMessage = ''; }
+        });
+      }
     }
     .width('100%')
     .height('100%');

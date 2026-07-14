@@ -163,7 +163,7 @@ entry (HAP / composition root)
 | 清除数据与退出登录 | `feature:settings` | `feature/settings` | 已完成 | 普通退出清除 Asset Store 凭据、原生/爬虫会话、门户/教务内存 Cookie 与当前用户但保留偏好；清除数据经二次确认后额外清空 Preferences、全部业务缓存和学习资料沙箱文件，重置学期初始化并立即回到登录页；API 24 构建通过，真机 Asset Store 删除与导航待验收 |
 | 课前通知与提醒 | `feature:notification` | `feature/notification` | 已完成 | 已声明提醒代理权限并接入系统通知授权；按课表登记未来 21 天、上课前 10 分钟的系统日历提醒，包含课程、地点和节次，点击返回应用；关闭开关会取消全部提醒，课表刷新、学期变更和冷启动会自动重排；Android 16 的 promoted ongoing 倒计时没有可直接移植的第三方接口，统一由 HarmonyOS ReminderAgent 决定系统展示样式；API 24 构建通过，待真机授权、到时触发和重启持久化验证 |
 | 课表服务卡片 | `feature:widget` | `feature/widget` | 已完成 | 新增动态 FormExtensionAbility 与 `feature_widget`，支持 HarmonyOS `2×2` / `2×4` 两种尺寸、浅深色与用户主题强调色；按当前学期/周次/星期筛选当天尚未结束课程，显示日期、剩余节数、节次、缩写教室并突出正在上课；支持卡片内手动刷新、系统每 30 分钟刷新、课表/学期变更与应用启动主动同步，点击课程区直达课表 Tab；工具页提供桌面添加指引。API 24 Debug HAP 构建通过且无 ArkTS 警告，无连接设备，卡片添加、尺寸布局、系统托管刷新和点击待真机验收 |
-| 应用更新 | `feature:update` | 待定 | 待开始 | 依据 HarmonyOS 分发渠道重新设计 |
+| 应用更新 | `feature:update` | `feature/update` | 已完成 | 启动及设置页手动检查本仓库最新 GitHub Release，按应用自身语义版本比较，展示版本/更新日志/可选或强制提示；提供 AppGallery 与可信项目发行页入口，不下载 Android APK；API 24 构建通过，仓库当前无 Release，待首个发行版及真机外部跳转验收 |
 | Debug / Mock 工具 | `feature:debug` | `feature/debug` | 待开始 | 仅开发构建启用 |
 
 功能台账若发现缺项，应先补充条目再开始实现；不得因为台账未列出而忽略 Android 已有能力。
@@ -262,3 +262,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 空闲教室日期范围 | 对齐 Android `FreeClassroomDatePicker`，在今天/明天快捷筛选外接入 HarmonyOS 原生日期选择对话框，支持独立选择开始/结束日期、禁止过去日期、五年范围和起止顺序自动修正，并将日期范围原样提交至教务空闲教室接口 | API 24 Debug HAP 构建成功后记录；无真实账号与连接设备，日期对话框及跨日接口结果待真机验收 |
 | 2026-07-15 | 校历查看与保存 | 对齐 Android 校历预览交互，新增 0.5–5 倍双指缩放、单指平移和双击复位；保存时下载当前校历到缓存，并通过 PhotoAccessHelper 系统资产创建确认对话框写入图库，不申请常驻媒体写权限 | API 24 Debug HAP 构建成功后记录；无连接设备，手势冲突、图库确认和保存结果待真机验收 |
 | 2026-07-15 | 电费历史房间 | 对齐 Android 的用户隔离房间历史，在支付成功后保存完整校区/楼栋/楼层/房间选择，按路径去重并保留最近 2 条；仅一条时进入页面自动逐级恢复，两条时展示快捷房间入口，选择后重新获取当前房间电量，避免使用陈旧余额 | API 24 Debug HAP 构建成功后记录；不执行真实资金操作，无测试账号与连接设备，成功后写入及恢复链路待小额真机验收 |
+| 2026-07-15 | 应用更新 | 新增 `feature_update`，将 Android APK 自更新替换为 HarmonyOS 安全分发流程：启动自动检查、设置页手动检查 GitHub 最新正式 Release，严格比较语义版本并校验发行链接主机，展示更新日志及可选/强制提示，提供 AppGallery 与项目发行页入口；发行说明含 `<!-- ahutong-force-update -->` 时启用强制提示 | 线上确认 Android 更新接口当前仅返回 3.1.9 APK，HarmonyOS 仓库暂无 Release；OHPM 全模块依赖同步，API 24 Debug HAP 构建成功且无 ArkTS 警告；待首个 HarmonyOS Release 与真机应用市场/浏览器拉起验收 |

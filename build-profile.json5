@@ -304,6 +304,11 @@
       "name": "feature_widget",
       "srcPath": "./feature/widget",
       "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "feature_update",
+      "srcPath": "./feature/update",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
     }
   ]
 }

@@ -11,9 +11,19 @@ export struct SettingsPage {
   @State message: string = '';
   @State showClear: boolean = false;
   @State clearing: boolean = false;
+  @State checkingUpdate: boolean = false;
   onLogout: () => Promise<void> = async () => {};
   onClearAllData: () => Promise<void> = async () => {};
   onReminderChange: (enabled: boolean) => Promise<boolean> = async (_enabled: boolean) => true;
+  onCheckUpdate: () => Promise<string> = async () => '检查更新失败';
+
+  private async checkUpdate(): Promise<void> {
+    if (this.checkingUpdate) return;
+    this.checkingUpdate = true;
+    this.message = '';
+    try { this.message = await this.onCheckUpdate(); }
+    finally { this.checkingUpdate = false; }
+  }
 
   private async feedback(): Promise<void> {
     try { const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
@@ -78,6 +88,13 @@ export struct SettingsPage {
         Text('关于').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold).padding({ left: 20 });
         this.item('开源协议', '查看第三方软件许可', 'license');
         this.item('贡献名单', '感谢每一位项目贡献者', 'contributors');
+        AhuInsetCard() {
+          Row() { Column({ space: 3 }) { Text('检查更新').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium);
+            Text(this.checkingUpdate ? '正在检查新版本' : '通过应用市场或项目发行页更新')
+              .fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary); }
+            .alignItems(HorizontalAlign.Start).layoutWeight(1); Text(this.checkingUpdate ? '…' : '›').fontSize(26); }
+          .width('100%').enabled(!this.checkingUpdate).onClick(() => this.checkUpdate());
+        }
         AhuInsetCard() {
           Row() { Column({ space: 3 }) { Text('意见反馈').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium);
             Text('加入安大通反馈群').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary); }
