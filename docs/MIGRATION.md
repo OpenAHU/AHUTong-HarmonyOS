@@ -4,7 +4,7 @@
 >
 > 当前分支：`migration/android-to-harmonyos`
 >
-> 当前阶段：M7 校园生活与缴费（进行中）
+> 当前阶段：M8 工具与校园服务（进行中）
 
 本文档是安大通 HarmonyOS 迁移的唯一进度台账。每完成一个可独立验收的功能，必须在同一个提交中更新对应条目、验证结果和变更记录，然后将提交推送到远程迁移分支。
 
@@ -50,7 +50,7 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`data_payment`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom`、`feature_payment` HAR
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`data_payment`、`data_portal`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom`、`feature_payment`、`feature_portal` HAR
 - 当前实现：M1-M3 基础架构已完成；M4 已完成协议门、登录 UI、门户/教务联合登录、安全凭据冷启动恢复、业务请求失效重登及个人学期初始化，仍待真实账号真机验收；M5 已开始迁移教务业务数据链路
 
 ## 3. 架构映射
@@ -105,7 +105,7 @@ entry (HAP / composition root)
 | M5 | 主页、课表、课程详情与周次配置 | 进行中 |
 | M6 | 成绩、考试、校历与空闲教室 | 进行中 |
 | M7 | 校园卡、电费、浴室与余额充值 | 进行中 |
-| M8 | 工具、电话本、失物招领、天气与仓库资源 | 待开始 |
+| M8 | 工具、电话本、失物招领、天气与仓库资源 | 进行中 |
 | M9 | 设置、关于、开源许可与数据清理 | 待开始 |
 | M10 | 通知、课前提醒、服务卡片及后台任务 | 待开始 |
 | M11 | 全量 UI 对照、性能、稳定性、隐私与发布准备 | 待开始 |
@@ -148,7 +148,7 @@ entry (HAP / composition root)
 | 电费充值 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移校区→楼栋→楼层→房间四级选择、电量信息、金额与 6 位密码校验、第三方房间载荷、动态密码映射、SHA-256 签名订单/支付和结果；API 24 Debug HAP 构建通过，历史房间快捷入口待补，真实支付待测试账号真机小额验证 |
 | 浴室缴费 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移竹园/龙河、桔园/蕙园选择，手机号账户查询，现金/赠送余额，金额校验，6 位密码确认与映射加密，YCard 订单/支付与成功失败状态；API 24 Debug HAP 构建通过，涉及真实资金，待测试账号真机小额验证 |
 | 浴室开放信息 | `feature:home` | `feature/home` | 待开始 | 开放状态及异常降级 |
-| 失物招领 | `feature:portal` + `data:portal` | 对应同名域 | 待开始 | 列表、加载、刷新与详情入口 |
+| 失物招领 | `feature:portal` + `data:portal` | 对应同名域 | 进行中 | 已完成失物/寻物双状态列表、首屏缓存、刷新、分页、错误/空状态和详情弹层；发布与删除待迁移；API 24 Debug HAP 构建通过，真实账号接口待运行验收 |
 | 校园电话本 | `feature:tools` | `feature/tools` | 待开始 | 分类、拨号与权限 |
 | 天气 | `feature:weather` | `feature/weather` | 待开始 | 当前天气、缓存、失败降级 |
 
@@ -242,3 +242,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 校园卡银行卡充值 | 新增 `data_payment`，迁移 YCard CAS 重定向票据、OAuth 令牌、一卡通账户与余额查询；按 Android 协议恢复 11 位安全随机数、时间戳、SHA-256 订单/支付签名、订单号提取和支付结果，页面补充账户状态、进度、成功/失败及防重入 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；因涉及真实资金且无测试账号/连接设备，未执行真实充值 |
 | 2026-07-15 | 浴室缴费 | 扩展 `data_payment` 的费用项账户查询与 YCard 账户支付，迁移两组浴室、手机号、现金/赠送余额、第三方账户载荷、订单号、6 位密码映射加密和支付结果；新页面接入首页浴室工具入口 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；因涉及真实资金且无测试账号/连接设备，未执行真实缴费 |
 | 2026-07-15 | 电费充值 | 扩展 `data_payment` 的 488 费用项，迁移校区、楼栋、楼层、房间逐级查询与电量信息；实现房间第三方载荷、通用排序 SHA-256 签名、订单、动态密码映射、最终支付和结果，并从首页电控工具进入新页面 | API 24 Debug HAP 构建成功且无 ArkTS 警告；因涉及真实资金且无测试账号/连接设备，未执行真实充值，房间历史快捷入口待后续补齐 |
+| 2026-07-15 | 失物招领列表 | 新增 `data_portal` 与 `feature_portal`，迁移失物招领/寻物启事双状态列表、首屏缓存、下拉刷新、分页加载、错误与空状态、图片信息卡和详情弹层，并接入首页失物招领工具入口 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，门户接口数据及图片加载待运行验收 |

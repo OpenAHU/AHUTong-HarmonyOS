@@ -19,6 +19,7 @@ export class PreferencesKeys {
   static readonly GRADE_CACHE: string = 'grade_cache';
   static readonly EXAM_CACHE: string = 'exam_cache';
   static readonly CARD_BALANCE: string = 'card_balance';
+  static readonly LOST_FOUND_LIST: string = 'lost_found_list';
 }
 
 export class AhuPreferences {

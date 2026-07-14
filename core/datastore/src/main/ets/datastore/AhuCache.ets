@@ -1,4 +1,4 @@
-import { Course, Exam, Grade, User } from 'core_model';
+import { Course, Exam, Grade, LostFoundItem, User } from 'core_model';
 import { AhuPreferences, PreferencesKeys } from './AhuPreferences';
 
 export class AhuCache {
@@ -170,6 +170,16 @@ export class AhuCache {
   static getCardBalance(): number | undefined {
     const key = AhuCache.userKey(PreferencesKeys.CARD_BALANCE);
     return AhuPreferences.contains(key) ? AhuPreferences.getNumber(key) : undefined;
+  }
+
+  static saveLostFoundList(state: number, items: Array<LostFoundItem>): void {
+    AhuPreferences.putString(AhuCache.userKey(`${PreferencesKeys.LOST_FOUND_LIST}:${state}`), JSON.stringify(items));
+  }
+
+  static getLostFoundList(state: number): Array<LostFoundItem> {
+    const raw = AhuPreferences.getString(AhuCache.userKey(`${PreferencesKeys.LOST_FOUND_LIST}:${state}`));
+    if (raw.length === 0) return [];
+    try { return JSON.parse(raw) as Array<LostFoundItem>; } catch (_) { return []; }
   }
 
   static logout(): void {

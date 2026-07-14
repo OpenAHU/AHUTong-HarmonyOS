@@ -252,6 +252,16 @@
       "name": "data_payment",
       "srcPath": "./data/payment",
       "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "data_portal",
+      "srcPath": "./data/portal",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "feature_portal",
+      "srcPath": "./feature/portal",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
     }
   ]
 }
