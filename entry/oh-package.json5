@@ -27,6 +27,7 @@
     "feature_update": "file:../feature/update",
     "feature_debug": "file:../feature/debug",
     "core_designsystem": "file:../core/designsystem",
+    "core_common": "file:../core/common",
     "core_datastore": "file:../core/datastore",
     "core_network": "file:../core/network",
     "core_sdk": "file:../core/sdk"

@@ -1,6 +1,7 @@
 import { AhuColors, AhuInsetCard, AhuLoading, AhuScreen, AhuTypography } from 'core_designsystem';
 import { common } from '@kit.AbilityKit';
 import { DownloadedFile, GitHubContentItem, REPOSITORIES, RepoConfig, RepositoryManager } from './RepositoryManager';
+import { BackPressDispatcher } from 'core_common';
 
 @Component
 export struct RepositoryPage {
@@ -24,8 +25,17 @@ export struct RepositoryPage {
   onBack: () => void = () => {};
 
   aboutToAppear(): void {
+    BackPressDispatcher.register('repository_page', () => this.handleBackPress());
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
     this.manager = new RepositoryManager(context); this.refreshDownloads();
+  }
+
+  aboutToDisappear(): void { BackPressDispatcher.unregister('repository_page'); }
+
+  private handleBackPress(): boolean {
+    if (this.pendingDeletePaths.length > 0) { this.pendingDeletePaths = []; return true; }
+    this.back();
+    return true;
   }
 
   private refreshDownloads(): void {

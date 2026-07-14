@@ -3,6 +3,7 @@ import {
   CardPaymentRepository, CardPaymentRepositoryProvider, ElectricityOption, ElectricityRoomInfo
 } from 'data_payment';
 import { AhuCache } from 'core_datastore';
+import { BackPressDispatcher } from 'core_common';
 
 interface ElectricitySelection {
   campus: ElectricityOption; building: ElectricityOption; floor: ElectricityOption; room: ElectricityOption;
@@ -35,8 +36,18 @@ export struct ElectricityRechargePage {
   onBack: () => void = () => {};
 
   aboutToAppear(): void {
+    BackPressDispatcher.register('electricity_recharge_page', () => this.handleBackPress());
     this.history = this.readHistory();
     if (this.history.length === 1) this.restore(this.history[0]); else this.loadCampuses();
+  }
+  aboutToDisappear(): void { BackPressDispatcher.unregister('electricity_recharge_page'); }
+
+  private handleBackPress(): boolean {
+    if (this.showResetRecord) { this.showResetRecord = false; return true; }
+    if (this.showConfirm && !this.paying) { this.showConfirm = false; return true; }
+    if (this.paying) return true;
+    this.onBack();
+    return true;
   }
   private validAmount(value: string): boolean { return /^\d*\.?\d{0,2}$/.test(value); }
 

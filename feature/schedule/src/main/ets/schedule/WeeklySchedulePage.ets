@@ -12,6 +12,7 @@ import {
   ScheduleSetupRepository
 } from 'data_schedule';
 import { AhuCache } from 'core_datastore';
+import { BackPressDispatcher } from 'core_common';
 
 const WEEKDAYS: Array<string> = ['一', '二', '三', '四', '五', '六', '日'];
 const COURSE_COLORS: Array<string> = [
@@ -32,13 +33,24 @@ export struct WeeklySchedulePage {
   @State overviewSchedule: boolean = false;
   @State previewNextSemester: boolean = false;
   @State settingsVisible: boolean = false;
+  active: boolean = false;
 
   aboutToAppear(): void {
+    BackPressDispatcher.register('weekly_schedule', () => this.handleBackPress());
     const config = this.setupRepository.displayConfig();
     if (config) {
       this.applyConfig(config);
     }
     this.load(false);
+  }
+
+  aboutToDisappear(): void { BackPressDispatcher.unregister('weekly_schedule'); }
+
+  private handleBackPress(): boolean {
+    if (!this.active) return false;
+    if (this.selectedCourse) { this.selectedCourse = undefined; return true; }
+    if (this.settingsVisible) { this.settingsVisible = false; return true; }
+    return false;
   }
 
   private applyConfig(config: ScheduleDisplayConfig): void {

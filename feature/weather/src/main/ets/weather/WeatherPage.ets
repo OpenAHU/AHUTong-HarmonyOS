@@ -3,6 +3,7 @@ import { ForecastDay, HourlyForecast, LifeIndexItem, WeatherAlert, WeatherRespon
 import { WeatherHomeConfig, WeatherRepository, WeatherRepositoryProvider } from 'data_weather';
 import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
 import { geoLocationManager } from '@kit.LocationKit';
+import { BackPressDispatcher } from 'core_common';
 
 interface NamedLifeIndex { name: string; value?: LifeIndexItem; }
 
@@ -24,10 +25,18 @@ export struct WeatherPage {
   onBack: () => void = () => {};
 
   aboutToAppear(): void {
+    BackPressDispatcher.register('weather_page', () => this.handleBackPress());
     const config = this.repository.homeConfig();
     this.showOnHome = config.showOnHome; this.showLocation = config.showLocation;
     this.showTemperature = config.showTemperature; this.showCondition = config.showCondition;
     this.showAqi = config.showAqi; this.load();
+  }
+  aboutToDisappear(): void { BackPressDispatcher.unregister('weather_page'); }
+
+  private handleBackPress(): boolean {
+    if (this.searching) { this.searching = false; this.city = ''; return true; }
+    this.onBack();
+    return true;
   }
 
   private saveHomeConfig(): void {

@@ -6,6 +6,7 @@ import { LengthMetrics } from '@kit.ArkUI';
 import { CampusCardRepository, CampusCardRepositoryProvider } from 'data_campuscard';
 import { common } from '@kit.AbilityKit';
 import { WeatherHomeConfig, WeatherRepository, WeatherRepositoryProvider } from 'data_weather';
+import { BackPressDispatcher } from 'core_common';
 
 const PERIOD_START: Array<number> = [480, 530, 590, 640, 690, 840, 890, 950, 1000, 1050, 1140, 1190, 1240];
 const PERIOD_END: Array<number> = [525, 575, 635, 685, 735, 885, 935, 995, 1045, 1095, 1185, 1235, 1285];
@@ -60,12 +61,14 @@ export struct HomePage {
   onOpenWidget: (route: string) => void = (_: string) => {};
   onOpenRecharge: () => void = () => {};
   homeEditEnabled: boolean = false;
+  active: boolean = false;
 
   private onEditRequestChanged(): void {
     if (this.homeEditEnabled) this.isEditing = true;
   }
 
   aboutToAppear(): void {
+    BackPressDispatcher.register('home_page', () => this.handleBackPress());
     const config = this.setupRepository.displayConfig();
     this.currentWeek = config?.currentWeek ?? 1;
     this.slots = AhuCache.getHomeWidgetSlots();
@@ -73,6 +76,14 @@ export struct HomePage {
     this.loadBalance(false);
     this.loadWeather();
     this.startPeriodicRefresh();
+  }
+
+  private handleBackPress(): boolean {
+    if (!this.active) return false;
+    if (this.showFullscreenQrcode) { this.closeFullscreenQrcode(); return true; }
+    if (this.showCardQrcode) { this.showCardQrcode = false; return true; }
+    if (this.isEditing) { this.isEditing = false; return true; }
+    return false;
   }
 
   private startPeriodicRefresh(): void {
@@ -157,6 +168,7 @@ export struct HomePage {
   }
 
   aboutToDisappear(): void {
+    BackPressDispatcher.unregister('home_page');
     if (this.refreshTimer >= 0) {
       clearInterval(this.refreshTimer);
       this.refreshTimer = -1;

@@ -1,6 +1,7 @@
 import { AhuColors, AhuInsetCard, AhuScreen, AhuTypography } from 'core_designsystem';
 import { BathroomAccount, CardPaymentRepository, CardPaymentRepositoryProvider } from 'data_payment';
 import { AhuCache } from 'core_datastore';
+import { BackPressDispatcher } from 'core_common';
 
 @Component
 export struct BathroomRechargePage {
@@ -18,7 +19,18 @@ export struct BathroomRechargePage {
   @State lastPhone?: string = undefined;
   onBack: () => void = () => {};
 
-  aboutToAppear(): void { this.lastPhone = AhuCache.getBathroomLastPhone(); }
+  aboutToAppear(): void {
+    BackPressDispatcher.register('bathroom_recharge_page', () => this.handleBackPress());
+    this.lastPhone = AhuCache.getBathroomLastPhone();
+  }
+  aboutToDisappear(): void { BackPressDispatcher.unregister('bathroom_recharge_page'); }
+
+  private handleBackPress(): boolean {
+    if (this.showConfirm && !this.paying) { this.showConfirm = false; return true; }
+    if (this.paying) return true;
+    this.onBack();
+    return true;
+  }
 
   private validAmount(value: string): boolean { return /^\d*\.?\d{0,2}$/.test(value); }
 

@@ -3,6 +3,7 @@ import { AhuCache } from 'core_datastore';
 import { common, Want } from '@kit.AbilityKit';
 import { pasteboard } from '@kit.BasicServicesKit';
 import { CardAccount, CardPaymentRepository, CardPaymentRepositoryProvider } from 'data_payment';
+import { BackPressDispatcher } from 'core_common';
 
 const ALIPAY_SCHEME: string =
   'alipays://platformapi/startapp?appId=2019090967125695&page=pages%2Findex%2Findex&chInfo=ch_share__chsub_CopyLink';
@@ -21,7 +22,18 @@ export struct CardRechargePage {
   @State paymentSuccess: boolean = false;
   onBack: () => void = () => {};
 
-  aboutToAppear(): void { this.loadAccount(); }
+  aboutToAppear(): void {
+    BackPressDispatcher.register('card_recharge_page', () => this.handleBackPress());
+    this.loadAccount();
+  }
+  aboutToDisappear(): void { BackPressDispatcher.unregister('card_recharge_page'); }
+
+  private handleBackPress(): boolean {
+    if (this.showConfirm && !this.opening) { this.showConfirm = false; return true; }
+    if (this.opening) return true;
+    this.onBack();
+    return true;
+  }
 
   private async loadAccount(): Promise<void> {
     this.accountLoading = true;

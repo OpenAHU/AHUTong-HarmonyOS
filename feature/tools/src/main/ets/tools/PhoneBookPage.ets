@@ -1,6 +1,7 @@
 import { common } from '@kit.AbilityKit';
 import { AhuColors, AhuInsetCard, AhuScreen, AhuTypography } from 'core_designsystem';
 import { Tel } from 'core_model';
+import { BackPressDispatcher } from 'core_common';
 
 interface PhoneCategory { name: string; entries: Array<Tel>; }
 
@@ -58,6 +59,16 @@ export struct PhoneBookPage {
   @State dialChoice?: Tel = undefined;
   @State error: string = '';
   onBack: () => void = () => {};
+
+  aboutToAppear(): void { BackPressDispatcher.register('phone_book_page', () => this.handleBackPress()); }
+  aboutToDisappear(): void { BackPressDispatcher.unregister('phone_book_page'); }
+
+  private handleBackPress(): boolean {
+    if (this.dialChoice) { this.dialChoice = undefined; return true; }
+    if (this.searching) { this.searching = false; this.query = ''; return true; }
+    this.onBack();
+    return true;
+  }
 
   private allEntries(): Array<Tel> {
     return PHONE_BOOK.reduce((result: Array<Tel>, item: PhoneCategory) => result.concat(item.entries), []);

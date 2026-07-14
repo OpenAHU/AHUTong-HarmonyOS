@@ -4,6 +4,7 @@ import { PreferencesPage } from './PreferencesPage';
 import { LicensePage } from './LicensePage';
 import { ContributorsPage } from './ContributorsPage';
 import { common } from '@kit.AbilityKit';
+import { BackPressDispatcher } from 'core_common';
 
 @Component
 export struct SettingsPage {
@@ -16,6 +17,7 @@ export struct SettingsPage {
   @State updateIntro: string = '';
   @State debugTapCount: number = 0;
   private lastDebugTap: number = 0;
+  active: boolean = false;
   appVersion: string = '';
   onLogout: () => Promise<void> = async () => {};
   onClearAllData: () => Promise<void> = async () => {};
@@ -25,6 +27,17 @@ export struct SettingsPage {
   onLoadUpdateIntro: () => Promise<string> = async () => '暂无更新介绍';
   debugEnabled: boolean = false;
   onOpenDebug: () => void = () => {};
+
+  aboutToAppear(): void { BackPressDispatcher.register('settings_page', () => this.handleBackPress()); }
+  aboutToDisappear(): void { BackPressDispatcher.unregister('settings_page'); }
+
+  private handleBackPress(): boolean {
+    if (!this.active) return false;
+    if (this.showUpdateIntro) { this.showUpdateIntro = false; return true; }
+    if (this.showClear) { this.showClear = false; return true; }
+    if (this.activePage.length > 0) { this.activePage = ''; return true; }
+    return false;
+  }
 
   private debugTap(): void {
     if (!this.debugEnabled) return;

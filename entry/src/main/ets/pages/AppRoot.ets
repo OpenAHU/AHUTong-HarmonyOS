@@ -20,6 +20,7 @@ import { AppUpdateDialog, AppUpdateManager, AppUpdateStatus } from 'feature_upda
 import type { AppUpdateInfo } from 'feature_update';
 import { GrayReleaseManager } from 'data_crawler';
 import { AppMaintenance } from '../app/AppMaintenance';
+import { BackPressDispatcher } from 'core_common';
 
 @Component
 export struct AppRoot {
@@ -50,10 +51,20 @@ export struct AppRoot {
   }
 
   aboutToAppear(): void {
+    BackPressDispatcher.register('app_root', () => this.handleBackPress());
     this.setupComplete = this.scheduleSetupRepository.hasCompletedSetup();
     this.onLaunchRouteChanged();
     this.checkUpdate(false);
     this.loadGrayState();
+  }
+
+  aboutToDisappear(): void { BackPressDispatcher.unregister('app_root'); }
+
+  private handleBackPress(): boolean {
+    if (this.updateInfo) { this.updateInfo = undefined; this.updateMessage = ''; return true; }
+    if (this.activePage.length > 0) { this.activePage = ''; return true; }
+    if (this.selectedIndex !== 0) { this.selectedIndex = 0; return true; }
+    return false;
   }
 
   private async loadGrayState(): Promise<void> {
@@ -107,6 +118,7 @@ export struct AppRoot {
     Tabs({ barPosition: BarPosition.End, index: this.selectedIndex }) {
       TabContent() {
         HomePage({
+          active: this.selectedIndex === 0,
           homeEditEnabled: this.homeEditEnabled,
           onOpenSchedule: () => {
             this.selectedIndex = 1;
@@ -127,7 +139,7 @@ export struct AppRoot {
       }, $r('app.string.nav_home')));
 
       TabContent() {
-        WeeklySchedulePage();
+        WeeklySchedulePage({ active: this.selectedIndex === 1 });
       }
       .tabBar(new BottomTabBarStyle({
         normal: new SymbolGlyphModifier($r('sys.symbol.calendar')),
@@ -145,6 +157,7 @@ export struct AppRoot {
 
       TabContent() {
         SettingsPage({
+          active: this.selectedIndex === 3,
           appVersion: AppUpdateManager.currentVersion(),
           onLogout: () => this.logout(false),
           onClearAllData: () => this.logout(true),

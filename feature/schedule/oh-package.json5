@@ -8,6 +8,7 @@
     "data_schedule": "file:../../data/schedule",
     "core_designsystem": "file:../../core/designsystem",
     "core_model": "file:../../core/model",
-    "core_datastore": "file:../../core/datastore"
+    "core_datastore": "file:../../core/datastore",
+    "core_common": "file:../../core/common"
   }
 }

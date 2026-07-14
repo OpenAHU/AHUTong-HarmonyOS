@@ -1,6 +1,7 @@
 import { AhuColors, AhuInsetCard, AhuScreen, AhuTypography } from 'core_designsystem';
 import { CampusItem, LostFoundItem, LostFoundPublishRequest, LostFoundType } from 'core_model';
 import { LostFoundRepository, LostFoundRepositoryProvider } from 'data_portal';
+import { BackPressDispatcher } from 'core_common';
 
 @Component
 export struct LostFoundPage {
@@ -36,7 +37,22 @@ export struct LostFoundPage {
   @State imageViewerIndex: number = -1;
   onBack: () => void = () => {};
 
-  aboutToAppear(): void { this.load(true); this.loadPublishOptions(); }
+  aboutToAppear(): void {
+    BackPressDispatcher.register('lost_found_page', () => this.handleBackPress());
+    this.load(true); this.loadPublishOptions();
+  }
+  aboutToDisappear(): void { BackPressDispatcher.unregister('lost_found_page'); }
+
+  private handleBackPress(): boolean {
+    if (this.imageViewerIndex >= 0) { this.imageViewerIndex = -1; return true; }
+    if (this.deleteTarget) { this.deleteTarget = undefined; this.deleteError = ''; return true; }
+    if (this.showPublish) { this.showPublish = false; return true; }
+    if (this.showMyPosts) { this.showMyPosts = false; return true; }
+    if (this.selected) { this.selected = undefined; return true; }
+    if (this.searchExpanded) { this.searchExpanded = false; this.query = ''; return true; }
+    this.onBack();
+    return true;
+  }
 
   private async loadPublishOptions(): Promise<void> {
     const campusResult = await this.repository.getCampuses();
