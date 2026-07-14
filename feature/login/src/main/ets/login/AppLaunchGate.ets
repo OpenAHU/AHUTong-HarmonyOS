@@ -7,6 +7,7 @@ import { LoginPage } from './LoginPage';
 export struct AppLaunchGate {
   @State loggedIn: boolean = false;
   @State restoring: boolean = true;
+  @StorageLink('ahu_logout_revision') logoutRevision: number = 0;
   rejectAction: () => void = () => {};
 
   @Builder
@@ -34,7 +35,7 @@ export struct AppLaunchGate {
       .height('100%')
       .justifyContent(FlexAlign.Center)
       .backgroundColor(AhuColors.pageBackground);
-    } else if (this.loggedIn) {
+    } else if (this.logoutRevision >= 0 && this.loggedIn && AuthSession.isLoggedIn()) {
       this.content();
     } else {
       LoginPage({

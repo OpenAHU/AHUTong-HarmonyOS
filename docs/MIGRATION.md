@@ -160,7 +160,7 @@ entry (HAP / composition root)
 | 仓库资源与下载 | `feature:repository` | `feature/repository` | 已完成 | 已迁移 6 个学院仓库、目录分层与返回、缓存优先/后台同步、刷新、文件类型/大小、CDN→GitHub Raw 双源下载、应用沙箱记录、已下载列表、删除与系统查看；6 个仓库根目录线上实测成功，API 24 构建通过，系统文件打开待真机验收 |
 | 设置与偏好 | `feature:settings` | `feature/settings` | 进行中 | 已用真实设置页替换 Tab 占位页，迁移账户/学期摘要、课前提醒意图、实验性倒计时、液态玻璃、13 组主题色与自定义 ARGB Hex 的持久化；API 24 构建通过，通知授权/调度归入 M10，主题色全局应用待设计系统收尾 |
 | 关于、贡献者、开源许可 | `feature:settings` | `feature/settings` | 已完成 | 已迁移应用图标/版本、加入我们、5 位 Android 内置开发者及职责/QQ/头像、QQ 联系与反馈失败提示，以及 Android 第三方许可清单；补充 HarmonyOS SDK 许可，外部项目链接使用系统隐式打开；API 24 构建通过，QQ 与浏览器拉起待真机验收 |
-| 清除数据与退出登录 | `feature:settings` | `feature/settings` | 待开始 | 缓存、Cookie、会话完整清理 |
+| 清除数据与退出登录 | `feature:settings` | `feature/settings` | 已完成 | 普通退出清除 Asset Store 凭据、原生/爬虫会话、门户/教务内存 Cookie 与当前用户但保留偏好；清除数据经二次确认后额外清空 Preferences、全部业务缓存和学习资料沙箱文件，重置学期初始化并立即回到登录页；API 24 构建通过，真机 Asset Store 删除与导航待验收 |
 | 课前通知与提醒 | `feature:notification` | `feature/notification` | 待开始 | 权限、调度、点击与重启恢复 |
 | 课表服务卡片 | `feature:widget` | `feature/widget` | 待开始 | 尺寸、刷新、点击与数据同步 |
 | 应用更新 | `feature:update` | 待定 | 待开始 | 依据 HarmonyOS 分发渠道重新设计 |
@@ -255,3 +255,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 浴室开放信息基线审计 | 对照 Android 当前源码、历史提交 `87d38da` 与线上旧接口：当前 `getBathrooms()` 明确返回空列表，首页开放状态 UI 已注释，仅有浴室缴费入口；HarmonyOS 已具备相同缴费入口，不恢复历史静态男女开放信息 | `https://ahuer.cn/api/bathroom/open` 线上 TLS/连接失败；此项按当前 Android 产品行为标记为不适用，浴室缴费功能仍按独立台账继续保留真机资金验收状态 |
 | 2026-07-15 | 设置偏好 | 新增 `feature_settings` 并替换设置 Tab 占位页，展示账户与学期；扩展持久化层，迁移课前提醒、实验性倒计时、液态玻璃、13 组预设主题色及自定义 ARGB Hex 校验，同时建立全局主题状态入口；README 同步更新为当前迁移实况 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；通知权限与调度按 M10 独立迁移，主题色对全部既有页面的动态应用待设计系统收尾，无连接设备待视觉验收 |
 | 2026-07-15 | 关于、贡献者与开源许可 | 扩展 `feature_settings`，迁移应用图标/版本、加入我们、Android 内置 5 位开发者的职责/QQ/远程头像、QQ 个人卡片与反馈群入口；迁移原第三方许可名称/作者/链接/协议，并补充 HarmonyOS SDK 许可，所有网页通过系统隐式能力打开 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，QQ/TIM、浏览器拉起及远程头像视觉待真机验收 |
+| 2026-07-15 | 退出登录与清除数据 | 设置页新增普通退出和带二次确认的完整清除；组合根调用认证仓库统一清 Asset Store 安全凭据、Native/爬虫会话和门户/教务 Cookie，完整清除再删除 Preferences、用户隔离业务缓存及学习资料沙箱文件；通过全局修订信号立即回到登录页并重置学期初始化 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，Asset Store 删除、清除后协议门重启行为和页面跳转待真机验收 |

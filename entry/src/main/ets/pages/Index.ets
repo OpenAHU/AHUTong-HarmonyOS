@@ -15,6 +15,9 @@ import { PhoneBookPage, ToolsPage } from 'feature_tools';
 import { WeatherPage } from 'feature_weather';
 import { RepositoryPage } from 'feature_repository';
 import { SettingsPage } from 'feature_settings';
+import { AuthRepositoryProvider } from 'data_auth';
+import { AhuCache } from 'core_datastore';
+import { fileIo as fs } from '@kit.CoreFileKit';
 
 @Entry
 @Component
@@ -23,6 +26,24 @@ struct Index {
   @State setupComplete: boolean = false;
   @State activePage: string = '';
   private readonly scheduleSetupRepository: ScheduleSetupRepository = new ScheduleSetupRepository();
+
+  private async logout(clearAll: boolean): Promise<void> {
+    await AuthRepositoryProvider.get().logout();
+    if (clearAll) {
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      const downloadDir = `${context.filesDir}/repository`;
+      try {
+        fs.listFileSync(downloadDir).forEach((name: string) => {
+          try { fs.unlinkSync(`${downloadDir}/${name}`); } catch (_) {}
+        });
+        fs.rmdirSync(downloadDir);
+      } catch (_) {}
+      AhuCache.clearAll();
+    }
+    this.setupComplete = false;
+    const revision = AppStorage.get<number>('ahu_logout_revision') ?? 0;
+    AppStorage.setOrCreate('ahu_logout_revision', revision + 1);
+  }
 
   aboutToAppear(): void {
     this.setupComplete = this.scheduleSetupRepository.hasCompletedSetup();
@@ -76,7 +97,7 @@ struct Index {
       }, $r('app.string.nav_tools')));
 
       TabContent() {
-        SettingsPage();
+        SettingsPage({ onLogout: () => this.logout(false), onClearAllData: () => this.logout(true) });
       }
       .tabBar(new BottomTabBarStyle({
         normal: new SymbolGlyphModifier($r('sys.symbol.gearshape')),

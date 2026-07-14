@@ -9,12 +9,26 @@ import { common } from '@kit.AbilityKit';
 export struct SettingsPage {
   @State activePage: string = '';
   @State message: string = '';
+  @State showClear: boolean = false;
+  @State clearing: boolean = false;
+  onLogout: () => Promise<void> = async () => {};
+  onClearAllData: () => Promise<void> = async () => {};
 
   private async feedback(): Promise<void> {
     try { const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
       await context.startAbility({ action: 'ohos.want.action.viewData',
         uri: 'mqqapi://card/show_pslcard?src_type=internal&version=1&uin=1006203134&card_type=group&source=qrcode' });
     } catch (_) { this.message = '请安装 QQ 或 TIM'; }
+  }
+
+  private async logout(): Promise<void> {
+    if (this.clearing) return; this.clearing = true;
+    try { await this.onLogout(); } finally { this.clearing = false; }
+  }
+
+  private async clearAll(): Promise<void> {
+    if (this.clearing) return; this.clearing = true;
+    try { await this.onClearAllData(); this.showClear = false; } finally { this.clearing = false; }
   }
 
   @Builder private item(title: string, subtitle: string, route: string) {
@@ -36,8 +50,9 @@ export struct SettingsPage {
     } else if (this.activePage === 'contributors') {
       ContributorsPage({ onBack: () => { this.activePage = ''; } });
     } else {
-      AhuScreen({ scrollable: true }) {
-        AhuPageHeader({ title: '设置' });
+      Stack() {
+        AhuScreen({ scrollable: true }) {
+          AhuPageHeader({ title: '设置' });
         AhuInsetCard({ containerColor: AhuColors.accentSurface }) {
           Row({ space: 16 }) {
             Image($r('app.media.startIcon')).width(64).height(64).borderRadius(18);
@@ -54,6 +69,10 @@ export struct SettingsPage {
               .fontColor(AhuColors.onSurfaceSecondary);
           }.width('100%').alignItems(HorizontalAlign.Start);
         }
+        AhuInsetCard() {
+          Row() { Text('退出登录').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium).layoutWeight(1);
+            Text('›').fontSize(26); }.width('100%').onClick(() => this.logout());
+        }
         this.item('偏好设置', '提醒、液态玻璃与主题颜色', 'preferences');
         Text('关于').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold).padding({ left: 20 });
         this.item('开源协议', '查看第三方软件许可', 'license');
@@ -65,8 +84,26 @@ export struct SettingsPage {
           .width('100%').onClick(() => this.feedback());
         }
         if (this.message.length > 0) Text(this.message).fontColor(AhuColors.error).padding({ left: 20 });
-        this.item('清除数据', '清除登录状态、课表和缓存', 'clear');
-      }
+          AhuInsetCard() {
+            Row() { Column({ space: 3 }) { Text('清除数据').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium);
+              Text('清除登录状态、课表和缓存').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary); }
+              .alignItems(HorizontalAlign.Start).layoutWeight(1); Text('›').fontSize(26); }
+            .width('100%').onClick(() => { this.showClear = true; });
+          }
+        }
+        if (this.showClear) {
+          Column({ space: 16 }) {
+            Text('清除所有数据？').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold);
+            Text('您的登录状态、课表等信息将会被永久清除').fontColor(AhuColors.onSurfaceSecondary);
+            Row({ space: 10 }) {
+              Button('取消', { type: ButtonType.Capsule }).enabled(!this.clearing).onClick(() => { this.showClear = false; });
+              Button(this.clearing ? '清除中' : '清除', { type: ButtonType.Capsule }).enabled(!this.clearing)
+                .backgroundColor(AhuColors.error).onClick(() => this.clearAll());
+            }.width('100%').justifyContent(FlexAlign.End);
+          }.width('86%').padding(24).backgroundColor(AhuColors.card).borderRadius(24)
+            .shadow({ radius: 24, color: '#44000000' });
+        }
+      }.width('100%').height('100%');
     }
   }
 }
