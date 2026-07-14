@@ -2,6 +2,7 @@ import { AhuColors, AhuInsetCard, AhuLoading, AhuScreen, AhuTypography } from 'c
 import { AhuCache } from 'core_datastore';
 import { Course, courseLength, courseStartTime, courseWeekday } from 'core_model';
 import { ScheduleRepository, ScheduleRepositoryProvider, ScheduleSetupRepository } from 'data_schedule';
+import { LengthMetrics } from '@kit.ArkUI';
 
 const PERIOD_START: Array<number> = [480, 530, 590, 640, 690, 840, 890, 950, 1000, 1050, 1140, 1190, 1240];
 const PERIOD_END: Array<number> = [525, 575, 635, 685, 735, 885, 935, 995, 1045, 1095, 1185, 1235, 1285];
@@ -33,11 +34,14 @@ export struct HomePage {
   @State courses: Array<Course> = [];
   @State isLoading: boolean = true;
   @State currentWeek: number = 1;
+  @State slots: Array<string> = [];
+  @State isEditing: boolean = false;
   onOpenSchedule: () => void = () => {};
 
   aboutToAppear(): void {
     const config = this.setupRepository.displayConfig();
     this.currentWeek = config?.currentWeek ?? 1;
+    this.slots = AhuCache.getHomeWidgetSlots();
     this.load();
   }
 
@@ -94,6 +98,61 @@ export struct HomePage {
 
   private widgetById(id: string): HomeWidget | undefined {
     return HOME_WIDGETS.find((widget: HomeWidget): boolean => widget.id === id);
+  }
+
+  private saveSlots(slots: Array<string>): void {
+    this.slots = slots;
+    AhuCache.saveHomeWidgetSlots(slots);
+  }
+
+  private removeWidget(index: number): void {
+    const next = this.slots.slice();
+    next[index] = '';
+    this.saveSlots(next);
+  }
+
+  private addWidget(id: string): void {
+    if (this.slots.includes(id)) {
+      return;
+    }
+    const index = this.slots.findIndex((value: string): boolean => value.length === 0);
+    if (index < 0) {
+      return;
+    }
+    const next = this.slots.slice();
+    next[index] = id;
+    this.saveSlots(next);
+  }
+
+  private moveWidget(index: number, offset: number): void {
+    const target = index + offset;
+    if (target < 0 || target >= this.slots.length) {
+      return;
+    }
+    const next = this.slots.slice();
+    const value = next[index];
+    next[index] = next[target];
+    next[target] = value;
+    this.saveSlots(next);
+  }
+
+  @Builder
+  private editHeader() {
+    Row() {
+      Text('首页')
+        .fontSize(28)
+        .fontWeight(FontWeight.Bold)
+        .fontColor(AhuColors.onSurface)
+        .layoutWeight(1);
+      Button(this.isEditing ? '完成' : '编辑', { type: ButtonType.Capsule })
+        .fontColor(this.isEditing ? AhuColors.onPrimaryAction : AhuColors.onSurface)
+        .backgroundColor(this.isEditing ? AhuColors.primaryAction : AhuColors.card)
+        .onClick(() => {
+          this.isEditing = !this.isEditing;
+        });
+    }
+    .width('100%')
+    .padding({ left: 24, right: 16, top: 24 });
   }
 
   @Builder
@@ -159,24 +218,42 @@ export struct HomePage {
   @Builder
   private widgetGrid() {
     Grid() {
-      ForEach(AhuCache.getHomeWidgetSlots(), (id: string, index: number) => {
+      ForEach(this.slots, (id: string, index: number) => {
         GridItem() {
           if (id.length > 0 && this.widgetById(id)) {
-            Column({ space: 8 }) {
-              SymbolGlyph(this.widgetById(id)?.symbol)
-                .fontSize(30)
-                .fontColor([this.widgetById(id)?.tint ?? '#607D8B']);
-              Text(this.widgetById(id)?.title ?? '')
-                .fontSize(AhuTypography.label)
-                .fontWeight(FontWeight.Medium)
-                .fontColor(AhuColors.onSurface)
-                .maxLines(1);
+            Stack({ alignContent: Alignment.TopEnd }) {
+              Column({ space: 8 }) {
+                SymbolGlyph(this.widgetById(id)?.symbol)
+                  .fontSize(30)
+                  .fontColor([this.widgetById(id)?.tint ?? '#607D8B']);
+                Text(this.widgetById(id)?.title ?? '')
+                  .fontSize(AhuTypography.label)
+                  .fontWeight(FontWeight.Medium)
+                  .fontColor(AhuColors.onSurface)
+                  .maxLines(1);
+              }
+              .width('100%').height('100%')
+              .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center);
+              if (this.isEditing) {
+                Button('×', { type: ButtonType.Circle })
+                  .width(28).height(28).margin(6)
+                  .fontSize(18).fontColor(AhuColors.onPrimaryAction)
+                  .backgroundColor(AhuColors.error)
+                  .onClick(() => this.removeWidget(index));
+              }
+            }
+            .width('100%').height('100%')
+            .backgroundColor(AhuColors.card).borderRadius(24);
+          } else {
+            Column() {
+              if (this.isEditing) {
+                Text('+').fontSize(28).fontColor(AhuColors.onSurfaceSecondary);
+              }
             }
             .width('100%').height('100%')
             .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
-            .backgroundColor(AhuColors.card).borderRadius(24);
-          } else {
-            Column().width('100%').height('100%');
+            .border({ width: this.isEditing ? 1 : 0, color: AhuColors.divider, style: BorderStyle.Dashed })
+            .borderRadius(24);
           }
         }
       }, (_: string, index: number) => `${index}`);
@@ -188,14 +265,61 @@ export struct HomePage {
     .padding({ left: 16, right: 16 });
   }
 
+  @Builder
+  private widgetEditor() {
+    AhuInsetCard() {
+      Column({ space: 14 }) {
+        Text('已添加工具')
+          .fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).fontColor(AhuColors.onSurface);
+        ForEach(this.slots, (id: string, index: number) => {
+          if (id.length > 0 && this.widgetById(id)) {
+            Row({ space: 8 }) {
+              Text(this.widgetById(id)?.title ?? '').layoutWeight(1).fontColor(AhuColors.onSurface);
+              Button('↑', { type: ButtonType.Circle })
+                .width(34).height(34).enabled(index > 0)
+                .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.chipUnselected)
+                .onClick(() => this.moveWidget(index, -1));
+              Button('↓', { type: ButtonType.Circle })
+                .width(34).height(34).enabled(index < this.slots.length - 1)
+                .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.chipUnselected)
+                .onClick(() => this.moveWidget(index, 1));
+            }
+            .width('100%');
+          }
+        }, (_: string, index: number) => `selected-${index}`);
+        Divider().color(AhuColors.divider);
+        Text('添加小工具')
+          .fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).fontColor(AhuColors.onSurface);
+        Flex({ wrap: FlexWrap.Wrap, space: { main: LengthMetrics.vp(8), cross: LengthMetrics.vp(8) } }) {
+          ForEach(HOME_WIDGETS, (widget: HomeWidget) => {
+            if (!this.slots.includes(widget.id)) {
+              Button(`+ ${widget.title}`, { type: ButtonType.Capsule })
+                .fontSize(AhuTypography.label)
+                .fontColor(AhuColors.onSurface)
+                .backgroundColor(AhuColors.chipUnselected)
+                .enabled(this.slots.includes(''))
+                .onClick(() => this.addWidget(widget.id));
+            }
+          }, (widget: HomeWidget) => widget.id);
+        }
+      }
+      .width('100%')
+      .alignItems(HorizontalAlign.Start);
+    }
+  }
+
   build() {
     if (this.isLoading) {
       AhuLoading({ message: $r('app.string.home_loading') });
     } else {
       AhuScreen({ scrollable: true, clearBottomNav: true }) {
+        this.editHeader();
         this.glance(this.todayCourses());
         this.todayTimeline(this.todayCourses());
         this.widgetGrid();
+        if (this.isEditing) {
+          this.widgetEditor();
+        }
       }
     }
   }
