@@ -19,6 +19,7 @@ import { ScheduleSetupRepository } from 'data_schedule';
 import { LostFoundPage } from 'feature_portal';
 import { PhoneBookPage, ToolsPage } from 'feature_tools';
 import { WeatherPage } from 'feature_weather';
+import { RepositoryPage } from 'feature_repository';
 
 @Component
 struct MigrationPage {
@@ -75,7 +76,7 @@ struct Index {
             this.selectedIndex = 1;
           },
           onOpenWidget: (route: string) => {
-            if (route === 'grade' || route === 'exam' || route === 'school_calendar' || route === 'free_classroom' || route === 'bathroom' || route === 'electricity' || route === 'lost_found' || route === 'phone_book' || route === 'weather') {
+            if (route === 'grade' || route === 'exam' || route === 'school_calendar' || route === 'free_classroom' || route === 'bathroom' || route === 'electricity' || route === 'lost_found' || route === 'phone_book' || route === 'weather' || route === 'repository') {
               this.activePage = route;
             }
           },
@@ -153,6 +154,8 @@ struct Index {
         PhoneBookPage({ onBack: () => { this.activePage = ''; } });
       } else if (this.activePage === 'weather') {
         WeatherPage({ onBack: () => { this.activePage = ''; } });
+      } else if (this.activePage === 'repository') {
+        RepositoryPage({ onBack: () => { this.activePage = ''; } });
       } else {
         this.mainContent();
       }

@@ -4,7 +4,7 @@
 >
 > 当前分支：`migration/android-to-harmonyos`
 >
-> 当前阶段：M8 工具与校园服务（进行中）
+> 当前阶段：M7 校园服务收尾（进行中）；M8 工具与资料已完成
 
 本文档是安大通 HarmonyOS 迁移的唯一进度台账。每完成一个可独立验收的功能，必须在同一个提交中更新对应条目、验证结果和变更记录，然后将提交推送到远程迁移分支。
 
@@ -50,7 +50,7 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`data_payment`、`data_portal`、`data_weather`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom`、`feature_payment`、`feature_portal`、`feature_tools`、`feature_weather` HAR
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`data_payment`、`data_portal`、`data_weather`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom`、`feature_payment`、`feature_portal`、`feature_tools`、`feature_weather`、`feature_repository` HAR
 - 当前实现：M1-M3 基础架构已完成；M4 已完成协议门、登录 UI、门户/教务联合登录、安全凭据冷启动恢复、业务请求失效重登及个人学期初始化，仍待真实账号真机验收；M5 已开始迁移教务业务数据链路
 
 ## 3. 架构映射
@@ -105,7 +105,7 @@ entry (HAP / composition root)
 | M5 | 主页、课表、课程详情与周次配置 | 进行中 |
 | M6 | 成绩、考试、校历与空闲教室 | 进行中 |
 | M7 | 校园卡、电费、浴室与余额充值 | 进行中 |
-| M8 | 工具、电话本、失物招领、天气与仓库资源 | 进行中 |
+| M8 | 工具、电话本、失物招领、天气与仓库资源 | 已完成 |
 | M9 | 设置、关于、开源许可与数据清理 | 待开始 |
 | M10 | 通知、课前提醒、服务卡片及后台任务 | 待开始 |
 | M11 | 全量 UI 对照、性能、稳定性、隐私与发布准备 | 待开始 |
@@ -157,7 +157,7 @@ entry (HAP / composition root)
 | 功能 | Android 来源 | HarmonyOS 目标 | 状态 | 验证/备注 |
 | --- | --- | --- | --- | --- |
 | 工具页 | `feature:tools` | `feature/tools` | 已完成 | 新增 `feature_tools`，正式替换工具 Tab 占位页；按首页 8 槽位持久化状态过滤已固定工具，以双列卡片展示其余入口并复用业务路由；API 24 Debug HAP 构建通过，待真机视觉验证 |
-| 仓库资源与下载 | `feature:repository` | `feature/repository` | 待开始 | 平台下载能力需重新评估 |
+| 仓库资源与下载 | `feature:repository` | `feature/repository` | 已完成 | 已迁移 6 个学院仓库、目录分层与返回、缓存优先/后台同步、刷新、文件类型/大小、CDN→GitHub Raw 双源下载、应用沙箱记录、已下载列表、删除与系统查看；6 个仓库根目录线上实测成功，API 24 构建通过，系统文件打开待真机验收 |
 | 设置与偏好 | `feature:settings` | `feature/settings` | 待开始 | 主题、课前提醒及业务偏好 |
 | 关于、贡献者、开源许可 | `feature:settings` | `feature/settings` | 待开始 | 信息与跳转一致 |
 | 清除数据与退出登录 | `feature:settings` | `feature/settings` | 待开始 | 缓存、Cookie、会话完整清理 |
@@ -251,3 +251,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 天气详情 | 新增完整天气模型、`data_weather` 与 `feature_weather`，修正通用网络客户端的 ArkTS 严格模式兼容；迁移城市/IP/区划码查询、响应缓存与失败回退，并展示实况、体感、风湿度、能见度、预警、7 日预报、AQI、带伞建议、24 小时预报和生活指数 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；线上合肥查询实测返回晴、29℃、7 日/24 小时数据及生活指数；无连接设备，视觉待真机验收 |
 | 2026-07-15 | 首页天气卡 | 扩展天气仓库的首页显示偏好并在详情页提供持久化开关；`feature_home` 复用同一仓库与缓存，按开关展示位置、温度、天气、空气质量或近 6 小时降水提醒，点击进入详情，关闭或失败时不占据首页内容 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，开关返回首页刷新与卡片视觉待真机验收 |
 | 2026-07-15 | 天气定位 | 为 Entry 模块声明模糊/精确定位运行时权限，天气页请求授权后调用系统定位与逆地理编码取得城市并刷新天气；拒绝授权、定位或编码失败时自动回退到缓存区划码，再回退到 IP 定位 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，授权弹窗、定位精度及逆地理编码结果待真机验收 |
+| 2026-07-15 | 仓库资源与下载 | 新增 `feature_repository`，对齐 Android 的 6 个学院资料源、学院选择、目录栈、缓存优先与后台同步、强制刷新、文件类型/大小；文件使用 jsDelivr CDN 与 GitHub Raw 双源回退下载到应用沙箱，持久化已下载记录并支持系统打开和删除 | 6 个 GitHub 仓库根目录线上逐一实测成功（17–49 项）；OHPM 全模块依赖同步，API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，沙箱 URI 跨应用打开与大文件下载待真机验收 |

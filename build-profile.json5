@@ -284,6 +284,11 @@
       "name": "feature_weather",
       "srcPath": "./feature/weather",
       "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "feature_repository",
+      "srcPath": "./feature/repository",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
     }
   ]
 }
