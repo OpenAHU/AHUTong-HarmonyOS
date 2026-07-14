@@ -50,7 +50,7 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`data_payment`、`data_portal`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom`、`feature_payment`、`feature_portal`、`feature_tools` HAR
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`data_payment`、`data_portal`、`data_weather`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom`、`feature_payment`、`feature_portal`、`feature_tools`、`feature_weather` HAR
 - 当前实现：M1-M3 基础架构已完成；M4 已完成协议门、登录 UI、门户/教务联合登录、安全凭据冷启动恢复、业务请求失效重登及个人学期初始化，仍待真实账号真机验收；M5 已开始迁移教务业务数据链路
 
 ## 3. 架构映射
@@ -150,7 +150,7 @@ entry (HAP / composition root)
 | 浴室开放信息 | `feature:home` | `feature/home` | 待开始 | 开放状态及异常降级 |
 | 失物招领 | `feature:portal` + `data:portal` | 对应同名域 | 已完成 | 双状态列表、缓存、刷新、分页、详情、发布/删除、本人帖子管理、全字段搜索、校区/类别筛选、结果计数和多图全屏浏览均已迁移；API 24 Debug HAP 构建通过，无真实账号与连接设备，接口、图片加载和视觉待运行验收 |
 | 校园电话本 | `feature:tools` | `feature/tools` | 已完成 | 已迁移九类、全部 2025/2026 更新内置号码、磬苑/龙河标识、跨目录名称/号码搜索、单号码直接拨号和双号码校区选择；使用系统隐式拨号器，不申请直接通话权限；API 24 Debug HAP 构建通过，待真机验证拨号器拉起 |
-| 天气 | `feature:weather` | `feature/weather` | 待开始 | 当前天气、缓存、失败降级 |
+| 天气 | `feature:weather` | `data/weather` + `feature/weather` | 进行中 | 已迁移 uapis.cn 完整模型、城市/IP/区划码查询、响应与区划码缓存、失败回退，以及实况、预警、7 日/24 小时预报、AQI、带伞建议和生活指数详情；线上合肥接口字段实测通过，API 24 Debug HAP 构建通过；HarmonyOS 定位及首页天气卡待补 |
 
 ### 6.4 工具与系统能力
 
@@ -248,3 +248,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 失物招领浏览增强 | 对齐 Android 的浏览交互，新增跨描述、联系人、电话、校区、类别、发布者、补充说明和时间的全字段搜索，校区/类别横向筛选、结果计数、无匹配状态，以及详情图片点击后的多图全屏查看与前后切换 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，远程图片加载、全屏视觉和触控待真机验收 |
 | 2026-07-15 | 工具页 | 新增 `feature_tools` HAR 并替换主导航工具 Tab 占位内容；复用首页工具注册含义与用户 8 槽位状态，过滤已固定入口，以自适应双列卡片呈现剩余工具并回调统一业务路由 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，网格视觉与首页编辑后刷新待真机验收 |
 | 2026-07-15 | 校园电话本 | 将 Android `TelDirectoryViewModel` 的九类静态目录和全部号码迁入 `feature_tools`，保留磬苑/龙河差异；实现分类切换、跨目录名称/号码搜索、空结果、单号码拨号与双号码校区选择，并从首页和工具页接入统一路由 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；采用 `ohos.want.action.dial` 隐式拨号且不申请直接通话权限，无连接设备，系统拨号器拉起待真机验收 |
+| 2026-07-15 | 天气详情 | 新增完整天气模型、`data_weather` 与 `feature_weather`，修正通用网络客户端的 ArkTS 严格模式兼容；迁移城市/IP/区划码查询、响应缓存与失败回退，并展示实况、体感、风湿度、能见度、预警、7 日预报、AQI、带伞建议、24 小时预报和生活指数 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；线上合肥查询实测返回晴、29℃、7 日/24 小时数据及生活指数；无连接设备，视觉待真机验收 |

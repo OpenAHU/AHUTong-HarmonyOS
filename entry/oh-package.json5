@@ -18,6 +18,7 @@
     "feature_payment": "file:../feature/payment",
     "feature_portal": "file:../feature/portal",
     "feature_tools": "file:../feature/tools",
+    "feature_weather": "file:../feature/weather",
     "core_designsystem": "file:../core/designsystem",
     "core_datastore": "file:../core/datastore",
     "core_network": "file:../core/network",

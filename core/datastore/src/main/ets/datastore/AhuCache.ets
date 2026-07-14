@@ -1,4 +1,4 @@
-import { CampusItem, Course, Exam, Grade, LostFoundItem, LostFoundType, User } from 'core_model';
+import { CampusItem, Course, Exam, Grade, LostFoundItem, LostFoundType, User, WeatherResponse } from 'core_model';
 import { AhuPreferences, PreferencesKeys } from './AhuPreferences';
 
 export class AhuCache {
@@ -200,6 +200,30 @@ export class AhuCache {
     const raw = AhuPreferences.getString(PreferencesKeys.LOST_FOUND_TYPES);
     if (raw.length === 0) return [];
     try { return JSON.parse(raw) as Array<LostFoundType>; } catch (_) { return []; }
+  }
+
+  static saveWeather(weather: WeatherResponse): void {
+    AhuPreferences.putString(PreferencesKeys.WEATHER_CACHE, JSON.stringify(weather));
+    if (weather.adcode) AhuPreferences.putString(PreferencesKeys.WEATHER_ADCODE, weather.adcode);
+  }
+
+  static getWeather(): WeatherResponse | undefined {
+    const raw = AhuPreferences.getString(PreferencesKeys.WEATHER_CACHE);
+    if (raw.length === 0) return undefined;
+    try { return JSON.parse(raw) as WeatherResponse; } catch (_) { return undefined; }
+  }
+
+  static getWeatherAdcode(): string | undefined {
+    const value = AhuPreferences.getString(PreferencesKeys.WEATHER_ADCODE);
+    return value.length > 0 ? value : undefined;
+  }
+
+  static saveWeatherShowOnHome(enabled: boolean): void {
+    AhuPreferences.putBoolean(PreferencesKeys.WEATHER_SHOW_ON_HOME, enabled);
+  }
+
+  static getWeatherShowOnHome(): boolean {
+    return AhuPreferences.getBoolean(PreferencesKeys.WEATHER_SHOW_ON_HOME);
   }
 
   static logout(): void {

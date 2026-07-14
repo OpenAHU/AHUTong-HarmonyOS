@@ -22,6 +22,9 @@ export class PreferencesKeys {
   static readonly LOST_FOUND_LIST: string = 'lost_found_list';
   static readonly LOST_FOUND_CAMPUSES: string = 'lost_found_campuses';
   static readonly LOST_FOUND_TYPES: string = 'lost_found_types';
+  static readonly WEATHER_CACHE: string = 'weather_cache';
+  static readonly WEATHER_ADCODE: string = 'weather_adcode';
+  static readonly WEATHER_SHOW_ON_HOME: string = 'weather_show_on_home';
 }
 
 export class AhuPreferences {

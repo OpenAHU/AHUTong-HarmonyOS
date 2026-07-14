@@ -36,3 +36,4 @@ export type {
   LostFoundUser
 } from './src/main/ets/model/PortalModels';
 export type { ApkUpdateInfo, LicenseInfo } from './src/main/ets/model/CommonModels';
+export type { AirPollutants, ForecastDay, HourlyForecast, LifeIndexItem, LifeIndices, WeatherAlert, WeatherResponse } from './src/main/ets/model/WeatherModels';

@@ -28,11 +28,8 @@ export class CookieStore {
   private cookies: Map<string, string> = new Map();
 
   private host(url: string): string {
-    try {
-      return new URL(url).hostname;
-    } catch (_) {
-      return url;
-    }
+    const match = /^https?:\/\/([^/]+)/i.exec(url);
+    return match && match.length > 1 ? match[1] : url;
   }
 
   get(url: string): string | undefined {
@@ -71,7 +68,10 @@ export class AhuHttpClient {
   }
 
   private requestHeaders(request: AhuHttpRequest): Record<string, string> {
-    const headers: Record<string, string> = request.headers ? { ...request.headers } : {};
+    const headers: Record<string, string> = {};
+    if (request.headers) {
+      Object.keys(request.headers).forEach((key: string) => headers[key] = request.headers?.[key] ?? '');
+    }
     if (!headers['Accept']) {
       headers['Accept'] = 'application/json';
     }
