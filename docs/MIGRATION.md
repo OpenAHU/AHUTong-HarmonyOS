@@ -4,7 +4,7 @@
 >
 > 当前分支：`migration/android-to-harmonyos`
 >
-> 当前阶段：M4 首次启动与认证（进行中）
+> 当前阶段：M5 主页与课表（进行中）
 
 本文档是安大通 HarmonyOS 迁移的唯一进度台账。每完成一个可独立验收的功能，必须在同一个提交中更新对应条目、验证结果和变更记录，然后将提交推送到远程迁移分支。
 
@@ -51,7 +51,7 @@
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
 - 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`feature_login`、`feature_schedule` HAR
-- 当前实现：M1-M3 基础架构已完成；M4 已完成协议门、登录 UI、门户/教务联合登录、安全凭据冷启动恢复及个人学期初始化，仍待真实账号真机验收和业务请求会话失效重登
+- 当前实现：M1-M3 基础架构已完成；M4 已完成协议门、登录 UI、门户/教务联合登录、安全凭据冷启动恢复、业务请求失效重登及个人学期初始化，仍待真实账号真机验收；M5 已开始迁移教务业务数据链路
 
 ## 3. 架构映射
 
@@ -102,7 +102,7 @@ entry (HAP / composition root)
 | M2 | Design System、主题、通用页面骨架与导航 | 已完成 |
 | M3 | Model、Datastore、Network、SDK 基础能力 | 已完成 |
 | M4 | 协议确认、首次启动、登录与会话管理 | 进行中 |
-| M5 | 主页、课表、课程详情与周次配置 | 待开始 |
+| M5 | 主页、课表、课程详情与周次配置 | 进行中 |
 | M6 | 成绩、考试、校历与空闲教室 | 待开始 |
 | M7 | 校园卡、电费、浴室与余额充值 | 待开始 |
 | M8 | 工具、电话本、失物招领、天气与仓库资源 | 待开始 |
@@ -123,7 +123,7 @@ entry (HAP / composition root)
 | 四入口主导航 | App / BottomNavBar | `entry` | 已完成 | 主页、课表、工具、设置 Tabs；API 24 Debug HAP 构建通过；无连接设备，待补真机视觉验证 |
 | 启动与协议确认 | `feature:login` / Splash | `feature/login` | 已完成 | 免责声明、隐私政策、商业合作依次确认并分别持久化；拒绝即终止 UIAbility；API 24 Debug HAP 构建通过，无连接设备，待补真机视觉与重启持久化验证 |
 | 统一身份认证登录 | `feature:login` + `data:auth` | `feature/login` + `data/auth` | 进行中 | 已迁移 UI、状态、Repository、门户验证码/OCR/5 次重试，以及教务 CAS `lt`、设备校验、兼容加密、登录和主页验证；固定向量、无凭据端点及 API 24 构建通过；尚缺真实账号真机端到端验证，故未标记完成 |
-| 登录态恢复与失效重登 | `core:common` + `data:auth` | `core/common` + `data/auth` | 进行中 | 已用 Asset Store（首次解锁后可访问、禁止同步）安全保存凭据，冷启动显示恢复状态并重建门户/CAS 内存 Cookie，失败清除用户并回登录页；API 24 构建通过；业务请求遇到会话过期后的自动重登待接入 |
+| 登录态恢复与失效重登 | `core:common` + `data:auth` | `core/common` + `data/auth` | 进行中 | 已用 Asset Store 安全保存凭据并支持冷启动恢复；教务业务请求统一携带内存 Cookie，识别 401/403 或 CAS 登录页后通过认证仓库重建会话并仅重试一次；API 24 构建通过，因无真实账号和设备尚未完成过期会话运行验收 |
 | 个人与学期初始化 | Setup / Info | `feature/login` + `data/schedule` | 已完成 | 登录后缺少配置时显示学年、学期（1/2/3）、当前周初始化页；校验输入、保存用户隔离学年/学期并按当前周反推开学周一；API 24 构建通过，无设备待补交互验证；设置页重新配置入口将在 M9 接入 |
 
 ### 6.2 首页与教学服务
@@ -225,3 +225,4 @@ entry (HAP / composition root)
 | 2026-07-14 | 教务 CAS 认证 | 忠实移植 Android `DES.strEnc` 兼容算法，新增多 Cookie 内存会话、CAS `lt` 提取、设备校验、登录重定向和教务主页登录态验证，并与门户登录串联 | ArkTS 加密结果与 Android 固定向量完全一致；匿名访问最终到达 CAS 页面、返回 45 字符 `lt` 及 3 个 Cookie；API 24 Debug HAP 构建成功且无 ArkTS 警告；缺真实账号真机验证 |
 | 2026-07-14 | 安全凭据与冷启动恢复 | 新增 Asset Store 凭据封装；登录成功后安全保存账号密码，冷启动用凭据重建门户/CAS Cookie，会话恢复失败时清除缓存用户并回到登录页，退出时删除安全资产 | API 24 Debug HAP 构建成功且无 ArkTS 警告；Asset Store 与冷启动流程因无设备未做运行验证，业务请求会话过期自动重登待后续仓库接入 |
 | 2026-07-14 | 个人与学期初始化 | 迁移 Android `Info` 页面，新增学年、1/2/3 学期、当前周输入与校验；按用户保存标准学期键，并依据当前日期和周次反推、保存开学周一 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，未执行输入法和视觉验证 |
+| 2026-07-14 | 教务会话失效重登 | 新增教务业务请求客户端，统一携带内存 Cookie，识别 HTTP 认证错误及 CAS 登录页；会话失效时从 Asset Store 凭据重建门户/教务会话并限次重试 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，失效重登待运行验证 |

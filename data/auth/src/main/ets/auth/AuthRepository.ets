@@ -2,7 +2,12 @@ import { AppErrorKind, AppResult, AppResults } from 'core_common';
 import { AhuCache, SecureCredentialStore } from 'core_datastore';
 import { User } from 'core_model';
 import { CampusNativeGateway } from 'core_sdk_api';
-import { CrawlerAuthenticator, PortalCrawlerAuthenticator } from 'data_crawler';
+import {
+  AcademicReloginHandler,
+  CrawlerAuthenticator,
+  CrawlerSession,
+  PortalCrawlerAuthenticator
+} from 'data_crawler';
 
 export interface AuthRepository {
   login(username: string, password: string): Promise<AppResult<User>>;
@@ -89,6 +94,9 @@ export class AuthRepositoryProvider {
 
   static initialize(gateway: CampusNativeGateway): void {
     AuthRepositoryProvider.repository = new DefaultAuthRepository(gateway);
+    CrawlerSession.setAcademicReloginHandler(
+      new RepositoryReloginHandler(AuthRepositoryProvider.repository)
+    );
   }
 
   static get(): AuthRepository {
@@ -96,5 +104,18 @@ export class AuthRepositoryProvider {
       throw new Error('AuthRepositoryProvider is not initialized');
     }
     return AuthRepositoryProvider.repository;
+  }
+}
+
+class RepositoryReloginHandler implements AcademicReloginHandler {
+  private readonly repository: AuthRepository;
+
+  constructor(repository: AuthRepository) {
+    this.repository = repository;
+  }
+
+  async relogin(): Promise<boolean> {
+    const result = await this.repository.restoreSession();
+    return result.isSuccess;
   }
 }

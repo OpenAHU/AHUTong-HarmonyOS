@@ -45,9 +45,25 @@ export class MemoryCookieJar {
 export class CrawlerSession {
   static readonly portalCookies: MemoryCookieJar = new MemoryCookieJar();
   static readonly academicCookies: MemoryCookieJar = new MemoryCookieJar();
+  private static academicReloginHandler?: AcademicReloginHandler;
+
+  static setAcademicReloginHandler(handler: AcademicReloginHandler): void {
+    CrawlerSession.academicReloginHandler = handler;
+  }
+
+  static async reauthenticateAcademic(): Promise<boolean> {
+    if (!CrawlerSession.academicReloginHandler) {
+      return false;
+    }
+    return CrawlerSession.academicReloginHandler.relogin();
+  }
 
   static clearAll(): void {
     CrawlerSession.portalCookies.clear();
     CrawlerSession.academicCookies.clear();
   }
+}
+
+export interface AcademicReloginHandler {
+  relogin(): Promise<boolean>;
 }
