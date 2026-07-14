@@ -106,7 +106,10 @@ export struct AppRoot {
   }
 
   private onLaunchRouteChanged(): void {
-    if (this.launchRoute === 'schedule') this.selectedIndex = 1;
+    if (this.launchRoute !== 'schedule') return;
+    this.activePage = '';
+    this.selectedIndex = 1;
+    this.launchRoute = '';
   }
 
   private onLogoutRevision(): void { this.setupComplete = false; this.activePage = ''; }
