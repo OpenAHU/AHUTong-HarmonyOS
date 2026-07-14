@@ -1,0 +1,9 @@
+{
+  "string": [
+    { "name": "schedule_setup_title", "value": "填写信息" },
+    { "name": "schedule_school_year", "value": "学年" },
+    { "name": "schedule_school_term", "value": "学期" },
+    { "name": "schedule_current_week", "value": "当前周" },
+    { "name": "schedule_setup_confirm", "value": "确定" }
+  ]
+}

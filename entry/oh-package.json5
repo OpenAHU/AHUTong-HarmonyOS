@@ -8,6 +8,7 @@
   "dependencies": {
     "feature_login": "file:../feature/login",
     "data_auth": "file:../data/auth",
+    "data_schedule": "file:../data/schedule",
     "feature_schedule": "file:../feature/schedule",
     "core_designsystem": "file:../core/designsystem",
     "core_datastore": "file:../core/datastore",

@@ -8,6 +8,8 @@ import {
 import { SymbolGlyphModifier } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { AppLaunchGate } from 'feature_login';
+import { ScheduleSetupPage } from 'feature_schedule';
+import { ScheduleSetupRepository } from 'data_schedule';
 
 @Component
 struct MigrationPage {
@@ -39,6 +41,12 @@ struct MigrationPage {
 @Component
 struct Index {
   @State selectedIndex: number = 0;
+  @State setupComplete: boolean = false;
+  private readonly scheduleSetupRepository: ScheduleSetupRepository = new ScheduleSetupRepository();
+
+  aboutToAppear(): void {
+    this.setupComplete = this.scheduleSetupRepository.hasCompletedSetup();
+  }
 
   private terminateApplication(): void {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
@@ -109,11 +117,24 @@ struct Index {
     .backgroundColor(AhuColors.pageBackground);
   }
 
+  @Builder
+  private postLoginContent() {
+    if (this.setupComplete) {
+      this.mainContent();
+    } else {
+      ScheduleSetupPage({
+        onSetup: () => {
+          this.setupComplete = true;
+        }
+      });
+    }
+  }
+
   build() {
     Stack() {
       AppLaunchGate({
         rejectAction: () => this.terminateApplication(),
-        content: this.mainContent
+        content: this.postLoginContent
       });
     }
     .width('100%')

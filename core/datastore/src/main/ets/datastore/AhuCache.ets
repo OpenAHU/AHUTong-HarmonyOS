@@ -81,6 +81,20 @@ export class AhuCache {
     return value.length > 0 ? value : undefined;
   }
 
+  static saveSchoolTermStartTime(schoolYear: string, schoolTerm: string, startTime: string): void {
+    AhuPreferences.putString(
+      AhuCache.userKey(`${PreferencesKeys.SCHOOL_TERM_START_TIME}:${schoolYear}:${schoolTerm}`),
+      startTime
+    );
+  }
+
+  static getSchoolTermStartTime(schoolYear: string, schoolTerm: string): string | undefined {
+    const value = AhuPreferences.getString(
+      AhuCache.userKey(`${PreferencesKeys.SCHOOL_TERM_START_TIME}:${schoolYear}:${schoolTerm}`)
+    );
+    return value.length > 0 ? value : undefined;
+  }
+
   static saveSchedule(schoolYear: string, schoolTerm: string, schedule: Array<Course>): void {
     AhuPreferences.putString(AhuCache.userKey(`${schoolYear}-${schoolTerm}.schedule`), JSON.stringify(schedule));
   }
