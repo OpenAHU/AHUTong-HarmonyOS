@@ -30,6 +30,7 @@ export struct ElectricityRechargePage {
   @State result: string = '';
   @State showConfirm: boolean = false;
   @State history: Array<ElectricityHistory> = [];
+  @State showHistoryOptions: boolean = false;
   @State infoClickCount: number = 0;
   @State infoMessage: string = '';
   @State showResetRecord: boolean = false;
@@ -38,6 +39,7 @@ export struct ElectricityRechargePage {
   aboutToAppear(): void {
     BackPressDispatcher.register('electricity_recharge_page', () => this.handleBackPress());
     this.history = this.readHistory();
+    this.showHistoryOptions = this.history.length === 2;
     if (this.history.length === 1) this.restore(this.history[0]); else this.loadCampuses();
   }
   aboutToDisappear(): void { BackPressDispatcher.unregister('electricity_recharge_page'); }
@@ -97,6 +99,11 @@ export struct ElectricityRechargePage {
       await this.selectRoom(item.selection.room);
     } catch (error) { this.error = (error as Error).message ?? '历史房间恢复失败'; }
     finally { this.loading = false; }
+  }
+
+  private selectHistory(item: ElectricityHistory): void {
+    this.showHistoryOptions = false;
+    this.restore(item);
   }
 
   private async loadCampuses(): Promise<void> {
@@ -225,14 +232,14 @@ export struct ElectricityRechargePage {
         AhuInsetCard() {
           Column({ space: 12 }) {
             Text('选择宿舍').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold);
-            if (this.history.length > 0) {
+            if (this.showHistoryOptions && this.history.length === 2) {
               Column({ space: 7 }) {
                 Text('最近房间').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary);
                 Flex({ wrap: FlexWrap.Wrap }) {
                   ForEach(this.history, (item: ElectricityHistory) => {
                     Button(item.label, { type: ButtonType.Capsule }).margin({ right: 8, bottom: 6 })
                       .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.chipUnselected)
-                      .onClick(() => this.restore(item));
+                      .onClick(() => this.selectHistory(item));
                   }, (item: ElectricityHistory) => `${item.updatedAt}`);
                 }.width('100%');
               }.width('100%').alignItems(HorizontalAlign.Start);
