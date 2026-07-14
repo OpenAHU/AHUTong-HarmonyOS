@@ -9,6 +9,26 @@
       "value": "拒绝"
     },
     {
+      "name": "login_action",
+      "value": "认证"
+    },
+    {
+      "name": "login_title",
+      "value": "登录"
+    },
+    {
+      "name": "login_username_hint",
+      "value": "请输入您的学号"
+    },
+    {
+      "name": "login_password_hint",
+      "value": "请输入您的智慧安大密码"
+    },
+    {
+      "name": "login_logging_in",
+      "value": "登录中"
+    },
+    {
       "name": "login_agreement_title",
       "value": "温馨提示与免责声明"
     },

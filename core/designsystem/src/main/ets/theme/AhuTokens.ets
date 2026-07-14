@@ -10,6 +10,7 @@ export class AhuColors {
   static readonly chipSelected: Resource = $r('app.color.ahu_chip_selected');
   static readonly chipUnselected: Resource = $r('app.color.ahu_chip_unselected');
   static readonly divider: Resource = $r('app.color.ahu_divider');
+  static readonly error: Resource = $r('app.color.ahu_error');
 }
 
 export class AhuDimens {

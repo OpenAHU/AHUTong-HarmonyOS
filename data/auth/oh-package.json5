@@ -5,6 +5,9 @@
   "main": "Index.ets",
   "license": "GPL-3.0-only",
   "dependencies": {
-    "core_datastore": "file:../../core/datastore"
+    "core_common": "file:../../core/common",
+    "core_datastore": "file:../../core/datastore",
+    "core_model": "file:../../core/model",
+    "core_sdk_api": "file:../../core/sdk-api"
   }
 }

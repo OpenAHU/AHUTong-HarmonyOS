@@ -7,7 +7,7 @@ import {
 } from 'core_designsystem';
 import { SymbolGlyphModifier } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
-import { LaunchConsentGate } from 'feature_login';
+import { AppLaunchGate } from 'feature_login';
 
 @Component
 struct MigrationPage {
@@ -111,7 +111,7 @@ struct Index {
 
   build() {
     Stack() {
-      LaunchConsentGate({
+      AppLaunchGate({
         rejectAction: () => this.terminateApplication(),
         content: this.mainContent
       });

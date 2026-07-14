@@ -10,6 +10,7 @@
     { "name": "ahu_on_surface_secondary", "value": "#99F6F7F8" },
     { "name": "ahu_chip_selected", "value": "#FF315C68" },
     { "name": "ahu_chip_unselected", "value": "#FF2B2D30" },
-    { "name": "ahu_divider", "value": "#24F6F7F8" }
+    { "name": "ahu_divider", "value": "#24F6F7F8" },
+    { "name": "ahu_error", "value": "#FFFFB4AB" }
   ]
 }
