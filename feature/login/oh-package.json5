@@ -1,0 +1,12 @@
+{
+  "name": "feature_login",
+  "version": "1.0.0",
+  "description": "First-launch and authentication UI for AHUTong.",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "core_datastore": "file:../../core/datastore",
+    "core_designsystem": "file:../../core/designsystem",
+    "data_auth": "file:../../data/auth"
+  }
+}

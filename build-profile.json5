@@ -145,6 +145,30 @@
           ]
         }
       ]
+    },
+    {
+      "name": "data_auth",
+      "srcPath": "./data/auth",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "feature_login",
+      "srcPath": "./feature/login",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
     }
   ]
 }

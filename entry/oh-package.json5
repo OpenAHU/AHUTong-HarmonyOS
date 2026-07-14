@@ -6,6 +6,7 @@
   "author": "",
   "license": "",
   "dependencies": {
+    "feature_login": "file:../feature/login",
     "feature_schedule": "file:../feature/schedule",
     "core_designsystem": "file:../core/designsystem",
     "core_datastore": "file:../core/datastore",

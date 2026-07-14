@@ -1,0 +1,10 @@
+{
+  "name": "data_auth",
+  "version": "1.0.0",
+  "description": "Authentication session data for AHUTong.",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "core_datastore": "file:../../core/datastore"
+  }
+}

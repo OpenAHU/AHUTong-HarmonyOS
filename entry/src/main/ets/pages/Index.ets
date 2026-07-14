@@ -6,6 +6,8 @@ import {
   AhuTypography
 } from 'core_designsystem';
 import { SymbolGlyphModifier } from '@kit.ArkUI';
+import { common } from '@kit.AbilityKit';
+import { LaunchConsentGate } from 'feature_login';
 
 @Component
 struct MigrationPage {
@@ -38,7 +40,16 @@ struct MigrationPage {
 struct Index {
   @State selectedIndex: number = 0;
 
-  build() {
+  private terminateApplication(): void {
+    const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    try {
+      context.terminateSelf();
+    } catch (_) {
+    }
+  }
+
+  @Builder
+  private mainContent() {
     Tabs({ barPosition: BarPosition.End, index: this.selectedIndex }) {
       TabContent() {
         MigrationPage({
@@ -96,5 +107,16 @@ struct Index {
       this.selectedIndex = index;
     })
     .backgroundColor(AhuColors.pageBackground);
+  }
+
+  build() {
+    Stack() {
+      LaunchConsentGate({
+        rejectAction: () => this.terminateApplication(),
+        content: this.mainContent
+      });
+    }
+    .width('100%')
+    .height('100%');
   }
 }

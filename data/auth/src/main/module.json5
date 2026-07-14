@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "data_auth",
+    "type": "har",
+    "deviceTypes": [
+      "phone"
+    ]
+  }
+}
