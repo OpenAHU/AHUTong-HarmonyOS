@@ -16,11 +16,13 @@ import { WeatherPage } from 'feature_weather';
 import { RepositoryPage } from 'feature_repository';
 import { SettingsPage } from 'feature_settings';
 import { CourseReminderManager } from 'feature_notification';
+import { ScheduleWidgetManager } from 'feature_widget';
 import { AppUpdateDialog, AppUpdateManager, AppUpdateStatus } from 'feature_update';
 import type { AppUpdateInfo } from 'feature_update';
 import { GrayReleaseManager } from 'data_crawler';
 import { AppMaintenance } from '../app/AppMaintenance';
 import { BackPressDispatcher } from 'core_common';
+import { AhuCache } from 'core_datastore';
 
 @Component
 export struct AppRoot {
@@ -44,7 +46,14 @@ export struct AppRoot {
 
   private async logout(clearAll: boolean): Promise<void> {
     const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+    const widgetIds = AhuCache.getScheduleWidgetIds();
     await AppMaintenance.logout(context, clearAll);
+    await CourseReminderManager.cancelCourseReminders();
+    await ScheduleWidgetManager.updateAll(widgetIds);
+    if (clearAll) {
+      AppStorage.setOrCreate('ahu_theme_color', '');
+      AppStorage.setOrCreate('ahu_liquid_glass', true);
+    }
     this.setupComplete = false;
     const revision = AppStorage.get<number>('ahu_logout_revision') ?? 0;
     AppStorage.setOrCreate('ahu_logout_revision', revision + 1);

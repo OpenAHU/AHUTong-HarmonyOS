@@ -78,8 +78,7 @@ export class ScheduleWidgetDataBuilder {
 }
 
 export class ScheduleWidgetManager {
-  static async updateAll(): Promise<void> {
-    const ids = AhuCache.getScheduleWidgetIds();
+  static async updateAll(ids: Array<string> = AhuCache.getScheduleWidgetIds()): Promise<void> {
     const data = ScheduleWidgetDataBuilder.bindingData();
     for (let index = 0; index < ids.length; index++) {
       try { await formProvider.updateForm(ids[index], data); } catch (_) {}

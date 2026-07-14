@@ -13,7 +13,7 @@ export class CourseReminderManager {
   static async setEnabled(context: common.UIAbilityContext, enabled: boolean): Promise<boolean> {
     if (!enabled) {
       AhuCache.setCourseReminderEnabled(false);
-      try { await reminderAgentManager.cancelAllReminders(); } catch (_) {}
+      await CourseReminderManager.cancelCourseReminders();
       return true;
     }
     try {
@@ -28,7 +28,7 @@ export class CourseReminderManager {
   }
 
   static async reschedule(): Promise<number> {
-    try { await reminderAgentManager.cancelAllReminders(); } catch (_) {}
+    await CourseReminderManager.cancelCourseReminders();
     if (!AhuCache.courseReminderEnabled()) return 0;
     const year = AhuCache.getSchoolYear();
     const rawTerm = AhuCache.getSchoolTerm();
@@ -70,6 +70,18 @@ export class CourseReminderManager {
       }
     }
     return count;
+  }
+
+  static async cancelCourseReminders(): Promise<void> {
+    try {
+      const reminders = await reminderAgentManager.getAllValidReminders();
+      for (let index = 0; index < reminders.length; index++) {
+        const reminder = reminders[index];
+        if (reminder.reminderReq.groupId !== 'ahu_course_reminder') continue;
+        try { await reminderAgentManager.cancelReminder(reminder.reminderId); } catch (_) {}
+      }
+    } catch (_) {}
+    try { await notificationManager.cancelGroup('ahu_course_reminder'); } catch (_) {}
   }
 
   static async scheduleDebug(context: common.UIAbilityContext, seconds: number): Promise<boolean> {
