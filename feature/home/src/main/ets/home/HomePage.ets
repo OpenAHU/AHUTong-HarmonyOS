@@ -3,6 +3,7 @@ import { AhuCache } from 'core_datastore';
 import { Course, courseLength, courseStartTime, courseWeekday } from 'core_model';
 import { ScheduleRepository, ScheduleRepositoryProvider, ScheduleSetupRepository } from 'data_schedule';
 import { LengthMetrics } from '@kit.ArkUI';
+import { CampusCardRepository, CampusCardRepositoryProvider } from 'data_campuscard';
 
 const PERIOD_START: Array<number> = [480, 530, 590, 640, 690, 840, 890, 950, 1000, 1050, 1140, 1190, 1240];
 const PERIOD_END: Array<number> = [525, 575, 635, 685, 735, 885, 935, 995, 1045, 1095, 1185, 1235, 1285];
@@ -31,11 +32,14 @@ const HOME_WIDGETS: Array<HomeWidget> = [
 export struct HomePage {
   private readonly scheduleRepository: ScheduleRepository = ScheduleRepositoryProvider.get();
   private readonly setupRepository: ScheduleSetupRepository = new ScheduleSetupRepository();
+  private readonly campusCardRepository: CampusCardRepository = CampusCardRepositoryProvider.get();
   @State courses: Array<Course> = [];
   @State isLoading: boolean = true;
   @State currentWeek: number = 1;
   @State slots: Array<string> = [];
   @State isEditing: boolean = false;
+  @State cardBalance?: number = undefined;
+  @State cardError: string = '';
   onOpenSchedule: () => void = () => {};
   onOpenWidget: (route: string) => void = (_: string) => {};
 
@@ -44,12 +48,20 @@ export struct HomePage {
     this.currentWeek = config?.currentWeek ?? 1;
     this.slots = AhuCache.getHomeWidgetSlots();
     this.load();
+    this.loadBalance(false);
   }
 
   private async load(): Promise<void> {
     const result = await this.scheduleRepository.getSchedule(false);
     this.courses = result.data ?? [];
     this.isLoading = false;
+  }
+
+  private async loadBalance(refresh: boolean): Promise<void> {
+    this.cardError = '';
+    const result = await this.campusCardRepository.getBalance(refresh);
+    if (result.isSuccess && result.data) this.cardBalance = result.data.balance;
+    else this.cardError = result.error?.message ?? '余额加载失败';
   }
 
   private todayCourses(): Array<Course> {
@@ -217,6 +229,24 @@ export struct HomePage {
   }
 
   @Builder
+  private campusCard() {
+    AhuInsetCard() {
+      Row() {
+        Column({ space: 16 }) {
+          Text('校园卡余额').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).fontColor(AhuColors.onSurface);
+          Text(this.cardBalance === undefined ? '--' : `¥ ${this.cardBalance.toFixed(2)}`)
+            .fontSize(26).fontWeight(FontWeight.Bold).fontColor(AhuColors.onSurface);
+          if (this.cardError.length > 0) Text(this.cardError).fontSize(12).fontColor(AhuColors.error).maxLines(1);
+        }.layoutWeight(1).alignItems(HorizontalAlign.Start);
+        Button('↻', { type: ButtonType.Circle }).width(40).height(40).fontSize(20)
+          .backgroundColor(AhuColors.chipUnselected).fontColor(AhuColors.onSurface).onClick(() => this.loadBalance(true));
+        Divider().vertical(true).height(80).color(AhuColors.divider).margin({ left: 12, right: 12 });
+        Text('充\n值').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).textAlign(TextAlign.Center);
+      }.width('100%').alignItems(VerticalAlign.Center);
+    }
+  }
+
+  @Builder
   private widgetGrid() {
     Grid() {
       ForEach(this.slots, (id: string, index: number) => {
@@ -322,6 +352,7 @@ export struct HomePage {
         this.editHeader();
         this.glance(this.todayCourses());
         this.todayTimeline(this.todayCourses());
+        this.campusCard();
         this.widgetGrid();
         if (this.isEditing) {
           this.widgetEditor();

@@ -8,6 +8,7 @@
     "core_datastore": "file:../../core/datastore",
     "core_designsystem": "file:../../core/designsystem",
     "core_model": "file:../../core/model",
-    "data_schedule": "file:../../data/schedule"
+    "data_schedule": "file:../../data/schedule",
+    "data_campuscard": "file:../../data/campuscard"
   }
 }

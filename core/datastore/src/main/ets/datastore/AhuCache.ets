@@ -163,6 +163,15 @@ export class AhuCache {
     try { return JSON.parse(raw) as Array<Exam>; } catch (_) { return []; }
   }
 
+  static saveCardBalance(balance: number): void {
+    AhuPreferences.putNumber(AhuCache.userKey(PreferencesKeys.CARD_BALANCE), balance);
+  }
+
+  static getCardBalance(): number | undefined {
+    const key = AhuCache.userKey(PreferencesKeys.CARD_BALANCE);
+    return AhuPreferences.contains(key) ? AhuPreferences.getNumber(key) : undefined;
+  }
+
   static logout(): void {
     AhuCache.clearCurrentUser();
   }

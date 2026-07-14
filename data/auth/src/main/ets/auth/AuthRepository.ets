@@ -94,9 +94,9 @@ export class AuthRepositoryProvider {
 
   static initialize(gateway: CampusNativeGateway): void {
     AuthRepositoryProvider.repository = new DefaultAuthRepository(gateway);
-    CrawlerSession.setAcademicReloginHandler(
-      new RepositoryReloginHandler(AuthRepositoryProvider.repository)
-    );
+    const handler = new RepositoryReloginHandler(AuthRepositoryProvider.repository);
+    CrawlerSession.setAcademicReloginHandler(handler);
+    CrawlerSession.setPortalReloginHandler(handler);
   }
 
   static get(): AuthRepository {

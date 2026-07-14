@@ -18,6 +18,7 @@ export class PreferencesKeys {
   static readonly HOME_WIDGET_SLOTS: string = 'home_widget_slots';
   static readonly GRADE_CACHE: string = 'grade_cache';
   static readonly EXAM_CACHE: string = 'exam_cache';
+  static readonly CARD_BALANCE: string = 'card_balance';
 }
 
 export class AhuPreferences {

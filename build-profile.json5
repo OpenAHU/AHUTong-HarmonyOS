@@ -237,6 +237,11 @@
       "name": "feature_classroom",
       "srcPath": "./feature/classroom",
       "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "data_campuscard",
+      "srcPath": "./data/campuscard",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
     }
   ]
 }

@@ -4,7 +4,7 @@
 >
 > 当前分支：`migration/android-to-harmonyos`
 >
-> 当前阶段：M6 教学服务（进行中）
+> 当前阶段：M7 校园生活与缴费（进行中）
 
 本文档是安大通 HarmonyOS 迁移的唯一进度台账。每完成一个可独立验收的功能，必须在同一个提交中更新对应条目、验证结果和变更记录，然后将提交推送到远程迁移分支。
 
@@ -50,7 +50,7 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom` HAR
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom` HAR
 - 当前实现：M1-M3 基础架构已完成；M4 已完成协议门、登录 UI、门户/教务联合登录、安全凭据冷启动恢复、业务请求失效重登及个人学期初始化，仍待真实账号真机验收；M5 已开始迁移教务业务数据链路
 
 ## 3. 架构映射
@@ -104,7 +104,7 @@ entry (HAP / composition root)
 | M4 | 协议确认、首次启动、登录与会话管理 | 进行中 |
 | M5 | 主页、课表、课程详情与周次配置 | 进行中 |
 | M6 | 成绩、考试、校历与空闲教室 | 进行中 |
-| M7 | 校园卡、电费、浴室与余额充值 | 待开始 |
+| M7 | 校园卡、电费、浴室与余额充值 | 进行中 |
 | M8 | 工具、电话本、失物招领、天气与仓库资源 | 待开始 |
 | M9 | 设置、关于、开源许可与数据清理 | 待开始 |
 | M10 | 通知、课前提醒、服务卡片及后台任务 | 待开始 |
@@ -143,7 +143,7 @@ entry (HAP / composition root)
 
 | 功能 | Android 来源 | HarmonyOS 目标 | 状态 | 验证/备注 |
 | --- | --- | --- | --- | --- |
-| 校园卡信息与余额 | `data:campuscard` / Home | `data/campuscard` + `feature/home` | 待开始 | 账户信息、余额、刷新 |
+| 校园卡信息与余额 | `data:campuscard` / Home | `data/campuscard` + `feature/home` | 进行中 | 新增门户业务会话客户端与失效重登，迁移 `/xzxcard/yue` 余额、用户缓存、首页余额卡与刷新/错误状态；二维码和充值待独立切片；API 24 构建通过，真实余额待设备验证 |
 | 校园卡余额充值 | `feature:payment` | `feature/payment` | 待开始 | 金额、确认、结果与重复提交 |
 | 电费充值 | `feature:payment` | `feature/payment` | 待开始 | 楼栋、房间、金额与结果 |
 | 浴室缴费 | `feature:payment` | `feature/payment` | 待开始 | 账户、金额与结果 |
@@ -235,3 +235,4 @@ entry (HAP / composition root)
 | 2026-07-14 | 考试查询 | 新增 `data_exam` / `feature_exam`，兼容新版 `tr[data-finished]` 表格与座位脚本、旧版 `studentExamInfoVms`，实现用户缓存、搜索、刷新、考试状态、地点和座位展示，并接入首页考场工具路由 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，两种线上 HTML 格式待运行验收 |
 | 2026-07-14 | 校历 | 新增 `feature_calendar`，接入 OpenAHU 校历图片，支持系统图片缓存、适应缩放、强制刷新、加载和失败重试，并接入首页校历工具路由 | API 24 Debug HAP 构建成功后记录；无连接设备，保存图库与缩放手势仍待平台验收 |
 | 2026-07-15 | 空闲教室 | 扩展教务客户端 JSON POST 与会话失效重试；新增 `feature_classroom`，迁移校区、教学楼、节次分组、今天/明天筛选、逐楼查询、结果去重排序与首页工具路由 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，接口结果及任意日期选择待运行验收 |
+| 2026-07-15 | 校园卡余额 | 新增门户业务请求客户端及 Asset Store 凭据失效重登钩子；新增 `data_campuscard`，迁移余额获取和用户缓存，并在首页恢复余额卡、刷新与错误状态 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，门户余额及过期重登待运行验收 |

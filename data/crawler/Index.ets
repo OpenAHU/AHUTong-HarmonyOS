@@ -7,3 +7,4 @@ export {
   MemoryCookieJar
 } from './src/main/ets/crawler/CrawlerSession';
 export { AcademicCrawlerClient } from './src/main/ets/crawler/AcademicCrawlerClient';
+export { PortalCrawlerClient } from './src/main/ets/crawler/PortalCrawlerClient';
