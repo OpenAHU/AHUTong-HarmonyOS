@@ -8,7 +8,27 @@ export class LostFoundRepository {
 
   currentUserId(): string { return AhuCache.getCurrentUser()?.xh ?? ''; }
 
+  private mockFailure<T>(): AppResult<T> | undefined {
+    if (!AhuCache.getMockData()) return undefined;
+    if (AhuCache.getMockScenario() === 'network_error')
+      return AppResults.failure<T>(AppErrorKind.HTTP, 'Mock 场景：接口返回 500', 500);
+    if (AhuCache.getMockScenario() === 'expired_login')
+      return AppResults.failure<T>(AppErrorKind.AUTHENTICATION, 'Mock 场景：登录状态已过期', 401);
+    return undefined;
+  }
+
+  private mockPage(page: number, pageSize: number, state: number): LostFoundResponse {
+    const all = AhuCache.getLostFoundList(state);
+    const start = Math.max(0, (page - 1) * pageSize);
+    const list = all.slice(start, start + pageSize);
+    return { code: 0, msg: 'mock', object: { pageNum: page, pageSize: pageSize, size: list.length,
+      startRow: list.length > 0 ? start + 1 : 0, endRow: start + list.length, total: all.length,
+      pages: Math.max(1, Math.ceil(all.length / pageSize)), list: list } };
+  }
+
   async getList(page: number, pageSize: number, state: number): Promise<AppResult<LostFoundResponse>> {
+    const failure = this.mockFailure<LostFoundResponse>(); if (failure) return failure;
+    if (AhuCache.getMockData()) return AppResults.success<LostFoundResponse>(this.mockPage(page, pageSize, state));
     const url = `https://adwmh.ahu.edu.cn/lostfound/all?pageNo=${page}&pageSize=${pageSize}&state=${state}`;
     const result = await this.client.getJson<LostFoundResponse>(url);
     if (result.isSuccess && result.data) {
@@ -28,6 +48,11 @@ export class LostFoundRepository {
   }
 
   async getCampuses(): Promise<AppResult<Array<CampusItem>>> {
+    const failure = this.mockFailure<Array<CampusItem>>(); if (failure) return failure;
+    if (AhuCache.getMockData()) return AppResults.success<Array<CampusItem>>([
+      { id: '1', campusName: '磬苑校区', campusOrder: 1, createTime: '', createUser: 'mock' },
+      { id: '2', campusName: '龙河校区', campusOrder: 2, createTime: '', createUser: 'mock' }
+    ]);
     const result = await this.client.getJson<PortalListResponse<CampusItem>>('https://adwmh.ahu.edu.cn/lostfound/campus/all');
     if (result.isSuccess && result.data && result.data.code === 0) {
       AhuCache.saveLostFoundCampuses(result.data.object);
@@ -40,6 +65,12 @@ export class LostFoundRepository {
   }
 
   async getTypes(): Promise<AppResult<Array<LostFoundType>>> {
+    const failure = this.mockFailure<Array<LostFoundType>>(); if (failure) return failure;
+    if (AhuCache.getMockData()) return AppResults.success<Array<LostFoundType>>([
+      { typeId: '1', typeName: '其他', typeState: '1' },
+      { typeId: '2', typeName: '校园卡', typeState: '1' },
+      { typeId: '3', typeName: '电子产品', typeState: '1' }
+    ]);
     const result = await this.client.getJson<PortalListResponse<LostFoundType>>('https://adwmh.ahu.edu.cn/lostfound/type/all');
     if (result.isSuccess && result.data && result.data.code === 0) {
       AhuCache.saveLostFoundTypes(result.data.object);
@@ -52,6 +83,17 @@ export class LostFoundRepository {
   }
 
   async publish(request: LostFoundPublishRequest): Promise<AppResult<boolean>> {
+    const failure = this.mockFailure<boolean>(); if (failure) return failure;
+    if (AhuCache.getMockData()) {
+      const state = Number.parseInt(request.state, 10);
+      const item: LostFoundItem = { id: `mock-published-${Date.now()}`, title: request.title,
+        phone: request.phone, linkman: request.linkman, state: state, typeid: request.typeid,
+        campusid: request.campusid, num1: request.num1, campusName: request.campusid === '2' ? '龙河校区' : '磬苑校区',
+        createtime: new Date().toISOString(), imgs: [], pubuser: { idNumber: this.currentUserId(), userName: 'Mock 同学' },
+        lostType: { typeId: request.typeid, typeName: 'Mock 分类', typeState: '1' } };
+      AhuCache.saveLostFoundList(state, [item].concat(AhuCache.getLostFoundList(state)));
+      return AppResults.success<boolean>(true);
+    }
     const result = await this.client.postJson<PortalActionResponse>('https://adwmh.ahu.edu.cn/lostfound/saveupdate',
       JSON.stringify(request));
     if (result.isSuccess && result.data && result.data.code === 0) return AppResults.success<boolean>(true);
@@ -60,6 +102,12 @@ export class LostFoundRepository {
   }
 
   async delete(id: string): Promise<AppResult<boolean>> {
+    const failure = this.mockFailure<boolean>(); if (failure) return failure;
+    if (AhuCache.getMockData()) {
+      AhuCache.saveLostFoundList(1, AhuCache.getLostFoundList(1).filter((item: LostFoundItem) => item.id !== id));
+      AhuCache.saveLostFoundList(2, AhuCache.getLostFoundList(2).filter((item: LostFoundItem) => item.id !== id));
+      return AppResults.success<boolean>(true);
+    }
     const result = await this.client.postForm<PortalActionResponse>('https://adwmh.ahu.edu.cn/lostfound/delete',
       `id=${encodeURIComponent(id)}`);
     if (result.isSuccess && result.data && result.data.code === 0) {
