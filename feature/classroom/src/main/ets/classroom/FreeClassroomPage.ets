@@ -21,7 +21,8 @@ export struct FreeClassroomPage {
   @State buildings: Array<Building> = [];
   @State selectedBuildings: Array<number> = [];
   @State selectedUnits: Array<number> = [];
-  @State dateOffset: number = 0;
+  @State startDate: string = '';
+  @State endDate: string = '';
   @State rooms: Array<FreeRoom> = [];
   @State isLoadingBuildings: boolean = true;
   @State isSearching: boolean = false;
@@ -29,7 +30,10 @@ export struct FreeClassroomPage {
   @State filtersExpanded: boolean = true;
   onBack: () => void = () => {};
 
-  aboutToAppear(): void { this.loadBuildings(); }
+  aboutToAppear(): void {
+    const today = this.formatDate(new Date());
+    this.startDate = today; this.endDate = today; this.loadBuildings();
+  }
 
   private async loadBuildings(): Promise<void> {
     this.isLoadingBuildings = true; this.errorMessage = ''; this.selectedBuildings = []; this.rooms = [];
@@ -57,9 +61,29 @@ export struct FreeClassroomPage {
       ? this.selectedUnits.filter((unit: number): boolean => !range.includes(unit))
       : Array.from(new Set([...this.selectedUnits, ...range])).sort((a: number, b: number): number => a - b);
   }
-  private date(): string {
-    const date = new Date(); date.setDate(date.getDate() + this.dateOffset);
+  private formatDate(date: Date): string {
     return `${date.getFullYear()}-${`${date.getMonth() + 1}`.padStart(2, '0')}-${`${date.getDate()}`.padStart(2, '0')}`;
+  }
+  private quickDate(offset: number): void {
+    const date = new Date(); date.setDate(date.getDate() + offset);
+    this.startDate = this.formatDate(date); this.endDate = this.startDate;
+  }
+  private chooseDate(isStart: boolean): void {
+    const today = new Date(); today.setHours(0, 0, 0, 0);
+    const minimum = isStart ? today : new Date(`${this.startDate}T00:00:00`);
+    const selected = new Date(`${isStart ? this.startDate : this.endDate}T00:00:00`);
+    this.getUIContext().showDatePickerDialog({
+      start: minimum, end: new Date(today.getFullYear() + 5, 11, 31), selected: selected,
+      onDateAccept: (date: Date) => {
+        const value = this.formatDate(date);
+        if (isStart) {
+          this.startDate = value;
+          if (new Date(`${this.endDate}T00:00:00`).getTime() < date.getTime()) this.endDate = value;
+        } else {
+          this.endDate = value;
+        }
+      }
+    });
   }
 
   private async search(): Promise<void> {
@@ -70,7 +94,7 @@ export struct FreeClassroomPage {
     this.isSearching = true; this.errorMessage = ''; const rooms: Array<FreeRoom> = [];
     for (let index = 0; index < ids.length; index++) {
       const request: FreeRoomRequest = { buildingId: `${ids[index]}`, campusId: `${this.campusId}`,
-        dateTimeSegmentCmd: { startDateTime: this.date(), endDateTime: this.date(), startTime: '', endTime: '', units: units, weekdays: [] },
+        dateTimeSegmentCmd: { startDateTime: this.startDate, endDateTime: this.endDate, startTime: '', endTime: '', units: units, weekdays: [] },
         hasDataPermission: false, roomId: '', seatsForLessonGte: '' };
       const body = JSON.stringify(request);
       const result = await this.client.postJson<FreeRoomResponse>('https://jw.ahu.edu.cn/student/ws/room-borrow/free-list', body);
@@ -103,7 +127,16 @@ export struct FreeClassroomPage {
         Row({ space: 8 }) { Text('选择节次').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).layoutWeight(1); AhuChip({ text: '上午', selected: [1,2,3,4,5].every((v: number): boolean => this.selectedUnits.includes(v)), clickAction: () => this.toggleRange(1,5) }); AhuChip({ text: '下午', selected: [6,7,8,9,10].every((v: number): boolean => this.selectedUnits.includes(v)), clickAction: () => this.toggleRange(6,10) }); AhuChip({ text: '晚上', selected: [11,12,13].every((v: number): boolean => this.selectedUnits.includes(v)), clickAction: () => this.toggleRange(11,13) }); }
         this.chipRow(Array.from({ length: 13 }, (_: Object, i: number) => i + 1));
       }.alignItems(HorizontalAlign.Start); }
-      AhuInsetCard() { Row({ space: 8 }) { Text('查询日期').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).layoutWeight(1); AhuChip({ text: '今天', selected: this.dateOffset === 0, clickAction: () => { this.dateOffset = 0; } }); AhuChip({ text: '明天', selected: this.dateOffset === 1, clickAction: () => { this.dateOffset = 1; } }); } }
+      AhuInsetCard() { Column({ space: 12 }) {
+        Row({ space: 8 }) { Text('查询日期').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).layoutWeight(1);
+          AhuChip({ text: '今天', selected: this.startDate === this.formatDate(new Date()) && this.endDate === this.startDate, clickAction: () => this.quickDate(0) });
+          AhuChip({ text: '明天', selected: this.startDate === this.formatDate(new Date(Date.now() + 86_400_000)) && this.endDate === this.startDate, clickAction: () => this.quickDate(1) }); }
+        Scroll() { Row({ space: 8 }) {
+          AhuChip({ text: `开始 ${this.startDate}`, selected: true, clickAction: () => this.chooseDate(true) });
+          AhuChip({ text: `结束 ${this.endDate}`, selected: true, clickAction: () => this.chooseDate(false) });
+        } }.scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off);
+        Text('可选择今天起五年内的日期范围').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary);
+      }.alignItems(HorizontalAlign.Start); }
     }
   }
   build() {
