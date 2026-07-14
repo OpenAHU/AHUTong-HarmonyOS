@@ -1,0 +1,7 @@
+{
+  "module": {
+    "name": "feature_grade",
+    "type": "har",
+    "deviceTypes": ["phone"]
+  }
+}

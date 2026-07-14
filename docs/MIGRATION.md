@@ -4,7 +4,7 @@
 >
 > 当前分支：`migration/android-to-harmonyos`
 >
-> 当前阶段：M5 主页与课表（进行中）
+> 当前阶段：M6 教学服务（进行中）
 
 本文档是安大通 HarmonyOS 迁移的唯一进度台账。每完成一个可独立验收的功能，必须在同一个提交中更新对应条目、验证结果和变更记录，然后将提交推送到远程迁移分支。
 
@@ -50,7 +50,7 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`feature_login`、`feature_home`、`feature_schedule` HAR
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade` HAR
 - 当前实现：M1-M3 基础架构已完成；M4 已完成协议门、登录 UI、门户/教务联合登录、安全凭据冷启动恢复、业务请求失效重登及个人学期初始化，仍待真实账号真机验收；M5 已开始迁移教务业务数据链路
 
 ## 3. 架构映射
@@ -103,7 +103,7 @@ entry (HAP / composition root)
 | M3 | Model、Datastore、Network、SDK 基础能力 | 已完成 |
 | M4 | 协议确认、首次启动、登录与会话管理 | 进行中 |
 | M5 | 主页、课表、课程详情与周次配置 | 进行中 |
-| M6 | 成绩、考试、校历与空闲教室 | 待开始 |
+| M6 | 成绩、考试、校历与空闲教室 | 进行中 |
 | M7 | 校园卡、电费、浴室与余额充值 | 待开始 |
 | M8 | 工具、电话本、失物招领、天气与仓库资源 | 待开始 |
 | M9 | 设置、关于、开源许可与数据清理 | 待开始 |
@@ -134,7 +134,7 @@ entry (HAP / composition root)
 | 首页卡片编辑 | `feature:home` | `feature/home` | 进行中 | 支持进入/完成编辑、8 槽位添加与隐藏、上移/下移排序、满槽禁用，以及按用户即时持久化；API 24 构建通过，Android 拖拽手势的 HarmonyOS 触控对照待设备验收 |
 | 电子课表 | `feature:schedule` + `data:schedule` | 对应同名域 | 进行中 | 已迁移数据源、用户/学期隔离缓存、20 周切换、回到当前周、强制刷新、星期日期与 1–13 节网格、课程色块及加载/空/错状态；API 24 构建通过，真实课表与视觉仍待账号设备验证 |
 | 课程详情 | `feature:schedule` | `feature/schedule` | 进行中 | 点击课程色块显示名称、连续/单双/离散周次、星期与节次、地点、教师，支持遮罩和按钮关闭；API 24 构建通过，待设备交互与视觉验收 |
-| 成绩查询 | `feature:grade` + `data:grade` | 对应同名域 | 待开始 | 学期、成绩详情、异常状态 |
+| 成绩查询 | `feature:grade` + `data:grade` | 对应同名域 | 进行中 | 已迁移多学籍入口识别、各学籍成绩 JSON 聚合、用户缓存、学期筛选、跨学期搜索、GPA/学分摘要、刷新与空错状态，并从首页工具进入；API 24 构建通过，真实账号接口与排名数据待设备验证 |
 | 考试查询 | `feature:exam` + `data:exam` | 对应同名域 | 待开始 | 考试时间、地点与空状态 |
 | 校历 | `feature:calendar` + `data:calendar` | 对应同名域 | 待开始 | 日期与教学周对应 |
 | 空闲教室 | `feature:classroom` | `feature/classroom` | 待开始 | 日期、校区、节次与空状态 |
@@ -231,3 +231,4 @@ entry (HAP / composition root)
 | 2026-07-14 | 课程详情 | 为课程色块接入详情弹层，展示课程名称、连续/单双/离散周次、星期、节次、地点和教师，并支持点击遮罩或按钮关闭 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，待触控与深浅色视觉对照 |
 | 2026-07-14 | 首页课程与卡片骨架 | 新增 `feature_home`，迁移日期、当前/下节/今日课程概览、今日课程列表、8 槽位工具网格，并以真实课表缓存驱动当前周和当日过滤，点击课程区域切换到课表 Tab | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；校园卡与天气仍为后续数据切片，无连接设备待视觉验证 |
 | 2026-07-14 | 首页卡片编辑 | 迁移 8 槽首页工具配置，支持显式编辑、添加、隐藏、上移/下移排序、满槽控制及用户隔离即时持久化；空槽与删除态提供视觉反馈 | API 24 Debug HAP 构建成功且无 ArkTS 警告；当前以可访问按钮排序替代拖拽，待设备验证长按/拖拽是否需要补齐 |
+| 2026-07-14 | 成绩查询 | 新增 `data_grade` / `feature_grade`，迁移多学籍识别、成绩 JSON 转换与加权 GPA 聚合、用户缓存、学期筛选、跨学期搜索、摘要和成绩卡片，并接入首页成绩工具路由 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，学籍 HTML、成绩接口及排名数据待运行验收 |

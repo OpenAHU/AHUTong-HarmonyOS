@@ -1,0 +1,12 @@
+{
+  "name": "feature_grade",
+  "version": "1.0.0",
+  "description": "Grade presentation and state management for AHUTong.",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "core_designsystem": "file:../../core/designsystem",
+    "core_model": "file:../../core/model",
+    "data_grade": "file:../../data/grade"
+  }
+}

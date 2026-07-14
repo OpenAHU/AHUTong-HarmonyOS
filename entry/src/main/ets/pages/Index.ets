@@ -10,6 +10,7 @@ import { common } from '@kit.AbilityKit';
 import { AppLaunchGate } from 'feature_login';
 import { ScheduleSetupPage, WeeklySchedulePage } from 'feature_schedule';
 import { HomePage } from 'feature_home';
+import { GradePage } from 'feature_grade';
 import { ScheduleSetupRepository } from 'data_schedule';
 
 @Component
@@ -43,6 +44,7 @@ struct MigrationPage {
 struct Index {
   @State selectedIndex: number = 0;
   @State setupComplete: boolean = false;
+  @State activePage: string = '';
   private readonly scheduleSetupRepository: ScheduleSetupRepository = new ScheduleSetupRepository();
 
   aboutToAppear(): void {
@@ -64,6 +66,11 @@ struct Index {
         HomePage({
           onOpenSchedule: () => {
             this.selectedIndex = 1;
+          },
+          onOpenWidget: (route: string) => {
+            if (route === 'grade') {
+              this.activePage = route;
+            }
           }
         });
       }
@@ -119,7 +126,11 @@ struct Index {
   @Builder
   private postLoginContent() {
     if (this.setupComplete) {
-      this.mainContent();
+      if (this.activePage === 'grade') {
+        GradePage({ onBack: () => { this.activePage = ''; } });
+      } else {
+        this.mainContent();
+      }
     } else {
       ScheduleSetupPage({
         onSetup: () => {

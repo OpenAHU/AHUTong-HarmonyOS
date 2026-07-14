@@ -1,4 +1,4 @@
-import { Course, User } from 'core_model';
+import { Course, Grade, User } from 'core_model';
 import { AhuPreferences, PreferencesKeys } from './AhuPreferences';
 
 export class AhuCache {
@@ -135,6 +135,22 @@ export class AhuCache {
   static saveHomeWidgetSlots(slots: Array<string>): void {
     const normalized = Array.from({ length: 8 }, (_: Object, index: number) => slots[index] ?? '');
     AhuPreferences.putString(AhuCache.userKey(PreferencesKeys.HOME_WIDGET_SLOTS), JSON.stringify(normalized));
+  }
+
+  static saveGrade(grade: Grade): void {
+    AhuPreferences.putString(AhuCache.userKey(PreferencesKeys.GRADE_CACHE), JSON.stringify(grade));
+  }
+
+  static getGrade(): Grade | undefined {
+    const raw = AhuPreferences.getString(AhuCache.userKey(PreferencesKeys.GRADE_CACHE));
+    if (raw.length === 0) {
+      return undefined;
+    }
+    try {
+      return JSON.parse(raw) as Grade;
+    } catch (_) {
+      return undefined;
+    }
   }
 
   static logout(): void {

@@ -37,6 +37,7 @@ export struct HomePage {
   @State slots: Array<string> = [];
   @State isEditing: boolean = false;
   onOpenSchedule: () => void = () => {};
+  onOpenWidget: (route: string) => void = (_: string) => {};
 
   aboutToAppear(): void {
     const config = this.setupRepository.displayConfig();
@@ -243,7 +244,12 @@ export struct HomePage {
               }
             }
             .width('100%').height('100%')
-            .backgroundColor(AhuColors.card).borderRadius(24);
+            .backgroundColor(AhuColors.card).borderRadius(24)
+            .onClick(() => {
+              if (!this.isEditing) {
+                this.onOpenWidget(id);
+              }
+            });
           } else {
             Column() {
               if (this.isEditing) {

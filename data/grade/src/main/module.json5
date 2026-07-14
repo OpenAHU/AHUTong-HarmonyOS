@@ -1,0 +1,7 @@
+{
+  "module": {
+    "name": "data_grade",
+    "type": "har",
+    "deviceTypes": ["phone"]
+  }
+}

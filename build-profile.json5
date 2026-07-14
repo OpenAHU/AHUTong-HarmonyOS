@@ -193,6 +193,30 @@
           ]
         }
       ]
+    },
+    {
+      "name": "data_grade",
+      "srcPath": "./data/grade",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "feature_grade",
+      "srcPath": "./feature/grade",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
     }
   ]
 }
