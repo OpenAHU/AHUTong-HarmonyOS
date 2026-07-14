@@ -1,10 +1,11 @@
 import { AhuColors, AhuInsetCard, AhuLoading, AhuScreen, AhuTypography } from 'core_designsystem';
 import { AhuCache } from 'core_datastore';
-import { Course, courseLength, courseStartTime, courseWeekday } from 'core_model';
+import { Course, HourlyForecast, WeatherResponse, courseLength, courseStartTime, courseWeekday } from 'core_model';
 import { ScheduleRepository, ScheduleRepositoryProvider, ScheduleSetupRepository } from 'data_schedule';
 import { LengthMetrics } from '@kit.ArkUI';
 import { CampusCardRepository, CampusCardRepositoryProvider } from 'data_campuscard';
 import { common } from '@kit.AbilityKit';
+import { WeatherRepository, WeatherRepositoryProvider } from 'data_weather';
 
 const PERIOD_START: Array<number> = [480, 530, 590, 640, 690, 840, 890, 950, 1000, 1050, 1140, 1190, 1240];
 const PERIOD_END: Array<number> = [525, 575, 635, 685, 735, 885, 935, 995, 1045, 1095, 1185, 1235, 1285];
@@ -34,6 +35,7 @@ export struct HomePage {
   private readonly scheduleRepository: ScheduleRepository = ScheduleRepositoryProvider.get();
   private readonly setupRepository: ScheduleSetupRepository = new ScheduleSetupRepository();
   private readonly campusCardRepository: CampusCardRepository = CampusCardRepositoryProvider.get();
+  private readonly weatherRepository: WeatherRepository = WeatherRepositoryProvider.get();
   @State courses: Array<Course> = [];
   @State isLoading: boolean = true;
   @State currentWeek: number = 1;
@@ -45,6 +47,7 @@ export struct HomePage {
   @State cardQrcode: string = '';
   @State qrcodeLoading: boolean = false;
   @State showFullscreenQrcode: boolean = false;
+  @State weather?: WeatherResponse = undefined;
   private originalBrightness: number = -1;
   onOpenSchedule: () => void = () => {};
   onOpenWidget: (route: string) => void = (_: string) => {};
@@ -56,6 +59,7 @@ export struct HomePage {
     this.slots = AhuCache.getHomeWidgetSlots();
     this.load();
     this.loadBalance(false);
+    this.loadWeather();
   }
 
   private async load(): Promise<void> {
@@ -69,6 +73,18 @@ export struct HomePage {
     const result = await this.campusCardRepository.getBalance(refresh);
     if (result.isSuccess && result.data) this.cardBalance = result.data.balance;
     else this.cardError = result.error?.message ?? '余额加载失败';
+  }
+
+  private async loadWeather(): Promise<void> {
+    if (!this.weatherRepository.showOnHome()) return;
+    const result = await this.weatherRepository.getWeather();
+    if (result.isSuccess && result.data) this.weather = result.data;
+  }
+
+  private rainSoon(weather: WeatherResponse): boolean {
+    const rain = (value?: string): boolean => /雨|雪|雷|冰雹/.test(value ?? '');
+    return rain(weather.weather) || (weather.hourly_forecast?.slice(0, 6)
+      .some((item: HourlyForecast) => rain(item.weather)) ?? false);
   }
 
   private async loadQrcode(): Promise<void> {
@@ -329,6 +345,27 @@ export struct HomePage {
   }
 
   @Builder
+  private weatherCard() {
+    if (this.weatherRepository.showOnHome() && this.weather) {
+      AhuInsetCard() {
+        Row({ space: 16 }) {
+          SymbolGlyph($r('sys.symbol.drop')).fontSize(38).fontColor(['#FFB300']);
+          Column({ space: 5 }) {
+            Text(this.weather.district ?? this.weather.city ?? '当前位置').fontSize(AhuTypography.label)
+              .fontColor(AhuColors.onSurfaceSecondary);
+            Text(`${this.weather.temperature === undefined ? '--' : Math.round(this.weather.temperature)}°  ${this.weather.weather ?? ''}`)
+              .fontSize(26).fontWeight(FontWeight.Bold);
+            Text(this.rainSoon(this.weather) ? '近期可能有降水，记得带伞' :
+              `空气质量 ${this.weather.aqi_category ?? '--'} ${this.weather.aqi ?? ''}`)
+              .fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary);
+          }.layoutWeight(1).alignItems(HorizontalAlign.Start);
+          Text('›').fontSize(28).fontColor(AhuColors.onSurfaceSecondary);
+        }.width('100%').onClick(() => this.onOpenWidget('weather'));
+      }
+    }
+  }
+
+  @Builder
   private fullscreenQrcode() {
     Column() {
       QRCode(this.cardQrcode).width(340).height(340).color('#000000').backgroundColor('#FFFFFF');
@@ -447,6 +484,7 @@ export struct HomePage {
           this.editHeader();
           this.glance(this.todayCourses());
           this.todayTimeline(this.todayCourses());
+          this.weatherCard();
           this.campusCard();
           this.widgetGrid();
           if (this.isEditing) {

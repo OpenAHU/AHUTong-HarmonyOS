@@ -6,6 +6,9 @@ import { AhuHttpClient } from 'core_network';
 export class WeatherRepository {
   private readonly client: AhuHttpClient = new AhuHttpClient();
 
+  showOnHome(): boolean { return AhuCache.getWeatherShowOnHome(); }
+  setShowOnHome(enabled: boolean): void { AhuCache.saveWeatherShowOnHome(enabled); }
+
   async getWeather(city?: string, forceRefresh: boolean = false): Promise<AppResult<WeatherResponse>> {
     const cached = AhuCache.getWeather();
     if (!forceRefresh && !city && cached) return AppResults.success<WeatherResponse>(cached);

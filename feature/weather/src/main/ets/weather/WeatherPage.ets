@@ -12,9 +12,10 @@ export struct WeatherPage {
   @State error: string = '';
   @State city: string = '';
   @State searching: boolean = false;
+  @State showOnHome: boolean = false;
   onBack: () => void = () => {};
 
-  aboutToAppear(): void { this.load(); }
+  aboutToAppear(): void { this.showOnHome = this.repository.showOnHome(); this.load(); }
 
   private async load(city?: string): Promise<void> {
     if (this.loading && this.weather) return;
@@ -70,6 +71,14 @@ export struct WeatherPage {
             .onClick(() => { this.load(this.city); this.searching = false; });
         }.padding({ left: 16, right: 16 });
       }
+      Row() {
+        Column({ space: 3 }) { Text('在首页显示天气').fontWeight(FontWeight.Medium);
+          Text('展示位置、温度、天气和空气质量').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary); }
+          .layoutWeight(1).alignItems(HorizontalAlign.Start);
+        Toggle({ type: ToggleType.Switch, isOn: this.showOnHome }).onChange((value: boolean) => {
+          this.showOnHome = value; this.repository.setShowOnHome(value);
+        });
+      }.width('100%').padding({ left: 20, right: 20 });
       if (this.loading && !this.weather) {
         Column({ space: 12 }) { LoadingProgress().width(48).height(48).color(AhuColors.primaryAction); Text('正在获取天气…'); }
           .width('100%').padding(48);
