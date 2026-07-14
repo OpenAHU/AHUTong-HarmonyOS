@@ -1,10 +1,13 @@
 import { AppErrorKind, AppResult, AppResults } from 'core_common';
 import { AhuCache } from 'core_datastore';
-import { CourseGrade, Grade, GradeItem, GradeResponse, TermGrade } from 'core_model';
+import { CourseGrade, GpaRankInfo, Grade, GradeItem, GradeResponse, GradeStudentProfile, TermGrade } from 'core_model';
 import { AcademicCrawlerClient } from 'data_crawler';
 
 export interface GradeRepository {
   getGrade(refresh?: boolean): Promise<AppResult<Grade>>;
+  getProfiles(): Array<GradeStudentProfile>;
+  getGradeForProfile(profileId: string): Grade | undefined;
+  getGpaRank(profileId: string, refresh?: boolean): Promise<AppResult<GpaRankInfo>>;
 }
 
 export class DefaultGradeRepository implements GradeRepository {
@@ -15,25 +18,33 @@ export class DefaultGradeRepository implements GradeRepository {
     this.client = client;
   }
 
-  private profileIds(html: string): Array<string> {
-    const ids: Array<string> = [];
+  private profiles(html: string): Array<GradeStudentProfile> {
+    const profiles: Array<GradeStudentProfile> = [];
     const buttonPattern = /<button[^>]*(?:onclick=["'][^"']*myFunction[^"']*["'][^>]*)?value=["'](\d+)["'][^>]*>/gi;
     let match = buttonPattern.exec(html);
     while (match) {
-      if (!ids.includes(match[1])) {
-        ids.push(match[1]);
+      const profileId = match[1];
+      if (!profiles.some((item: GradeStudentProfile) => item.id === profileId)) {
+        const start = Math.max(0, match.index - 800); const end = Math.min(html.length, match.index + 1_500);
+        const block = html.substring(start, end); const values: Array<string> = [];
+        const ddPattern = /<dd[^>]*>([\s\S]*?)<\/dd>/gi; let dd = ddPattern.exec(block);
+        while (dd && values.length < 3) { values.push(dd[1].replace(/<[^>]*>/g, '').replace(/&nbsp;/g, ' ').trim()); dd = ddPattern.exec(block); }
+        profiles.push({ id: profileId, trainingType: values[0] || `学籍 ${profiles.length + 1}`,
+          department: values[1] ?? '', major: values[2] ?? '' });
       }
       match = buttonPattern.exec(html);
     }
     const infoPattern = /grade\/sheet\/info\/(\d+)/gi;
     match = infoPattern.exec(html);
     while (match) {
-      if (!ids.includes(match[1])) {
-        ids.push(match[1]);
+      const profileId = match[1];
+      if (!profiles.some((item: GradeStudentProfile) => item.id === profileId)) {
+        profiles.push({ id: profileId, trainingType: profiles.length === 0 ? '主修' : `学籍 ${profiles.length + 1}`,
+          department: '', major: '' });
       }
       match = infoPattern.exec(html);
     }
-    return ids;
+    return profiles;
   }
 
   private item(source: CourseGrade): GradeItem {
@@ -97,8 +108,8 @@ export class DefaultGradeRepository implements GradeRepository {
       return AppResults.failure<Grade>(page.error?.kind ?? AppErrorKind.UNKNOWN,
         page.error?.message ?? '获取成绩入口失败', page.error?.code);
     }
-    let ids = this.profileIds(page.data);
-    if (ids.length === 0 && page.data.trim().startsWith('{')) {
+    const profiles = this.profiles(page.data);
+    if (profiles.length === 0 && page.data.trim().startsWith('{')) {
       try {
         const direct = JSON.parse(page.data) as GradeResponse;
         const directTerms = this.terms(direct);
@@ -108,21 +119,24 @@ export class DefaultGradeRepository implements GradeRepository {
       } catch (_) {
       }
     }
-    if (ids.length === 0) {
+    if (profiles.length === 0) {
       return AppResults.failure<Grade>(AppErrorKind.PARSE, '无法识别教务成绩学籍');
     }
-    const terms: Array<TermGrade> = [];
-    for (let index = 0; index < ids.length; index++) {
+    const perProfile: Record<string, Grade> = {};
+    for (let index = 0; index < profiles.length; index++) {
       const result = await this.client.getJson<GradeResponse>(
-        `${DefaultGradeRepository.BASE_URL}/student/for-std/grade/sheet/info/${ids[index]}`);
+        `${DefaultGradeRepository.BASE_URL}/student/for-std/grade/sheet/info/${profiles[index].id}`);
       if (result.isSuccess && result.data) {
-        terms.push(...this.terms(result.data));
+        const terms = this.terms(result.data);
+        if (terms.length > 0) perProfile[profiles[index].id] = this.aggregate(terms);
       }
     }
-    if (terms.length === 0) {
+    const availableProfiles = profiles.filter((profile: GradeStudentProfile) => perProfile[profile.id] !== undefined);
+    if (availableProfiles.length === 0) {
       return AppResults.failure<Grade>(AppErrorKind.PARSE, '未获取到成绩数据');
     }
-    return AppResults.success<Grade>(this.aggregate(terms));
+    AhuCache.saveGradeProfiles(profiles); AhuCache.saveGradesPerProfile(perProfile);
+    return AppResults.success<Grade>(perProfile[availableProfiles[0].id]);
   }
 
   async getGrade(refresh: boolean = false): Promise<AppResult<Grade>> {
@@ -137,6 +151,43 @@ export class DefaultGradeRepository implements GradeRepository {
       AhuCache.saveGrade(result.data);
     }
     return result;
+  }
+
+  getProfiles(): Array<GradeStudentProfile> { return AhuCache.getGradeProfiles(); }
+  getGradeForProfile(profileId: string): Grade | undefined { return AhuCache.getGradesPerProfile()[profileId]; }
+
+  private rankObject(html: string): string | undefined {
+    const assignment = /(?:var|let|const)?\s*(?:window\s*\.\s*)?gpasemestermodel\s*=/i.exec(html);
+    if (!assignment) return undefined;
+    const start = html.indexOf('{', assignment.index + assignment[0].length); if (start < 0) return undefined;
+    let depth = 0; let quote = ''; let escaped = false;
+    for (let index = start; index < html.length; index++) {
+      const char = html[index];
+      if (quote.length > 0) { if (escaped) escaped = false; else if (char === '\\') escaped = true;
+        else if (char === quote) quote = ''; continue; }
+      if (char === '"' || char === "'") quote = char;
+      else if (char === '{') depth++;
+      else if (char === '}' && --depth === 0) return html.substring(start, index + 1);
+    }
+    return undefined;
+  }
+
+  async getGpaRank(profileId: string, refresh: boolean = false): Promise<AppResult<GpaRankInfo>> {
+    if (!refresh) { const cached = AhuCache.getGpaRank(profileId); if (cached) return AppResults.success<GpaRankInfo>(cached); }
+    const result = await this.client.getText(
+      `${DefaultGradeRepository.BASE_URL}/student/for-std/grade/sheet/semester-index/${profileId}`);
+    if (result.isSuccess && result.data) {
+      try {
+        const objectText = this.rankObject(result.data);
+        if (!objectText) throw new Error('未找到排名数据');
+        const rank = JSON.parse(objectText.replace(/'/g, '"')) as GpaRankInfo;
+        AhuCache.saveGpaRank(profileId, rank); return AppResults.success<GpaRankInfo>(rank);
+      } catch (_) {}
+    }
+    const cached = AhuCache.getGpaRank(profileId);
+    if (cached) return AppResults.success<GpaRankInfo>(cached);
+    return AppResults.failure<GpaRankInfo>(result.error?.kind ?? AppErrorKind.PARSE,
+      result.error?.message ?? '当前学籍暂无专业排名', result.error?.code);
   }
 }
 

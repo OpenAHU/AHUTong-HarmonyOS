@@ -19,6 +19,9 @@ export class PreferencesKeys {
   static readonly MOCK_SCENARIO: string = 'mock_scenario';
   static readonly HOME_WIDGET_SLOTS: string = 'home_widget_slots';
   static readonly GRADE_CACHE: string = 'grade_cache';
+  static readonly GRADE_PROFILES: string = 'grade_profiles';
+  static readonly GRADE_PER_PROFILE: string = 'grade_per_profile';
+  static readonly GPA_RANK_CACHE: string = 'gpa_rank_cache';
   static readonly EXAM_CACHE: string = 'exam_cache';
   static readonly CARD_BALANCE: string = 'card_balance';
   static readonly LOST_FOUND_LIST: string = 'lost_found_list';

@@ -1,5 +1,5 @@
 import { AhuChip, AhuColors, AhuEmptyState, AhuInsetCard, AhuLoading, AhuTypography } from 'core_designsystem';
-import { Grade, GradeItem, TermGrade } from 'core_model';
+import { GpaRankInfo, Grade, GradeItem, GradeStudentProfile, GpaSemesterSub, TermGrade } from 'core_model';
 import { GradeRepository, GradeRepositoryProvider } from 'data_grade';
 
 @Component
@@ -10,6 +10,10 @@ export struct GradePage {
   @State query: string = '';
   @State isLoading: boolean = true;
   @State errorMessage: string = '';
+  @State profiles: Array<GradeStudentProfile> = [];
+  @State selectedProfileId: string = '';
+  @State rank?: GpaRankInfo = undefined;
+  @State rankMessage: string = '';
   onBack: () => void = () => {};
 
   aboutToAppear(): void {
@@ -22,6 +26,10 @@ export struct GradePage {
     const result = await this.repository.getGrade(refresh);
     if (result.isSuccess && result.data) {
       this.grade = result.data;
+      this.profiles = this.repository.getProfiles();
+      if (this.profiles.length > 0 && this.selectedProfileId.length === 0) this.selectedProfileId = this.profiles[0].id;
+      const profileGrade = this.repository.getGradeForProfile(this.selectedProfileId);
+      if (profileGrade) this.grade = profileGrade;
       const terms = result.data.termGradeList ?? [];
       if (this.selectedTerm.length === 0 && terms.length > 0) {
         this.selectedTerm = this.termKey(terms[0]);
@@ -30,6 +38,22 @@ export struct GradePage {
       this.errorMessage = result.error?.message ?? '成绩加载失败';
     }
     this.isLoading = false;
+    if (this.selectedProfileId.length > 0) this.loadRank(refresh);
+  }
+
+  private async loadRank(refresh: boolean): Promise<void> {
+    this.rankMessage = '';
+    const result = await this.repository.getGpaRank(this.selectedProfileId, refresh);
+    if (result.isSuccess && result.data) this.rank = result.data;
+    else { this.rank = undefined; this.rankMessage = result.error?.message ?? '当前学籍暂无专业排名'; }
+  }
+
+  private selectProfile(id: string): void {
+    this.selectedProfileId = id; this.rank = undefined; this.rankMessage = '';
+    const grade = this.repository.getGradeForProfile(id);
+    if (grade) { this.grade = grade; const terms = grade.termGradeList ?? [];
+      this.selectedTerm = terms.length > 0 ? this.termKey(terms[0]) : ''; }
+    this.loadRank(false);
   }
 
   private termKey(term: TermGrade): string {
@@ -38,6 +62,15 @@ export struct GradePage {
 
   private selected(): TermGrade | undefined {
     return (this.grade?.termGradeList ?? []).find((term: TermGrade): boolean => this.termKey(term) === this.selectedTerm);
+  }
+
+  private currentTermRank(): GpaSemesterSub | undefined {
+    const semesterId = this.selected()?.termGradeList?.[0]?.semesterId;
+    return this.rank?.gpaSemesterSubs.find((item: GpaSemesterSub) => item.semesterId === semesterId);
+  }
+
+  private profileLabel(profile: GradeStudentProfile): string {
+    return [profile.trainingType, profile.department, profile.major].filter((value: string) => value.length > 0).join(' · ');
   }
 
   private visibleItems(): Array<GradeItem> {
@@ -77,8 +110,8 @@ export struct GradePage {
 
   @Builder
   private summary() {
-    AhuInsetCard() {
-      Row() {
+    Column({ space: 12 }) {
+      AhuInsetCard() { Row() {
         Column({ space: 4 }) {
           Text('本学期 GPA').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary);
           Text(this.selected()?.termGradePointAverage ?? '--').fontSize(28).fontWeight(FontWeight.Bold);
@@ -91,7 +124,18 @@ export struct GradePage {
           Text('总学分').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary);
           Text(this.grade?.totalCredit ?? '--').fontSize(28).fontWeight(FontWeight.Bold);
         }.layoutWeight(1).alignItems(HorizontalAlign.Start);
-      }.width('100%');
+      }.width('100%'); }
+      AhuInsetCard() {
+        Column({ space: 8 }) {
+          Row() { Text('总专业排名').layoutWeight(1).fontColor(AhuColors.onSurfaceSecondary);
+            Text(this.rank ? `${this.rank.majorRank} / ${this.rank.majorHeadCount}` : '--').fontWeight(FontWeight.Bold); }
+          Row() { Text('本学期专业排名').layoutWeight(1).fontColor(AhuColors.onSurfaceSecondary);
+            Text(this.currentTermRank() ? `${this.currentTermRank()?.majorRank} / ${this.rank?.majorHeadCount}` : '--').fontWeight(FontWeight.Bold); }
+          Row() { Text('排名更新时间').layoutWeight(1).fontColor(AhuColors.onSurfaceSecondary);
+            Text(this.rank?.updatedDateTimeStr ?? '--').fontSize(AhuTypography.label); }
+          if (this.rankMessage.length > 0) Text(this.rankMessage).fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary);
+        }.width('100%');
+      }
     }
   }
 
@@ -126,6 +170,14 @@ export struct GradePage {
         Scroll() {
           Column({ space: 14 }) {
             if (this.query.length === 0) {
+              if (this.profiles.length > 1) {
+                Scroll() { Row({ space: 8 }) {
+                  ForEach(this.profiles, (profile: GradeStudentProfile) => {
+                    AhuChip({ text: this.profileLabel(profile), selected: this.selectedProfileId === profile.id,
+                      clickAction: () => this.selectProfile(profile.id) });
+                  }, (profile: GradeStudentProfile) => profile.id);
+                } }.scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off).padding({ left: 16, right: 16 });
+              }
               Scroll() {
                 Row({ space: 8 }) {
                   ForEach(this.grade?.termGradeList ?? [], (term: TermGrade) => {

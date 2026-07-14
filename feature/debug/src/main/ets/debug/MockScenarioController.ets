@@ -1,5 +1,5 @@
 import { AhuCache } from 'core_datastore';
-import { Course, Exam, Grade, GradeItem, LostFoundItem, TermGrade } from 'core_model';
+import { Course, Exam, GpaRankInfo, Grade, GradeItem, LostFoundItem, TermGrade } from 'core_model';
 
 export interface MockScenarioOption {
   id: string;
@@ -103,7 +103,17 @@ export class MockScenarioController {
     AhuCache.saveSchoolYear('2025-2026'); AhuCache.saveSchoolTerm('2025-2026-2');
     AhuCache.saveSchoolTermStartTime('2025-2026', '2', MockScenarioController.dateText(monday));
     AhuCache.saveSchedule('2025-2026', '2', MockScenarioController.courses(selected.id));
-    AhuCache.saveGrade(MockScenarioController.grade(selected.id));
+    const mockGrade = MockScenarioController.grade(selected.id);
+    AhuCache.saveGrade(mockGrade);
+    AhuCache.saveGradeProfiles([{ id: 'mock-profile', trainingType: '主修', department: '计算机科学与技术学院', major: '软件工程' }]);
+    const grades: Record<string, Grade> = {}; grades['mock-profile'] = mockGrade; AhuCache.saveGradesPerProfile(grades);
+    const rank: GpaRankInfo = { id: 1, gpa: selected.id === 'high_performer' ? 4.6 : 3.9,
+      majorRank: selected.id === 'high_performer' ? 2 : selected.id === 'retake_student' ? 96 : 18,
+      majorHeadCount: 120, inPlanCredits: 80, outPlanCredits: 4, totalCredits: 84,
+      gpaSemesterSubs: [{ gpa: selected.id === 'high_performer' ? 4.6 : 3.9, semesterId: 1,
+        majorRank: selected.id === 'high_performer' ? 1 : 15, inPlanCredits: 20, outPlanCredits: 0, totalCredits: 20 }],
+      updatedDateTimeStr: '2026-07-15 12:00' };
+    AhuCache.saveGpaRank('mock-profile', rank);
     AhuCache.saveExams(MockScenarioController.exams(selected.id));
     AhuCache.saveCardBalance(selected.id === 'low_balance' ? 1.25 : selected.id === 'high_performer' ? 328.60 : 86.40);
     const lost = MockScenarioController.lostFound(selected.id);

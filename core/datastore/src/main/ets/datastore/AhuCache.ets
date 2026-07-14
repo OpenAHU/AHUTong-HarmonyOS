@@ -1,4 +1,4 @@
-import { CampusItem, Course, Exam, Grade, LostFoundItem, LostFoundType, User, WeatherResponse } from 'core_model';
+import { CampusItem, Course, Exam, GpaRankInfo, Grade, GradeStudentProfile, LostFoundItem, LostFoundType, User, WeatherResponse } from 'core_model';
 import { AhuPreferences, PreferencesKeys } from './AhuPreferences';
 
 export class AhuCache {
@@ -151,6 +151,30 @@ export class AhuCache {
     } catch (_) {
       return undefined;
     }
+  }
+
+  static saveGradeProfiles(profiles: Array<GradeStudentProfile>): void {
+    AhuPreferences.putString(AhuCache.userKey(PreferencesKeys.GRADE_PROFILES), JSON.stringify(profiles));
+  }
+  static getGradeProfiles(): Array<GradeStudentProfile> {
+    const raw = AhuPreferences.getString(AhuCache.userKey(PreferencesKeys.GRADE_PROFILES));
+    try { return raw.length > 0 ? JSON.parse(raw) as Array<GradeStudentProfile> : []; } catch (_) { return []; }
+  }
+  static saveGradesPerProfile(grades: Record<string, Grade>): void {
+    AhuPreferences.putString(AhuCache.userKey(PreferencesKeys.GRADE_PER_PROFILE), JSON.stringify(grades));
+  }
+  static getGradesPerProfile(): Record<string, Grade> {
+    const raw = AhuPreferences.getString(AhuCache.userKey(PreferencesKeys.GRADE_PER_PROFILE));
+    try { return raw.length > 0 ? JSON.parse(raw) as Record<string, Grade> : {}; } catch (_) { return {}; }
+  }
+  static saveGpaRank(profileId: string, rank: GpaRankInfo): void {
+    const values = AhuCache.getGpaRanks(); values[profileId] = rank;
+    AhuPreferences.putString(AhuCache.userKey(PreferencesKeys.GPA_RANK_CACHE), JSON.stringify(values));
+  }
+  static getGpaRank(profileId: string): GpaRankInfo | undefined { return AhuCache.getGpaRanks()[profileId]; }
+  private static getGpaRanks(): Record<string, GpaRankInfo> {
+    const raw = AhuPreferences.getString(AhuCache.userKey(PreferencesKeys.GPA_RANK_CACHE));
+    try { return raw.length > 0 ? JSON.parse(raw) as Record<string, GpaRankInfo> : {}; } catch (_) { return {}; }
   }
 
   static saveExams(exams: Array<Exam>): void {
