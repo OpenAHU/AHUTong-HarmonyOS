@@ -166,6 +166,7 @@ entry (HAP / composition root)
 | 应用更新 | `feature:update` | `feature/update` | 已完成 | 启动及设置页手动检查本仓库最新 GitHub Release，按应用自身语义版本比较，展示版本/更新日志/可选或强制提示；设置页保留独立“更新介绍”，无新版本或暂无 Release 时仍显示当前版本/开发构建状态；提供 AppGallery 与可信项目发行页入口，不下载 Android APK；API 24 构建通过，待首个发行版及真机外部跳转验收 |
 | Debug / Mock 工具 | `feature:debug` | `feature/debug` | 已完成 | Debug 构建设置页应用卡连续点击 8 次进入；提供与 Android 对齐的 12 个场景、课表/成绩/考试/余额/失物招领样例、真实/Mock 切换、影响首页/课表/服务卡片的时间偏移、缓存清理及 10/50 秒系统提醒；release 构建隐藏入口；API 24 Debug/Release HAP 均构建通过，待真机交互与通知验收 |
 | 应用元数据与版本展示 | App Manifest / About | `AppScope` + `feature/settings` | 已完成 | 应用名统一为“安大通”，厂商改为 OpenAHU，模块与 Ability 使用正式描述；设置页从 BundleInfo 读取实际版本，不再硬编码；清理未使用的迁移占位文案；API 24 Debug HAP 构建通过 |
+| 本地单元测试基线 | Android JVM tests | `core/model/src/test` + `feature/update/src/test` | 已完成 | 删除工程模板示例断言，测试与被测代码同模块放置；覆盖语义版本升级/相等/回退/非法标签，以及课程星期、周次、节次和长度的正常与异常转换；两模块 Hvigor Test 4 项通过 |
 
 功能台账若发现缺项，应先补充条目再开始实现；不得因为台账未列出而忽略 Android 已有能力。
 
@@ -272,3 +273,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 成绩学籍与专业排名 | 对齐 Android 成绩完整数据链，解析成绩入口的多学籍 ID/培养类型/院系/专业，按学籍独立请求、缓存与切换成绩；新增排名页面请求和带引号/转义/嵌套对象边界解析，按学籍缓存总 GPA、总/学期专业排名、专业人数及更新时间，并在刷新时同步更新；Debug 场景同步提供学籍与排名样例 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，多学籍 HTML 和排名模型待运行验收 |
 | 2026-07-15 | 学期重新配置 | 设置账户区域新增“学期设置”，复用首次初始化页重新选择学年、1/2/3 学期和当前周；保存后更新用户隔离配置、开学周一，自动重排提醒与刷新服务卡片并返回主界面 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，设置返回及课表联动待真机验收 |
 | 2026-07-15 | 发布元数据清理 | 将 AppScope 应用名与 Android 对齐为“安大通”，厂商标识改为 OpenAHU，替换工程模板的模块/Ability/包描述并删除未使用的迁移占位资源；设置页由组合根注入 BundleInfo 实际版本，避免发版升级后仍显示 1.0.0 | API 24 Debug HAP 构建成功且无 ArkTS 警告；版本取值与更新检查复用同一 BundleInfo 来源 |
+| 2026-07-15 | 本地单元测试基线 | 将语义版本比较提取为无平台依赖的纯函数，应用更新继续通过同一入口调用；删除 Entry 默认 `abc` 示例测试，在 `feature_update` 与 `core_model` 各自模块内覆盖版本升级/相等/回退/非法标签和课程字段转换 | `feature_update` 与 `core_model` 的 Hvigor Test 均构建并执行成功，合计 4 个测试用例全部通过；报告生成于对应模块 `.test/default/outputs/test/reports` |

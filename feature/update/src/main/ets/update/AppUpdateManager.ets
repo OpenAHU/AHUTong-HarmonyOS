@@ -1,6 +1,7 @@
 import { bundleManager } from '@kit.AbilityKit';
 import { common } from '@kit.AbilityKit';
 import { AhuHttpClient } from 'core_network';
+import { isVersionNewer } from './VersionComparator';
 
 const LATEST_RELEASE_API: string = 'https://api.github.com/repos/OpenAHU/AHUTong-HarmonyOS/releases/latest';
 const RELEASES_PAGE: string = 'https://github.com/OpenAHU/AHUTong-HarmonyOS/releases';
@@ -40,24 +41,8 @@ export interface AppUpdateCheckResult {
 export class AppUpdateManager {
   private static readonly client: AhuHttpClient = new AhuHttpClient();
 
-  private static normalizeVersion(value: string): number[] | undefined {
-    const normalized = value.trim().replace(/^[vV]/, '');
-    if (!/^\d+(\.\d+){0,3}$/.test(normalized)) return undefined;
-    return normalized.split('.').map((part: string) => Number(part));
-  }
-
   static isVersionNewer(remote: string, current: string): boolean {
-    const remoteParts = AppUpdateManager.normalizeVersion(remote);
-    const currentParts = AppUpdateManager.normalizeVersion(current);
-    if (!remoteParts || !currentParts) return false;
-    const length = Math.max(remoteParts.length, currentParts.length);
-    for (let index = 0; index < length; index++) {
-      const remotePart = remoteParts[index] ?? 0;
-      const currentPart = currentParts[index] ?? 0;
-      if (remotePart > currentPart) return true;
-      if (remotePart < currentPart) return false;
-    }
-    return false;
+    return isVersionNewer(remote, current);
   }
 
   static currentVersion(): string {
