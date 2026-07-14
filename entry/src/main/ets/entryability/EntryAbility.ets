@@ -4,8 +4,10 @@ import { window } from '@kit.ArkUI';
 import { AhuCache, AhuPreferences } from 'core_datastore';
 import { CampusGatewayProvider } from 'core_sdk';
 import { AuthRepositoryProvider } from 'data_auth';
-import { ScheduleReminderCoordinator, ScheduleReminderCoordinatorProvider } from 'data_schedule';
+import { ScheduleReminderCoordinator, ScheduleReminderCoordinatorProvider, ScheduleWidgetCoordinator,
+  ScheduleWidgetCoordinatorProvider } from 'data_schedule';
 import { CourseReminderManager } from 'feature_notification';
+import { ScheduleWidgetManager } from 'feature_widget';
 
 const DOMAIN = 0x0000;
 
@@ -13,6 +15,10 @@ class CourseScheduleReminderCoordinator implements ScheduleReminderCoordinator {
   reschedule(): void {
     CourseReminderManager.reschedule().catch(() => {});
   }
+}
+
+class CourseScheduleWidgetCoordinator implements ScheduleWidgetCoordinator {
+  update(): void { ScheduleWidgetManager.updateAll().catch(() => {}); }
 }
 
 export default class EntryAbility extends UIAbility {
@@ -24,7 +30,10 @@ export default class EntryAbility extends UIAbility {
     CampusGatewayProvider.initialize();
     AuthRepositoryProvider.initialize(CampusGatewayProvider.get());
     ScheduleReminderCoordinatorProvider.initialize(new CourseScheduleReminderCoordinator());
+    ScheduleWidgetCoordinatorProvider.initialize(new CourseScheduleWidgetCoordinator());
     CourseReminderManager.reschedule().catch(() => {});
+    ScheduleWidgetManager.updateAll().catch(() => {});
+    this.applyLaunchWant(want);
     try {
       this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
     } catch (err) {
@@ -35,6 +44,15 @@ export default class EntryAbility extends UIAbility {
 
   onDestroy(): void {
     hilog.info(DOMAIN, 'testTag', '%{public}s', 'Ability onDestroy');
+  }
+
+  onNewWant(want: Want): void {
+    this.applyLaunchWant(want);
+  }
+
+  private applyLaunchWant(want: Want): void {
+    const route = want.parameters?.['route'] as string;
+    AppStorage.setOrCreate('ahu_launch_route', route === 'schedule' ? 'schedule' : '');
   }
 
   onWindowStageCreate(windowStage: window.WindowStage): void {

@@ -3,6 +3,22 @@
     {
       "name": "start_window_background",
       "value": "#FFFFFF"
+    },
+    {
+      "name": "schedule_card_background",
+      "value": "#FFF8F9FB"
+    },
+    {
+      "name": "schedule_card_text",
+      "value": "#FF1F1F1F"
+    },
+    {
+      "name": "schedule_card_secondary",
+      "value": "#FF666666"
+    },
+    {
+      "name": "schedule_card_ongoing",
+      "value": "#224A90E2"
     }
   ]
 }

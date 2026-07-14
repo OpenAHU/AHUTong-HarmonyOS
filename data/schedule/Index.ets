@@ -17,3 +17,7 @@ export {
   ScheduleReminderCoordinator,
   ScheduleReminderCoordinatorProvider
 } from './src/main/ets/schedule/ScheduleReminderCoordinator';
+export {
+  ScheduleWidgetCoordinator,
+  ScheduleWidgetCoordinatorProvider
+} from './src/main/ets/schedule/ScheduleWidgetCoordinator';

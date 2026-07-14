@@ -27,6 +27,7 @@ struct Index {
   @State setupComplete: boolean = false;
   @State activePage: string = '';
   @StorageLink('ahu_liquid_glass') useLiquidGlass: boolean = true;
+  @StorageLink('ahu_launch_route') @Watch('onLaunchRouteChanged') launchRoute: string = '';
   private readonly scheduleSetupRepository: ScheduleSetupRepository = new ScheduleSetupRepository();
 
   private async logout(clearAll: boolean): Promise<void> {
@@ -49,6 +50,11 @@ struct Index {
 
   aboutToAppear(): void {
     this.setupComplete = this.scheduleSetupRepository.hasCompletedSetup();
+    this.onLaunchRouteChanged();
+  }
+
+  private onLaunchRouteChanged(): void {
+    if (this.launchRoute === 'schedule') this.selectedIndex = 1;
   }
 
   private terminateApplication(): void {

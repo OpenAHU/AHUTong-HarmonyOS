@@ -238,6 +238,14 @@ export class AhuCache {
   static liveCountdownEnabled(): boolean { return AhuPreferences.getBoolean(PreferencesKeys.LIVE_COUNTDOWN_ENABLED); }
   static setThemeColor(value: string): void { AhuPreferences.putString(PreferencesKeys.THEME_COLOR, value); }
   static themeColor(): string { return AhuPreferences.getString(PreferencesKeys.THEME_COLOR); }
+  static saveScheduleWidgetIds(ids: Array<string>): void {
+    AhuPreferences.putString(PreferencesKeys.SCHEDULE_WIDGET_IDS, JSON.stringify(ids));
+  }
+  static getScheduleWidgetIds(): Array<string> {
+    const raw = AhuPreferences.getString(PreferencesKeys.SCHEDULE_WIDGET_IDS);
+    if (raw.length === 0) return [];
+    try { return JSON.parse(raw) as Array<string>; } catch (_) { return []; }
+  }
 
   static logout(): void {
     AhuCache.clearCurrentUser();

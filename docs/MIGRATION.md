@@ -4,7 +4,7 @@
 >
 > 当前分支：`migration/android-to-harmonyos`
 >
-> 当前阶段：M10 通知与服务卡片（进行中）；课前通知已完成，服务卡片待迁移
+> 当前阶段：M11 全量审计与发布准备；M10 通知与服务卡片已完成
 
 本文档是安大通 HarmonyOS 迁移的唯一进度台账。每完成一个可独立验收的功能，必须在同一个提交中更新对应条目、验证结果和变更记录，然后将提交推送到远程迁移分支。
 
@@ -50,7 +50,7 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`data_payment`、`data_portal`、`data_weather`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom`、`feature_payment`、`feature_portal`、`feature_tools`、`feature_weather`、`feature_repository`、`feature_settings`、`feature_notification` HAR
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`data_payment`、`data_portal`、`data_weather`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom`、`feature_payment`、`feature_portal`、`feature_tools`、`feature_weather`、`feature_repository`、`feature_settings`、`feature_notification`、`feature_widget` HAR
 - 当前实现：M1-M3 基础架构已完成；M4 已完成协议门、登录 UI、门户/教务联合登录、安全凭据冷启动恢复、业务请求失效重登及个人学期初始化，仍待真实账号真机验收；M5 已开始迁移教务业务数据链路
 
 ## 3. 架构映射
@@ -107,8 +107,8 @@ entry (HAP / composition root)
 | M7 | 校园卡、电费、浴室与余额充值 | 进行中 |
 | M8 | 工具、电话本、失物招领、天气与仓库资源 | 已完成 |
 | M9 | 设置、关于、开源许可与数据清理 | 已完成 |
-| M10 | 通知、课前提醒、服务卡片及后台任务 | 进行中 |
-| M11 | 全量 UI 对照、性能、稳定性、隐私与发布准备 | 待开始 |
+| M10 | 通知、课前提醒、服务卡片及后台任务 | 已完成 |
+| M11 | 全量 UI 对照、性能、稳定性、隐私与发布准备 | 进行中 |
 
 阶段只用于组织工作；提交仍按“一个可独立验收的功能”拆分，不把整个阶段压成一个大提交。
 
@@ -162,7 +162,7 @@ entry (HAP / composition root)
 | 关于、贡献者、开源许可 | `feature:settings` | `feature/settings` | 已完成 | 已迁移应用图标/版本、加入我们、5 位 Android 内置开发者及职责/QQ/头像、QQ 联系与反馈失败提示，以及 Android 第三方许可清单；补充 HarmonyOS SDK 许可，外部项目链接使用系统隐式打开；API 24 构建通过，QQ 与浏览器拉起待真机验收 |
 | 清除数据与退出登录 | `feature:settings` | `feature/settings` | 已完成 | 普通退出清除 Asset Store 凭据、原生/爬虫会话、门户/教务内存 Cookie 与当前用户但保留偏好；清除数据经二次确认后额外清空 Preferences、全部业务缓存和学习资料沙箱文件，重置学期初始化并立即回到登录页；API 24 构建通过，真机 Asset Store 删除与导航待验收 |
 | 课前通知与提醒 | `feature:notification` | `feature/notification` | 已完成 | 已声明提醒代理权限并接入系统通知授权；按课表登记未来 21 天、上课前 10 分钟的系统日历提醒，包含课程、地点和节次，点击返回应用；关闭开关会取消全部提醒，课表刷新、学期变更和冷启动会自动重排；Android 16 的 promoted ongoing 倒计时没有可直接移植的第三方接口，统一由 HarmonyOS ReminderAgent 决定系统展示样式；API 24 构建通过，待真机授权、到时触发和重启持久化验证 |
-| 课表服务卡片 | `feature:widget` | `feature/widget` | 待开始 | 尺寸、刷新、点击与数据同步 |
+| 课表服务卡片 | `feature:widget` | `feature/widget` | 已完成 | 新增动态 FormExtensionAbility 与 `feature_widget`，支持 HarmonyOS `2×2` / `2×4` 两种尺寸、浅深色与用户主题强调色；按当前学期/周次/星期筛选当天尚未结束课程，显示日期、剩余节数、节次、缩写教室并突出正在上课；支持卡片内手动刷新、系统每 30 分钟刷新、课表/学期变更与应用启动主动同步，点击课程区直达课表 Tab；工具页提供桌面添加指引。API 24 Debug HAP 构建通过且无 ArkTS 警告，无连接设备，卡片添加、尺寸布局、系统托管刷新和点击待真机验收 |
 | 应用更新 | `feature:update` | 待定 | 待开始 | 依据 HarmonyOS 分发渠道重新设计 |
 | Debug / Mock 工具 | `feature:debug` | `feature/debug` | 待开始 | 仅开发构建启用 |
 
@@ -258,3 +258,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 退出登录与清除数据 | 设置页新增普通退出和带二次确认的完整清除；组合根调用认证仓库统一清 Asset Store 安全凭据、Native/爬虫会话和门户/教务 Cookie，完整清除再删除 Preferences、用户隔离业务缓存及学习资料沙箱文件；通过全局修订信号立即回到登录页并重置学期初始化 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，Asset Store 删除、清除后协议门重启行为和页面跳转待真机验收 |
 | 2026-07-15 | 全局主题与液态玻璃 | 应用创建时从持久化初始化全局主题/材质状态；设计系统将 `primaryAction` 改为动态颜色来源，使现有 53 处按钮、选中态、进度和强调文本统一响应预设或自定义主题色；液态玻璃开关实时切换底部导航的超厚组件材质/无材质 | API 24 Debug HAP 构建成功且无 ArkTS 警告；冷启动读取链路完成，无连接设备，深浅色对比度、材质性能和全部页面视觉待真机验收 |
 | 2026-07-15 | 课前通知与提醒 | 新增 `feature_notification`，迁移 1–13 节作息与上课前 10 分钟规则；通过 HarmonyOS ReminderAgent 一次性登记未来 21 天课程提醒，支持系统通知授权、课程/地点/节次内容、点击返回、开关取消，并在课表刷新、学期变更和冷启动时自动重排；实验性倒计时按平台能力交由系统决定展示样式 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，系统授权弹窗、到时触发、点击和重启恢复待真机验收 |
+| 2026-07-15 | 课表服务卡片 | 新增 `feature_widget` 与动态 `ScheduleFormAbility`，将 Android Glance/RemoteViews 两套课表微件合并为 HarmonyOS 服务卡片；支持 `2×2` / `2×4`、浅深色、主题强调色、日期与剩余课程、上课中高亮、空状态、教室缩写、手动/30 分钟系统刷新、课表变更主动同步和点击直达课表，并在工具页说明系统桌面添加方式 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无签名与连接设备，卡片安装添加、两种尺寸、刷新托管及点击路由待真机验收 |

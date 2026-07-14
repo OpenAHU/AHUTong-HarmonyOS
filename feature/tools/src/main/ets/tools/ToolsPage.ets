@@ -1,4 +1,4 @@
-import { AhuColors, AhuPageHeader, AhuScreen, AhuTypography } from 'core_designsystem';
+import { AhuColors, AhuInsetCard, AhuPageHeader, AhuScreen, AhuTypography } from 'core_designsystem';
 import { AhuCache } from 'core_datastore';
 
 interface ToolEntry { id: string; title: string; symbol: Resource; tint: string; }
@@ -19,6 +19,7 @@ const TOOL_ENTRIES: Array<ToolEntry> = [
 @Component
 export struct ToolsPage {
   @State entries: Array<ToolEntry> = [];
+  @State cardTip: string = '';
   onOpenWidget: (route: string) => void = (_: string) => {};
 
   aboutToAppear(): void { this.refresh(); }
@@ -31,6 +32,21 @@ export struct ToolsPage {
   build() {
     AhuScreen({ scrollable: true }) {
       AhuPageHeader({ title: '工具' });
+      AhuInsetCard({ containerColor: AhuColors.accentSurface }) {
+        Row({ space: 14 }) {
+          SymbolGlyph($r('sys.symbol.calendar')).fontSize(34).fontColor([AhuColors.primaryAction]);
+          Column({ space: 3 }) {
+            Text('桌面课表卡片').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold);
+            Text('长按桌面，在服务卡片中选择“安大通 · 今日课表”')
+              .fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary);
+          }.alignItems(HorizontalAlign.Start).layoutWeight(1);
+          Text('›').fontSize(26).fontColor(AhuColors.onSurfaceSecondary);
+        }.width('100%').onClick(() => { this.cardTip = 'HarmonyOS 由桌面统一管理服务卡片，请长按桌面添加'; });
+      }
+      if (this.cardTip.length > 0) {
+        Text(this.cardTip).fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary)
+          .padding({ left: 18, right: 18 });
+      }
       Text('未固定到首页的工具').fontSize(AhuTypography.body).fontColor(AhuColors.onSurfaceSecondary)
         .padding({ left: 18, right: 18 });
       if (this.entries.length === 0) {

@@ -3,6 +3,7 @@ import { AhuCache } from 'core_datastore';
 import { Course } from 'core_model';
 import { AcademicCrawlerClient } from 'data_crawler';
 import { ScheduleReminderCoordinatorProvider } from './ScheduleReminderCoordinator';
+import { ScheduleWidgetCoordinatorProvider } from './ScheduleWidgetCoordinator';
 
 interface CurrentSemester {
   id: number;
@@ -139,6 +140,7 @@ export class DefaultScheduleRepository implements ScheduleRepository {
     if (remote.isSuccess && remote.data) {
       AhuCache.saveSchedule(schoolYear, schoolTerm, remote.data);
       ScheduleReminderCoordinatorProvider.get().reschedule();
+      ScheduleWidgetCoordinatorProvider.get().update();
     }
     return remote;
   }

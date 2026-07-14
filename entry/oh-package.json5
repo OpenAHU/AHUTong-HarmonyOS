@@ -22,6 +22,7 @@
     "feature_repository": "file:../feature/repository",
     "feature_settings": "file:../feature/settings",
     "feature_notification": "file:../feature/notification",
+    "feature_widget": "file:../feature/widget",
     "core_designsystem": "file:../core/designsystem",
     "core_datastore": "file:../core/datastore",
     "core_network": "file:../core/network",

@@ -25,6 +25,7 @@ export class PreferencesKeys {
   static readonly WEATHER_CACHE: string = 'weather_cache';
   static readonly WEATHER_ADCODE: string = 'weather_adcode';
   static readonly WEATHER_SHOW_ON_HOME: string = 'weather_show_on_home';
+  static readonly SCHEDULE_WIDGET_IDS: string = 'schedule_widget_ids';
 }
 
 export class AhuPreferences {

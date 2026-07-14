@@ -52,6 +52,17 @@
     ],
     "extensionAbilities": [
       {
+        "name": "ScheduleFormAbility",
+        "srcEntry": "./ets/scheduleformability/ScheduleFormAbility.ets",
+        "label": "$string:schedule_card_name",
+        "description": "$string:schedule_card_description",
+        "type": "form",
+        "exported": true,
+        "metadata": [
+          { "name": "ohos.extension.form", "resource": "$profile:form_config" }
+        ]
+      },
+      {
         "name": "EntryBackupAbility",
         "srcEntry": "./ets/entrybackupability/EntryBackupAbility.ets",
         "type": "backup",

@@ -299,6 +299,11 @@
       "name": "feature_notification",
       "srcPath": "./feature/notification",
       "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "feature_widget",
+      "srcPath": "./feature/widget",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
     }
   ]
 }
