@@ -4,6 +4,7 @@ import { Course, courseLength, courseStartTime, courseWeekday } from 'core_model
 import { ScheduleRepository, ScheduleRepositoryProvider, ScheduleSetupRepository } from 'data_schedule';
 import { LengthMetrics } from '@kit.ArkUI';
 import { CampusCardRepository, CampusCardRepositoryProvider } from 'data_campuscard';
+import { common } from '@kit.AbilityKit';
 
 const PERIOD_START: Array<number> = [480, 530, 590, 640, 690, 840, 890, 950, 1000, 1050, 1140, 1190, 1240];
 const PERIOD_END: Array<number> = [525, 575, 635, 685, 735, 885, 935, 995, 1045, 1095, 1185, 1235, 1285];
@@ -40,6 +41,11 @@ export struct HomePage {
   @State isEditing: boolean = false;
   @State cardBalance?: number = undefined;
   @State cardError: string = '';
+  @State showCardQrcode: boolean = false;
+  @State cardQrcode: string = '';
+  @State qrcodeLoading: boolean = false;
+  @State showFullscreenQrcode: boolean = false;
+  private originalBrightness: number = -1;
   onOpenSchedule: () => void = () => {};
   onOpenWidget: (route: string) => void = (_: string) => {};
 
@@ -62,6 +68,51 @@ export struct HomePage {
     const result = await this.campusCardRepository.getBalance(refresh);
     if (result.isSuccess && result.data) this.cardBalance = result.data.balance;
     else this.cardError = result.error?.message ?? '余额加载失败';
+  }
+
+  private async loadQrcode(): Promise<void> {
+    this.qrcodeLoading = true;
+    this.cardError = '';
+    const result = await this.campusCardRepository.getQrcode();
+    if (result.isSuccess && result.data) this.cardQrcode = result.data;
+    else {
+      this.cardQrcode = '';
+      this.cardError = result.error?.message ?? '校园码加载失败';
+    }
+    this.qrcodeLoading = false;
+  }
+
+  private openQrcode(): void {
+    this.showCardQrcode = true;
+    this.loadQrcode();
+  }
+
+  private async openFullscreenQrcode(): Promise<void> {
+    if (this.cardQrcode.length === 0) return;
+    try {
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      const mainWindow = context.windowStage.getMainWindowSync();
+      this.originalBrightness = mainWindow.getWindowProperties().brightness;
+      await mainWindow.setWindowBrightness(1);
+      this.showFullscreenQrcode = true;
+    } catch (_) {
+      this.cardError = '无法调整屏幕亮度';
+    }
+  }
+
+  private async closeFullscreenQrcode(): Promise<void> {
+    this.showFullscreenQrcode = false;
+    try {
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      await context.windowStage.getMainWindowSync().setWindowBrightness(this.originalBrightness);
+    } catch (_) {
+      // Window may already be unavailable while the page or ability is leaving the foreground.
+    }
+    this.originalBrightness = -1;
+  }
+
+  aboutToDisappear(): void {
+    if (this.showFullscreenQrcode) this.closeFullscreenQrcode();
   }
 
   private todayCourses(): Array<Course> {
@@ -231,19 +282,60 @@ export struct HomePage {
   @Builder
   private campusCard() {
     AhuInsetCard() {
-      Row() {
-        Column({ space: 16 }) {
-          Text('校园卡余额').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).fontColor(AhuColors.onSurface);
+      if (this.showCardQrcode) {
+        Column({ space: 12 }) {
+          Row() {
+            Button('←', { type: ButtonType.Circle }).width(40).height(40)
+              .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.chipUnselected)
+              .onClick(() => this.showCardQrcode = false);
+            Blank();
+            Button('放大', { type: ButtonType.Capsule }).height(40)
+              .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.chipUnselected)
+              .enabled(this.cardQrcode.length > 0)
+              .onClick(() => this.openFullscreenQrcode());
+          }.width('100%');
+          if (this.qrcodeLoading) {
+            LoadingProgress().width(48).height(48).color(AhuColors.primaryAction);
+          } else if (this.cardQrcode.length > 0) {
+            QRCode(this.cardQrcode).width(200).height(200).color('#000000').backgroundColor('#FFFFFF')
+              .onClick(() => {
+                this.loadQrcode();
+                this.loadBalance(true);
+              });
+          } else {
+            Text(this.cardError.length > 0 ? this.cardError : '校园码加载失败')
+              .fontColor(AhuColors.error).onClick(() => this.loadQrcode());
+          }
           Text(this.cardBalance === undefined ? '--' : `¥ ${this.cardBalance.toFixed(2)}`)
-            .fontSize(26).fontWeight(FontWeight.Bold).fontColor(AhuColors.onSurface);
-          if (this.cardError.length > 0) Text(this.cardError).fontSize(12).fontColor(AhuColors.error).maxLines(1);
-        }.layoutWeight(1).alignItems(HorizontalAlign.Start);
-        Button('↻', { type: ButtonType.Circle }).width(40).height(40).fontSize(20)
-          .backgroundColor(AhuColors.chipUnselected).fontColor(AhuColors.onSurface).onClick(() => this.loadBalance(true));
-        Divider().vertical(true).height(80).color(AhuColors.divider).margin({ left: 12, right: 12 });
-        Text('充\n值').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).textAlign(TextAlign.Center);
-      }.width('100%').alignItems(VerticalAlign.Center);
+            .fontSize(24).fontWeight(FontWeight.Bold).fontColor(AhuColors.onSurface);
+        }.width('100%').alignItems(HorizontalAlign.Center);
+      } else {
+        Row() {
+          Column({ space: 16 }) {
+            Text('校园卡余额').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).fontColor(AhuColors.onSurface);
+            Text(this.cardBalance === undefined ? '--' : `¥ ${this.cardBalance.toFixed(2)}`)
+              .fontSize(26).fontWeight(FontWeight.Bold).fontColor(AhuColors.onSurface);
+            if (this.cardError.length > 0) Text(this.cardError).fontSize(12).fontColor(AhuColors.error).maxLines(1);
+          }.layoutWeight(1).alignItems(HorizontalAlign.Start).onClick(() => this.openQrcode());
+          Button('↻', { type: ButtonType.Circle }).width(40).height(40).fontSize(20)
+            .backgroundColor(AhuColors.chipUnselected).fontColor(AhuColors.onSurface).onClick(() => this.loadBalance(true));
+          Divider().vertical(true).height(80).color(AhuColors.divider).margin({ left: 12, right: 12 });
+          Text('充\n值').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).textAlign(TextAlign.Center);
+        }.width('100%').alignItems(VerticalAlign.Center);
+      }
     }
+  }
+
+  @Builder
+  private fullscreenQrcode() {
+    Column() {
+      QRCode(this.cardQrcode).width(340).height(340).color('#000000').backgroundColor('#FFFFFF');
+      Text('点击空白处关闭').fontSize(AhuTypography.body).fontColor('#66000000').margin({ top: 24 });
+    }
+    .width('100%').height('100%')
+    .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center)
+    .backgroundColor('#FFFFFFFF')
+    .onClick(() => this.closeFullscreenQrcode());
   }
 
   @Builder
@@ -345,19 +437,25 @@ export struct HomePage {
   }
 
   build() {
-    if (this.isLoading) {
-      AhuLoading({ message: $r('app.string.home_loading') });
-    } else {
-      AhuScreen({ scrollable: true, clearBottomNav: true }) {
-        this.editHeader();
-        this.glance(this.todayCourses());
-        this.todayTimeline(this.todayCourses());
-        this.campusCard();
-        this.widgetGrid();
-        if (this.isEditing) {
-          this.widgetEditor();
+    Stack() {
+      if (this.isLoading) {
+        AhuLoading({ message: $r('app.string.home_loading') });
+      } else {
+        AhuScreen({ scrollable: true, clearBottomNav: true }) {
+          this.editHeader();
+          this.glance(this.todayCourses());
+          this.todayTimeline(this.todayCourses());
+          this.campusCard();
+          this.widgetGrid();
+          if (this.isEditing) {
+            this.widgetEditor();
+          }
         }
       }
+      if (this.showFullscreenQrcode) {
+        this.fullscreenQrcode();
+      }
     }
+    .width('100%').height('100%');
   }
 }
