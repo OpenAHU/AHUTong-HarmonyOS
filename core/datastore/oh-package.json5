@@ -1,0 +1,11 @@
+{
+  "name": "core_datastore",
+  "version": "1.0.0",
+  "description": "User-scoped preferences and cache for AHUTong.",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "core_common": "file:../common",
+    "core_model": "file:../model"
+  }
+}

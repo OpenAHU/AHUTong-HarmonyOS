@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "core_datastore",
+    "type": "har",
+    "deviceTypes": [
+      "phone"
+    ]
+  }
+}

@@ -75,6 +75,18 @@
       ]
     },
     {
+      "name": "core_datastore",
+      "srcPath": "./core/datastore",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
       "name": "data_schedule",
       "srcPath": "./data/schedule",
       "targets": [

@@ -7,7 +7,8 @@
   "license": "",
   "dependencies": {
     "feature_schedule": "file:../feature/schedule",
-    "core_designsystem": "file:../core/designsystem"
+    "core_designsystem": "file:../core/designsystem",
+    "core_datastore": "file:../core/datastore"
   }
 }
 
