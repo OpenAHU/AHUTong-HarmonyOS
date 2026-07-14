@@ -13,6 +13,7 @@ export struct SettingsPage {
   @State clearing: boolean = false;
   onLogout: () => Promise<void> = async () => {};
   onClearAllData: () => Promise<void> = async () => {};
+  onReminderChange: (enabled: boolean) => Promise<boolean> = async (_enabled: boolean) => true;
 
   private async feedback(): Promise<void> {
     try { const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
@@ -44,7 +45,7 @@ export struct SettingsPage {
 
   build() {
     if (this.activePage === 'preferences') {
-      PreferencesPage({ onBack: () => { this.activePage = ''; } });
+      PreferencesPage({ onBack: () => { this.activePage = ''; }, onReminderChange: this.onReminderChange });
     } else if (this.activePage === 'license') {
       LicensePage({ onBack: () => { this.activePage = ''; } });
     } else if (this.activePage === 'contributors') {

@@ -13,3 +13,7 @@ export {
   ScheduleRepository,
   ScheduleRepositoryProvider
 } from './src/main/ets/schedule/ScheduleRepository';
+export {
+  ScheduleReminderCoordinator,
+  ScheduleReminderCoordinatorProvider
+} from './src/main/ets/schedule/ScheduleReminderCoordinator';

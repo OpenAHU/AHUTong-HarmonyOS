@@ -1,4 +1,5 @@
 import { AhuCache } from 'core_datastore';
+import { ScheduleReminderCoordinatorProvider } from './ScheduleReminderCoordinator';
 
 export interface ScheduleSetupValues {
   schoolYear: string;
@@ -73,5 +74,6 @@ export class ScheduleSetupRepository {
     const day = `${start.getDate()}`.padStart(2, '0');
     AhuCache.saveSchoolTermStartTime(normalizedYear, normalizedTerm,
       `${start.getFullYear()}-${month}-${day}`);
+    ScheduleReminderCoordinatorProvider.get().reschedule();
   }
 }

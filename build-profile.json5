@@ -294,6 +294,11 @@
       "name": "feature_settings",
       "srcPath": "./feature/settings",
       "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "feature_notification",
+      "srcPath": "./feature/notification",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
     }
   ]
 }

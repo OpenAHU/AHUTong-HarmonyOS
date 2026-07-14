@@ -15,6 +15,7 @@ import { PhoneBookPage, ToolsPage } from 'feature_tools';
 import { WeatherPage } from 'feature_weather';
 import { RepositoryPage } from 'feature_repository';
 import { SettingsPage } from 'feature_settings';
+import { CourseReminderManager } from 'feature_notification';
 import { AuthRepositoryProvider } from 'data_auth';
 import { AhuCache } from 'core_datastore';
 import { fileIo as fs } from '@kit.CoreFileKit';
@@ -98,7 +99,14 @@ struct Index {
       }, $r('app.string.nav_tools')));
 
       TabContent() {
-        SettingsPage({ onLogout: () => this.logout(false), onClearAllData: () => this.logout(true) });
+        SettingsPage({
+          onLogout: () => this.logout(false),
+          onClearAllData: () => this.logout(true),
+          onReminderChange: (enabled: boolean) => {
+            const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+            return CourseReminderManager.setEnabled(context, enabled);
+          }
+        });
       }
       .tabBar(new BottomTabBarStyle({
         normal: new SymbolGlyphModifier($r('sys.symbol.gearshape')),

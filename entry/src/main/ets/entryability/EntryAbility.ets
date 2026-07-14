@@ -4,8 +4,16 @@ import { window } from '@kit.ArkUI';
 import { AhuCache, AhuPreferences } from 'core_datastore';
 import { CampusGatewayProvider } from 'core_sdk';
 import { AuthRepositoryProvider } from 'data_auth';
+import { ScheduleReminderCoordinator, ScheduleReminderCoordinatorProvider } from 'data_schedule';
+import { CourseReminderManager } from 'feature_notification';
 
 const DOMAIN = 0x0000;
+
+class CourseScheduleReminderCoordinator implements ScheduleReminderCoordinator {
+  reschedule(): void {
+    CourseReminderManager.reschedule().catch(() => {});
+  }
+}
 
 export default class EntryAbility extends UIAbility {
   onCreate(want: Want, launchParam: AbilityConstant.LaunchParam): void {
@@ -15,6 +23,8 @@ export default class EntryAbility extends UIAbility {
     AppStorage.setOrCreate('ahu_logout_revision', 0);
     CampusGatewayProvider.initialize();
     AuthRepositoryProvider.initialize(CampusGatewayProvider.get());
+    ScheduleReminderCoordinatorProvider.initialize(new CourseScheduleReminderCoordinator());
+    CourseReminderManager.reschedule().catch(() => {});
     try {
       this.context.getApplicationContext().setColorMode(ConfigurationConstant.ColorMode.COLOR_MODE_NOT_SET);
     } catch (err) {

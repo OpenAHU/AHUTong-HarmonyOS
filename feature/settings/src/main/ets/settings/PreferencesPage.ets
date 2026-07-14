@@ -20,7 +20,9 @@ export struct PreferencesPage {
   @State showCustom: boolean = false;
   @State customColor: string = '';
   @State colorError: string = '';
+  @State reminderMessage: string = '';
   onBack: () => void = () => {};
+  onReminderChange: (enabled: boolean) => Promise<boolean> = async (_enabled: boolean) => true;
 
   aboutToAppear(): void {
     this.reminder = AhuCache.courseReminderEnabled(); this.liveCountdown = AhuCache.liveCountdownEnabled();
@@ -35,6 +37,17 @@ export struct PreferencesPage {
     const value = this.customColor.trim().toUpperCase();
     if (!/^#[0-9A-F]{8}$/.test(value)) { this.colorError = '请输入 #AARRGGBB 格式，例如 #FF007FAC'; return; }
     this.setTheme(value); this.showCustom = false; this.colorError = '';
+  }
+
+  private async changeReminder(enabled: boolean): Promise<void> {
+    this.reminderMessage = '';
+    const applied = await this.onReminderChange(enabled);
+    this.reminder = enabled && applied;
+    if (!this.reminder) {
+      this.liveCountdown = false;
+      AhuCache.setLiveCountdownEnabled(false);
+    }
+    if (enabled && !applied) this.reminderMessage = '未获得通知权限，课前提醒未开启';
   }
 
   build() {
@@ -55,14 +68,16 @@ export struct PreferencesPage {
                   .fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary); }
                 .alignItems(HorizontalAlign.Start).layoutWeight(1);
                 Toggle({ type: ToggleType.Switch, isOn: this.reminder }).onChange((enabled: boolean) => {
-                  this.reminder = enabled; AhuCache.setCourseReminderEnabled(enabled);
-                  if (!enabled) { this.liveCountdown = false; AhuCache.setLiveCountdownEnabled(false); }
+                  this.changeReminder(enabled);
                 });
               }.width('100%');
+              if (this.reminderMessage.length > 0) {
+                Text(this.reminderMessage).fontSize(AhuTypography.label).fontColor(AhuColors.error).width('100%');
+              }
               Divider().color(AhuColors.divider);
               Row() {
                 Column({ space: 4 }) { Text('课前倒计时岛卡提醒（实验性）');
-                  Text('需同时开启课前提醒，系统能力将在通知阶段接入').fontSize(AhuTypography.label)
+                  Text('需同时开启课前提醒，展示样式由 HarmonyOS 系统决定').fontSize(AhuTypography.label)
                     .fontColor(AhuColors.onSurfaceSecondary); }.alignItems(HorizontalAlign.Start).layoutWeight(1);
                 Toggle({ type: ToggleType.Switch, isOn: this.liveCountdown }).enabled(this.reminder)
                   .onChange((enabled: boolean) => { this.liveCountdown = enabled; AhuCache.setLiveCountdownEnabled(enabled); });
