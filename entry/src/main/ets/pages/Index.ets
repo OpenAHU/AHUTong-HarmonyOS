@@ -17,7 +17,7 @@ import { FreeClassroomPage } from 'feature_classroom';
 import { BathroomRechargePage, CardRechargePage, ElectricityRechargePage } from 'feature_payment';
 import { ScheduleSetupRepository } from 'data_schedule';
 import { LostFoundPage } from 'feature_portal';
-import { ToolsPage } from 'feature_tools';
+import { PhoneBookPage, ToolsPage } from 'feature_tools';
 
 @Component
 struct MigrationPage {
@@ -74,7 +74,7 @@ struct Index {
             this.selectedIndex = 1;
           },
           onOpenWidget: (route: string) => {
-            if (route === 'grade' || route === 'exam' || route === 'school_calendar' || route === 'free_classroom' || route === 'bathroom' || route === 'electricity' || route === 'lost_found') {
+            if (route === 'grade' || route === 'exam' || route === 'school_calendar' || route === 'free_classroom' || route === 'bathroom' || route === 'electricity' || route === 'lost_found' || route === 'phone_book') {
               this.activePage = route;
             }
           },
@@ -148,6 +148,8 @@ struct Index {
         ElectricityRechargePage({ onBack: () => { this.activePage = ''; } });
       } else if (this.activePage === 'lost_found') {
         LostFoundPage({ onBack: () => { this.activePage = ''; } });
+      } else if (this.activePage === 'phone_book') {
+        PhoneBookPage({ onBack: () => { this.activePage = ''; } });
       } else {
         this.mainContent();
       }
