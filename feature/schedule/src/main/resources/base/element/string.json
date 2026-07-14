@@ -4,6 +4,8 @@
     { "name": "schedule_school_year", "value": "学年" },
     { "name": "schedule_school_term", "value": "学期" },
     { "name": "schedule_current_week", "value": "当前周" },
-    { "name": "schedule_setup_confirm", "value": "确定" }
+    { "name": "schedule_setup_confirm", "value": "确定" },
+    { "name": "schedule_loading", "value": "正在加载课表" },
+    { "name": "schedule_retry", "value": "重试" }
   ]
 }

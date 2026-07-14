@@ -6,6 +6,13 @@ export interface ScheduleSetupValues {
   currentWeek: number;
 }
 
+export interface ScheduleDisplayConfig {
+  schoolYear: string;
+  schoolTerm: string;
+  currentWeek: number;
+  startDate: string;
+}
+
 export class ScheduleSetupRepository {
   hasCompletedSetup(): boolean {
     return AhuCache.getSchoolYear() !== undefined && AhuCache.getSchoolTerm() !== undefined;
@@ -19,6 +26,27 @@ export class ScheduleSetupRepository {
       schoolYear: AhuCache.getSchoolYear() ?? `${startYear}-${startYear + 1}`,
       schoolTerm: this.cachedTerm() ?? term,
       currentWeek: 1
+    };
+  }
+
+  displayConfig(now: Date = new Date()): ScheduleDisplayConfig | undefined {
+    const schoolYear = AhuCache.getSchoolYear();
+    const schoolTerm = this.cachedTerm();
+    if (!schoolYear || !schoolTerm) {
+      return undefined;
+    }
+    const startDate = AhuCache.getSchoolTermStartTime(schoolYear, schoolTerm);
+    if (!startDate) {
+      return undefined;
+    }
+    const start = new Date(`${startDate}T00:00:00`);
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const elapsedDays = Math.floor((today.getTime() - start.getTime()) / 86_400_000);
+    return {
+      schoolYear: schoolYear,
+      schoolTerm: schoolTerm,
+      currentWeek: Math.max(1, Math.min(20, Math.floor(elapsedDays / 7) + 1)),
+      startDate: startDate
     };
   }
 

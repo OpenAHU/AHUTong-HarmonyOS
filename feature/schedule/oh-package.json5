@@ -6,6 +6,7 @@
   "license": "GPL-3.0-only",
   "dependencies": {
     "data_schedule": "file:../../data/schedule",
-    "core_designsystem": "file:../../core/designsystem"
+    "core_designsystem": "file:../../core/designsystem",
+    "core_model": "file:../../core/model"
   }
 }

@@ -8,7 +8,7 @@ import {
 import { SymbolGlyphModifier } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { AppLaunchGate } from 'feature_login';
-import { ScheduleSetupPage } from 'feature_schedule';
+import { ScheduleSetupPage, WeeklySchedulePage } from 'feature_schedule';
 import { ScheduleSetupRepository } from 'data_schedule';
 
 @Component
@@ -71,10 +71,7 @@ struct Index {
       }, $r('app.string.nav_home')));
 
       TabContent() {
-        MigrationPage({
-          title: $r('app.string.nav_schedule'),
-          description: $r('app.string.schedule_migration_description')
-        });
+        WeeklySchedulePage();
       }
       .tabBar(new BottomTabBarStyle({
         normal: new SymbolGlyphModifier($r('sys.symbol.calendar')),
