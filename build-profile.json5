@@ -159,6 +159,18 @@
       ]
     },
     {
+      "name": "data_crawler",
+      "srcPath": "./data/crawler",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
       "name": "feature_login",
       "srcPath": "./feature/login",
       "targets": [

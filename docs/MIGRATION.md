@@ -50,8 +50,8 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_schedule`、`feature_login`、`feature_schedule` HAR
-- 当前实现：M1-M3 基础架构已完成，M4 已完成首次启动协议门、登录页面与认证状态流；真实校园认证仍受原生 SDK / 爬虫源未迁移阻塞
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`feature_login`、`feature_schedule` HAR
+- 当前实现：M1-M3 基础架构已完成，M4 已完成首次启动协议门、登录页面与认证状态流，并接入安大门户验证码 OCR 登录；教务 CAS 会话和安全凭据存储仍待迁移
 
 ## 3. 架构映射
 
@@ -122,7 +122,7 @@ entry (HAP / composition root)
 | --- | --- | --- | --- | --- |
 | 四入口主导航 | App / BottomNavBar | `entry` | 已完成 | 主页、课表、工具、设置 Tabs；API 24 Debug HAP 构建通过；无连接设备，待补真机视觉验证 |
 | 启动与协议确认 | `feature:login` / Splash | `feature/login` | 已完成 | 免责声明、隐私政策、商业合作依次确认并分别持久化；拒绝即终止 UIAbility；API 24 Debug HAP 构建通过，无连接设备，待补真机视觉与重启持久化验证 |
-| 统一身份认证登录 | `feature:login` + `data:auth` | `feature/login` + `data/auth` | 进行中 | 已迁移胶囊输入、焦点表情、密码显隐、空值/加载/失败/成功状态、Repository 契约及成功用户持久化；API 24 Debug HAP 构建通过；真实认证仍等待 Native/Crawler 实现，未标记完成 |
+| 统一身份认证登录 | `feature:login` + `data:auth` | `feature/login` + `data/auth` | 进行中 | 已迁移 UI、状态、Repository、安大门户验证码获取、OpenAHU OCR、最多 5 次表单认证与成功用户持久化；端点/OCR 无凭据冒烟及 API 24 构建通过；尚缺教务 CAS 联合会话与真实账号真机验证 |
 | 登录态恢复与失效重登 | `core:common` + `data:auth` | `core/common` + `data/auth` | 待开始 | 冷启动、Cookie、会话过期 |
 | 个人与学期初始化 | Setup / Info | `feature/login` + `data/schedule` | 待开始 | 首次配置及重新配置 |
 
@@ -200,6 +200,7 @@ entry (HAP / composition root)
 - Android 工作区当前可能含未提交改动；每个功能必须锁定源提交和额外差异。
 - 校园系统接口、Cookie、WebView 和证书策略需要在 HarmonyOS 网络栈上逐项验证。
 - Android 原生 SDK / Rust 或 JNI 能力不能直接假定可用，需要确定 ArkTS、NAPI 或重新实现方案。
+- Android 仓库仅含 `arm64-v8a/libahutong_rs.so` 成品而无 Rust 源码，不能直接作为 HarmonyOS NAPI 库复用；当前按业务域迁移 ArkTS 爬虫路径。
 - Android 登录成功会缓存智慧安大密码供爬虫自动重登；HarmonyOS 版暂不把密码写入普通 Preferences，须接入系统安全凭据存储后再恢复该能力。
 - 后台任务、开机恢复、通知、课表微件和应用更新均存在平台语义差异，应按 HarmonyOS 官方能力设计。
 - UI 一致不等于照搬 Android 系统控件；涉及系统权限、窗口和返回行为时优先满足 HarmonyOS 规范。
@@ -220,3 +221,4 @@ entry (HAP / composition root)
 | 2026-07-14 | SDK 边界 | 新增 `core_sdk_api` / `core_sdk`，迁移 `CampusNativeGateway` 能力契约、Provider 与明确失败的占位实现 | API 24 Debug HAP 构建成功且无 ArkTS 警告；Rust/JNI 尚未迁移，调用不会伪装成功 |
 | 2026-07-14 | 首次启动 | 新增 `data_auth` / `feature_login`，迁移免责声明、隐私政策与商业合作三段顺序确认、本地持久化和拒绝退出，并接入应用入口 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无签名及连接设备，未执行安装、视觉和冷启动验证 |
 | 2026-07-14 | 登录界面与状态 | 对照 Android 恢复账号/密码胶囊输入、四张焦点表情、密码显隐与动态登录状态条；新增可注入认证 Repository、会话门和成功用户持久化 | API 24 Debug HAP 构建成功且无 ArkTS 警告；原生 SDK 当前明确返回不可用，未使用假成功，真实账号认证待后续数据源提交 |
+| 2026-07-14 | 门户认证数据源 | 新增 `data_crawler`，迁移安大门户验证码、OpenAHU OCR、表单登录、Cookie 会话与 5 次验证码重试；认证仓库在 Native 不可用时自动降级到该真实数据源 | 验证码端点返回 200 和会话 Cookie，OCR 返回 4 位结果；API 24 Debug HAP 构建成功且无 ArkTS 警告；未使用或记录真实账号，教务 CAS 会话仍待迁移 |

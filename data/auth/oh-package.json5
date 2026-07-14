@@ -8,6 +8,7 @@
     "core_common": "file:../../core/common",
     "core_datastore": "file:../../core/datastore",
     "core_model": "file:../../core/model",
-    "core_sdk_api": "file:../../core/sdk-api"
+    "core_sdk_api": "file:../../core/sdk-api",
+    "data_crawler": "file:../crawler"
   }
 }

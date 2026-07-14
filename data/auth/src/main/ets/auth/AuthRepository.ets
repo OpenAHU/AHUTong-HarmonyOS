@@ -2,6 +2,7 @@ import { AppErrorKind, AppResult, AppResults } from 'core_common';
 import { AhuCache } from 'core_datastore';
 import { User } from 'core_model';
 import { CampusNativeGateway } from 'core_sdk_api';
+import { CrawlerAuthenticator, PortalCrawlerAuthenticator } from 'data_crawler';
 
 export interface AuthRepository {
   login(username: string, password: string): Promise<AppResult<User>>;
@@ -10,9 +11,11 @@ export interface AuthRepository {
 
 export class DefaultAuthRepository implements AuthRepository {
   private readonly gateway: CampusNativeGateway;
+  private readonly crawler: CrawlerAuthenticator;
 
-  constructor(gateway: CampusNativeGateway) {
+  constructor(gateway: CampusNativeGateway, crawler: CrawlerAuthenticator = new PortalCrawlerAuthenticator()) {
     this.gateway = gateway;
+    this.crawler = crawler;
   }
 
   async login(username: string, password: string): Promise<AppResult<User>> {
@@ -23,7 +26,10 @@ export class DefaultAuthRepository implements AuthRepository {
 
     AhuCache.clearCurrentUser();
     this.gateway.clearSession();
-    const result = await this.gateway.login(normalizedUsername, password);
+    this.crawler.clearSession();
+    const result = this.gateway.isNativeLoaded()
+      ? await this.gateway.login(normalizedUsername, password)
+      : await this.crawler.login(normalizedUsername, password);
     if (!result.isSuccess) {
       return result;
     }
@@ -40,6 +46,7 @@ export class DefaultAuthRepository implements AuthRepository {
 
   logout(): void {
     this.gateway.clearSession();
+    this.crawler.clearSession();
     AhuCache.logout();
   }
 }

@@ -1,0 +1,11 @@
+{
+  "name": "data_crawler",
+  "version": "1.0.0",
+  "description": "Campus web crawler data sources for AHUTong.",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "core_common": "file:../../core/common",
+    "core_model": "file:../../core/model"
+  }
+}

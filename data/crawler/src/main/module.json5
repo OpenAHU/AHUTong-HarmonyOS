@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "data_crawler",
+    "type": "har",
+    "deviceTypes": [
+      "phone"
+    ]
+  }
+}
