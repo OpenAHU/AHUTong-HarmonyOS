@@ -52,8 +52,10 @@ export struct HomePage {
   @State dragTarget: number = -1;
   @State dragOffsetX: number = 0;
   @State dragOffsetY: number = 0;
+  @State clockRevision: number = 0;
   @StorageLink('ahu_home_edit_request') @Watch('onEditRequestChanged') homeEditRequest: number = 0;
   private originalBrightness: number = -1;
+  private refreshTimer: number = -1;
   onOpenSchedule: () => void = () => {};
   onOpenWidget: (route: string) => void = (_: string) => {};
   onOpenRecharge: () => void = () => {};
@@ -70,6 +72,15 @@ export struct HomePage {
     this.load();
     this.loadBalance(false);
     this.loadWeather();
+    this.startPeriodicRefresh();
+  }
+
+  private startPeriodicRefresh(): void {
+    if (this.refreshTimer >= 0) clearInterval(this.refreshTimer);
+    this.refreshTimer = setInterval(() => {
+      this.clockRevision++;
+      this.loadBalance(true);
+    }, 30_000);
   }
 
   private async load(): Promise<void> {
@@ -146,6 +157,10 @@ export struct HomePage {
   }
 
   aboutToDisappear(): void {
+    if (this.refreshTimer >= 0) {
+      clearInterval(this.refreshTimer);
+      this.refreshTimer = -1;
+    }
     if (this.showFullscreenQrcode) this.closeFullscreenQrcode();
   }
 
@@ -157,6 +172,7 @@ export struct HomePage {
   }
 
   private currentMinutes(): number {
+    this.clockRevision;
     const now = AhuCache.now();
     return now.getHours() * 60 + now.getMinutes();
   }
