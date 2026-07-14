@@ -22,7 +22,14 @@ export struct ExamPage {
   private visible(): Array<Exam> {
     const query = this.query.trim().toLowerCase();
     return this.exams.filter((exam: Exam): boolean => query.length === 0 || (exam.course ?? '').toLowerCase().includes(query))
-      .sort((left: Exam, right: Exam): number => (left.time ?? '').localeCompare(right.time ?? ''));
+      .sort((left: Exam, right: Exam): number => {
+        const statusOrder = this.statusOrder(left) - this.statusOrder(right);
+        return statusOrder !== 0 ? statusOrder : (left.time ?? '').localeCompare(right.time ?? '');
+      });
+  }
+  private statusOrder(exam: Exam): number {
+    const status = this.status(exam);
+    return status === '进行中' ? 0 : status === '未开始' ? 1 : status === '已结束' ? 2 : 3;
   }
   private status(exam: Exam): string {
     const match = (exam.time ?? '').match(/(\d{4}-\d{2}-\d{2})\s+(\d{2}:\d{2})~(\d{2}:\d{2})/);
