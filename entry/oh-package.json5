@@ -10,6 +10,7 @@
     "data_auth": "file:../data/auth",
     "data_schedule": "file:../data/schedule",
     "feature_schedule": "file:../feature/schedule",
+    "feature_home": "file:../feature/home",
     "core_designsystem": "file:../core/designsystem",
     "core_datastore": "file:../core/datastore",
     "core_network": "file:../core/network",

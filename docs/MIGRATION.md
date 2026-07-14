@@ -50,7 +50,7 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`feature_login`、`feature_schedule` HAR
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`feature_login`、`feature_home`、`feature_schedule` HAR
 - 当前实现：M1-M3 基础架构已完成；M4 已完成协议门、登录 UI、门户/教务联合登录、安全凭据冷启动恢复、业务请求失效重登及个人学期初始化，仍待真实账号真机验收；M5 已开始迁移教务业务数据链路
 
 ## 3. 架构映射
@@ -130,7 +130,7 @@ entry (HAP / composition root)
 
 | 功能 | Android 来源 | HarmonyOS 目标 | 状态 | 验证/备注 |
 | --- | --- | --- | --- | --- |
-| 首页与卡片编排 | `feature:home` | `feature/home` | 待开始 | 今日课程、校园卡、天气、缴费入口 |
+| 首页与卡片编排 | `feature:home` | `feature/home` | 进行中 | 已迁移日期与当前/下节/今日课程概览、今日课程列表、8 槽位工具网格及课表联动；校园卡、天气真实数据卡待对应数据域迁移；API 24 构建通过，待设备视觉验证 |
 | 首页卡片编辑 | `feature:home` | `feature/home` | 待开始 | 排序、显示隐藏、持久化 |
 | 电子课表 | `feature:schedule` + `data:schedule` | 对应同名域 | 进行中 | 已迁移数据源、用户/学期隔离缓存、20 周切换、回到当前周、强制刷新、星期日期与 1–13 节网格、课程色块及加载/空/错状态；API 24 构建通过，真实课表与视觉仍待账号设备验证 |
 | 课程详情 | `feature:schedule` | `feature/schedule` | 进行中 | 点击课程色块显示名称、连续/单双/离散周次、星期与节次、地点、教师，支持遮罩和按钮关闭；API 24 构建通过，待设备交互与视觉验收 |
@@ -229,3 +229,4 @@ entry (HAP / composition root)
 | 2026-07-14 | 课表数据源与缓存 | 迁移 Android 课表爬虫与仓库：解析教务当前学期脚本、请求 `print-data`、映射课程周次/星期/节次/教师/教室，并按用户和学期缓存及支持强制刷新 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；匿名请求仅能验证认证防线，真实课程数据待账号设备验收 |
 | 2026-07-14 | 电子周课表 | 以 ArkUI 迁移 Android 课表主界面：20 周胶囊选择、当前周定位、刷新、星期日期表头、1–13 节纵轴、按周过滤课程色块，以及加载、空数据和失败重试状态 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号和连接设备，待课程重叠与深浅色视觉对照 |
 | 2026-07-14 | 课程详情 | 为课程色块接入详情弹层，展示课程名称、连续/单双/离散周次、星期、节次、地点和教师，并支持点击遮罩或按钮关闭 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，待触控与深浅色视觉对照 |
+| 2026-07-14 | 首页课程与卡片骨架 | 新增 `feature_home`，迁移日期、当前/下节/今日课程概览、今日课程列表、8 槽位工具网格，并以真实课表缓存驱动当前周和当日过滤，点击课程区域切换到课表 Tab | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；校园卡与天气仍为后续数据切片，无连接设备待视觉验证 |

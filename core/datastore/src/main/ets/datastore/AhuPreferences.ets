@@ -15,6 +15,7 @@ export class PreferencesKeys {
   static readonly LIVE_COUNTDOWN_ENABLED: string = 'course_reminder_live_countdown_enabled';
   static readonly THEME_COLOR: string = 'theme_color_hex';
   static readonly MOCK_CURRENT_TIME: string = 'mock_current_time';
+  static readonly HOME_WIDGET_SLOTS: string = 'home_widget_slots';
 }
 
 export class AhuPreferences {

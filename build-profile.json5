@@ -181,6 +181,18 @@
           ]
         }
       ]
+    },
+    {
+      "name": "feature_home",
+      "srcPath": "./feature/home",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
     }
   ]
 }

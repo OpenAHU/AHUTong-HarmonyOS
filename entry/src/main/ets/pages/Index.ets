@@ -9,6 +9,7 @@ import { SymbolGlyphModifier } from '@kit.ArkUI';
 import { common } from '@kit.AbilityKit';
 import { AppLaunchGate } from 'feature_login';
 import { ScheduleSetupPage, WeeklySchedulePage } from 'feature_schedule';
+import { HomePage } from 'feature_home';
 import { ScheduleSetupRepository } from 'data_schedule';
 
 @Component
@@ -60,9 +61,10 @@ struct Index {
   private mainContent() {
     Tabs({ barPosition: BarPosition.End, index: this.selectedIndex }) {
       TabContent() {
-        MigrationPage({
-          title: $r('app.string.nav_home'),
-          description: $r('app.string.home_migration_description')
+        HomePage({
+          onOpenSchedule: () => {
+            this.selectedIndex = 1;
+          }
         });
       }
       .tabBar(new BottomTabBarStyle({

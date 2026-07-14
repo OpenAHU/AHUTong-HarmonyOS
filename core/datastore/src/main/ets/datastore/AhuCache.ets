@@ -119,6 +119,24 @@ export class AhuCache {
     return AhuPreferences.getBoolean(AhuCache.userKey(PreferencesKeys.SHOW_ALL_COURSE));
   }
 
+  static getHomeWidgetSlots(): Array<string> {
+    const raw = AhuPreferences.getString(AhuCache.userKey(PreferencesKeys.HOME_WIDGET_SLOTS));
+    if (raw.length === 0) {
+      return ['bathroom', 'electricity', '', '', '', '', '', ''];
+    }
+    try {
+      const slots = JSON.parse(raw) as Array<string>;
+      return Array.from({ length: 8 }, (_: Object, index: number) => slots[index] ?? '');
+    } catch (_) {
+      return ['bathroom', 'electricity', '', '', '', '', '', ''];
+    }
+  }
+
+  static saveHomeWidgetSlots(slots: Array<string>): void {
+    const normalized = Array.from({ length: 8 }, (_: Object, index: number) => slots[index] ?? '');
+    AhuPreferences.putString(AhuCache.userKey(PreferencesKeys.HOME_WIDGET_SLOTS), JSON.stringify(normalized));
+  }
+
   static logout(): void {
     AhuCache.clearCurrentUser();
   }

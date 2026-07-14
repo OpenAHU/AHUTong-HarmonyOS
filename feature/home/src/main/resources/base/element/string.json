@@ -1,0 +1,11 @@
+{
+  "string": [
+    { "name": "home_in_class", "value": "正在上课" },
+    { "name": "home_next_class", "value": "下节课是" },
+    { "name": "home_today_courses", "value": "今日课程" },
+    { "name": "home_all_courses_done", "value": "已全部上完" },
+    { "name": "home_no_courses", "value": "今天暂无课程" },
+    { "name": "home_view_schedule", "value": "点击查看完整课表" },
+    { "name": "home_loading", "value": "正在准备首页" }
+  ]
+}

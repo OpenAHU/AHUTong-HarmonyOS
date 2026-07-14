@@ -1,0 +1,13 @@
+{
+  "name": "feature_home",
+  "version": "1.0.0",
+  "description": "Home presentation and state management for AHUTong.",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "core_datastore": "file:../../core/datastore",
+    "core_designsystem": "file:../../core/designsystem",
+    "core_model": "file:../../core/model",
+    "data_schedule": "file:../../data/schedule"
+  }
+}
