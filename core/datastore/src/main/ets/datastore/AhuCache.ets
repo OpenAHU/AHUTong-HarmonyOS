@@ -1,4 +1,4 @@
-import { Course, Grade, User } from 'core_model';
+import { Course, Exam, Grade, User } from 'core_model';
 import { AhuPreferences, PreferencesKeys } from './AhuPreferences';
 
 export class AhuCache {
@@ -151,6 +151,16 @@ export class AhuCache {
     } catch (_) {
       return undefined;
     }
+  }
+
+  static saveExams(exams: Array<Exam>): void {
+    AhuPreferences.putString(AhuCache.userKey(PreferencesKeys.EXAM_CACHE), JSON.stringify(exams));
+  }
+
+  static getExams(): Array<Exam> {
+    const raw = AhuPreferences.getString(AhuCache.userKey(PreferencesKeys.EXAM_CACHE));
+    if (raw.length === 0) return [];
+    try { return JSON.parse(raw) as Array<Exam>; } catch (_) { return []; }
   }
 
   static logout(): void {

@@ -217,6 +217,16 @@
           ]
         }
       ]
+    },
+    {
+      "name": "data_exam",
+      "srcPath": "./data/exam",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "feature_exam",
+      "srcPath": "./feature/exam",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
     }
   ]
 }

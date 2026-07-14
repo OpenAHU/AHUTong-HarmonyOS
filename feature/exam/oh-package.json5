@@ -1,0 +1,4 @@
+{
+  "name": "feature_exam", "version": "1.0.0", "main": "Index.ets", "license": "GPL-3.0-only",
+  "dependencies": { "core_designsystem": "file:../../core/designsystem", "core_model": "file:../../core/model", "data_exam": "file:../../data/exam" }
+}

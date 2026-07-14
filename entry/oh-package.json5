@@ -12,6 +12,7 @@
     "feature_schedule": "file:../feature/schedule",
     "feature_home": "file:../feature/home",
     "feature_grade": "file:../feature/grade",
+    "feature_exam": "file:../feature/exam",
     "core_designsystem": "file:../core/designsystem",
     "core_datastore": "file:../core/datastore",
     "core_network": "file:../core/network",

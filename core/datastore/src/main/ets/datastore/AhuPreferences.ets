@@ -17,6 +17,7 @@ export class PreferencesKeys {
   static readonly MOCK_CURRENT_TIME: string = 'mock_current_time';
   static readonly HOME_WIDGET_SLOTS: string = 'home_widget_slots';
   static readonly GRADE_CACHE: string = 'grade_cache';
+  static readonly EXAM_CACHE: string = 'exam_cache';
 }
 
 export class AhuPreferences {
