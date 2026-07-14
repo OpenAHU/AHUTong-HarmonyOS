@@ -6,6 +6,8 @@ import { PortalCrawlerClient } from 'data_crawler';
 export class LostFoundRepository {
   private readonly client: PortalCrawlerClient = new PortalCrawlerClient();
 
+  currentUserId(): string { return AhuCache.getCurrentUser()?.xh ?? ''; }
+
   async getList(page: number, pageSize: number, state: number): Promise<AppResult<LostFoundResponse>> {
     const url = `https://adwmh.ahu.edu.cn/lostfound/all?pageNo=${page}&pageSize=${pageSize}&state=${state}`;
     const result = await this.client.getJson<LostFoundResponse>(url);
@@ -55,6 +57,18 @@ export class LostFoundRepository {
     if (result.isSuccess && result.data && result.data.code === 0) return AppResults.success<boolean>(true);
     return AppResults.failure<boolean>(result.error?.kind ?? AppErrorKind.HTTP,
       result.data?.msg ?? result.error?.message ?? '发布失败', result.data?.code ?? result.error?.code);
+  }
+
+  async delete(id: string): Promise<AppResult<boolean>> {
+    const result = await this.client.postForm<PortalActionResponse>('https://adwmh.ahu.edu.cn/lostfound/delete',
+      `id=${encodeURIComponent(id)}`);
+    if (result.isSuccess && result.data && result.data.code === 0) {
+      AhuCache.saveLostFoundList(1, AhuCache.getLostFoundList(1).filter((item: LostFoundItem) => item.id !== id));
+      AhuCache.saveLostFoundList(2, AhuCache.getLostFoundList(2).filter((item: LostFoundItem) => item.id !== id));
+      return AppResults.success<boolean>(true);
+    }
+    return AppResults.failure<boolean>(result.error?.kind ?? AppErrorKind.HTTP,
+      result.data?.msg ?? result.error?.message ?? '删除失败', result.data?.code ?? result.error?.code);
   }
 }
 

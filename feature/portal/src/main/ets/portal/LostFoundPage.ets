@@ -25,6 +25,10 @@ export struct LostFoundPage {
   @State num1: string = '';
   @State publishing: boolean = false;
   @State publishError: string = '';
+  @State showMyPosts: boolean = false;
+  @State deleteTarget?: LostFoundItem = undefined;
+  @State deleting: boolean = false;
+  @State deleteError: string = '';
   onBack: () => void = () => {};
 
   aboutToAppear(): void { this.load(true); this.loadPublishOptions(); }
@@ -50,6 +54,22 @@ export struct LostFoundPage {
     if (!result.isSuccess) { this.publishError = result.error?.message ?? '发布失败'; return; }
     this.showPublish = false; this.linkman = ''; this.phone = ''; this.title = ''; this.num1 = '';
     this.state = Number(this.publishState); await this.load(true);
+  }
+
+  private myPosts(): Array<LostFoundItem> {
+    const userId = this.repository.currentUserId();
+    return this.items.filter((item: LostFoundItem) => item.pubuser?.idNumber === userId);
+  }
+
+  private async confirmDelete(): Promise<void> {
+    if (!this.deleteTarget || this.deleting) return;
+    this.deleting = true; this.deleteError = '';
+    const id = this.deleteTarget.id;
+    const result = await this.repository.delete(id);
+    this.deleting = false;
+    if (!result.isSuccess) { this.deleteError = result.error?.message ?? '删除失败'; return; }
+    this.items = this.items.filter((item: LostFoundItem) => item.id !== id);
+    this.deleteTarget = undefined;
   }
 
   private async load(refresh: boolean): Promise<void> {
@@ -143,6 +163,52 @@ export struct LostFoundPage {
       .alignItems(HorizontalAlign.Start);
   }
 
+  @Builder
+  private myPostsSheet() {
+    Column({ space: 12 }) {
+      Row() {
+        Text('管理我的帖子').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold).layoutWeight(1);
+        Button('×', { type: ButtonType.Circle }).width(38).height(38).backgroundColor(AhuColors.chipUnselected)
+          .fontColor(AhuColors.onSurface).onClick(() => this.showMyPosts = false);
+      }.width('100%');
+      if (this.myPosts().length === 0) {
+        Text('当前列表中没有由你发布的帖子').fontColor(AhuColors.onSurfaceSecondary).padding({ top: 32, bottom: 32 });
+      } else {
+        Scroll() {
+          Column({ space: 10 }) {
+            ForEach(this.myPosts(), (item: LostFoundItem) => {
+              Row({ space: 12 }) {
+                Column({ space: 4 }) {
+                  Text(item.title).fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).maxLines(2);
+                  Text(item.createtime ?? '').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary);
+                }.layoutWeight(1).alignItems(HorizontalAlign.Start);
+                Button('删除', { type: ButtonType.Capsule }).fontColor(AhuColors.error)
+                  .backgroundColor(AhuColors.chipUnselected).onClick(() => { this.deleteError = ''; this.deleteTarget = item; });
+              }.width('100%').padding(12).backgroundColor(AhuColors.cardStrong).borderRadius(16);
+            }, (item: LostFoundItem) => item.id);
+          }.width('100%');
+        }.layoutWeight(1).scrollBar(BarState.Auto);
+      }
+    }.width('92%').height('76%').padding(22).backgroundColor(AhuColors.card).borderRadius(28)
+      .alignItems(HorizontalAlign.Start);
+  }
+
+  @Builder
+  private deleteConfirmSheet(item: LostFoundItem) {
+    Column({ space: 18 }) {
+      Text('确认删除').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold);
+      Text(`确定删除“${item.title}”吗？删除后无法恢复。`).fontSize(AhuTypography.body);
+      if (this.deleteError.length > 0) Text(this.deleteError).fontSize(AhuTypography.label).fontColor(AhuColors.error);
+      Row({ space: 10 }) {
+        Button('取消', { type: ButtonType.Capsule }).layoutWeight(1).enabled(!this.deleting)
+          .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.chipUnselected)
+          .onClick(() => this.deleteTarget = undefined);
+        Button(this.deleting ? '删除中…' : '删除', { type: ButtonType.Capsule }).layoutWeight(1).enabled(!this.deleting)
+          .fontColor(AhuColors.onPrimaryAction).backgroundColor(AhuColors.error).onClick(() => this.confirmDelete());
+      }.width('100%');
+    }.width('86%').padding(24).backgroundColor(AhuColors.card).borderRadius(28).alignItems(HorizontalAlign.Start);
+  }
+
   build() {
     Stack({ alignContent: Alignment.Center }) {
       AhuScreen({ scrollable: true }) {
@@ -164,6 +230,8 @@ export struct LostFoundPage {
             .fontColor(this.state === 2 ? AhuColors.onPrimaryAction : AhuColors.onSurface)
             .backgroundColor(this.state === 2 ? AhuColors.primaryAction : AhuColors.chipUnselected)
             .onClick(() => this.switchState(2));
+          Button('我的', { type: ButtonType.Capsule }).fontColor(AhuColors.onSurface)
+            .backgroundColor(AhuColors.chipUnselected).onClick(() => this.showMyPosts = true);
         }.width('100%').padding({ left: 16, right: 16 });
         if (this.loading) {
           Column({ space: 12 }) { LoadingProgress().width(48).height(48).color(AhuColors.primaryAction); Text('正在加载…'); }
@@ -198,6 +266,14 @@ export struct LostFoundPage {
       if (this.showPublish) {
         Column() { this.publishSheet(); }.width('100%').height('100%')
           .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).backgroundColor('#66000000');
+      }
+      if (this.showMyPosts) {
+        Column() { this.myPostsSheet(); }.width('100%').height('100%')
+          .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).backgroundColor('#66000000');
+      }
+      if (this.deleteTarget) {
+        Column() { this.deleteConfirmSheet(this.deleteTarget); }.width('100%').height('100%')
+          .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).backgroundColor('#88000000');
       }
     }.width('100%').height('100%');
   }

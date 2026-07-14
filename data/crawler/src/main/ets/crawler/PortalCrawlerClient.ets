@@ -46,4 +46,16 @@ export class PortalCrawlerClient {
     try { return AppResults.success<T>(JSON.parse(result.data) as T); }
     catch (_) { return AppResults.failure<T>(AppErrorKind.PARSE, '门户数据解析失败'); }
   }
+
+  async postForm<T>(url: string, body: string): Promise<AppResult<T>> {
+    let result = await this.requestOnce(url, http.RequestMethod.POST, body,
+      'application/x-www-form-urlencoded; charset=UTF-8');
+    if (!result.isSuccess && result.error?.kind === AppErrorKind.AUTHENTICATION && await CrawlerSession.reauthenticatePortal())
+      result = await this.requestOnce(url, http.RequestMethod.POST, body,
+        'application/x-www-form-urlencoded; charset=UTF-8');
+    if (!result.isSuccess || result.data === undefined)
+      return AppResults.failure<T>(result.error?.kind ?? AppErrorKind.UNKNOWN, result.error?.message ?? '门户请求失败', result.error?.code);
+    try { return AppResults.success<T>(JSON.parse(result.data) as T); }
+    catch (_) { return AppResults.failure<T>(AppErrorKind.PARSE, '门户数据解析失败'); }
+  }
 }
