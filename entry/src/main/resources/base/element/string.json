@@ -2,11 +2,11 @@
   "string": [
     {
       "name": "module_desc",
-      "value": "module description"
+      "value": "安大通校园服务应用"
     },
     {
       "name": "EntryAbility_desc",
-      "value": "description"
+      "value": "安大通主界面"
     },
     {
       "name": "EntryAbility_label",
@@ -27,26 +27,6 @@
     {
       "name": "nav_settings",
       "value": "设置"
-    },
-    {
-      "name": "migration_in_progress",
-      "value": "功能迁移中"
-    },
-    {
-      "name": "home_migration_description",
-      "value": "主页卡片、今日课程、校园卡与天气等内容将在后续功能提交中逐项恢复。"
-    },
-    {
-      "name": "schedule_migration_description",
-      "value": "电子课表、周次选择、课程详情与刷新缓存能力正在迁移。"
-    },
-    {
-      "name": "tools_migration_description",
-      "value": "成绩、考试、校历、空闲教室、电话本和校园生活工具将在此提供。"
-    },
-    {
-      "name": "settings_migration_description",
-      "value": "账户、偏好、提醒、关于与数据管理功能将在此提供。"
     },
     {
       "name": "location_reason",

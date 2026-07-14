@@ -132,6 +132,7 @@ struct Index {
 
       TabContent() {
         SettingsPage({
+          appVersion: AppUpdateManager.currentVersion(),
           onLogout: () => this.logout(false),
           onClearAllData: () => this.logout(true),
           onReminderChange: (enabled: boolean) => {

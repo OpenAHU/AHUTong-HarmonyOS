@@ -16,6 +16,7 @@ export struct SettingsPage {
   @State updateIntro: string = '';
   @State debugTapCount: number = 0;
   private lastDebugTap: number = 0;
+  appVersion: string = '';
   onLogout: () => Promise<void> = async () => {};
   onClearAllData: () => Promise<void> = async () => {};
   onReminderChange: (enabled: boolean) => Promise<boolean> = async (_enabled: boolean) => true;
@@ -90,7 +91,7 @@ export struct SettingsPage {
           Row({ space: 16 }) {
             Image($r('app.media.startIcon')).width(64).height(64).borderRadius(18);
             Column({ space: 5 }) { Text('安大通').fontSize(24).fontWeight(FontWeight.Bold);
-              Text('1.0.0 · HarmonyOS').fontSize(AhuTypography.body).fontColor(AhuColors.onSurfaceSecondary); }
+              Text(`${this.appVersion} · HarmonyOS`).fontSize(AhuTypography.body).fontColor(AhuColors.onSurfaceSecondary); }
             .alignItems(HorizontalAlign.Start);
           }.width('100%');
         }
