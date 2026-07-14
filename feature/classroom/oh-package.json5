@@ -1,4 +1,4 @@
 {
   "name": "feature_classroom", "version": "1.0.0", "main": "Index.ets", "license": "GPL-3.0-only",
-  "dependencies": { "core_common": "file:../../core/common", "core_designsystem": "file:../../core/designsystem", "data_crawler": "file:../../data/crawler" }
+  "dependencies": { "core_common": "file:../../core/common", "core_datastore": "file:../../core/datastore", "core_designsystem": "file:../../core/designsystem", "data_crawler": "file:../../data/crawler" }
 }

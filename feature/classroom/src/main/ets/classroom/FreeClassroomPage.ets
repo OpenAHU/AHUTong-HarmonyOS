@@ -1,5 +1,6 @@
 import { AhuChip, AhuColors, AhuInsetCard, AhuLoading, AhuTypography } from 'core_designsystem';
 import { AcademicCrawlerClient } from 'data_crawler';
+import { AhuCache } from 'core_datastore';
 
 interface Building { id: number; nameZh: string; }
 interface RoomBuilding { id: number; nameZh: string; }
@@ -37,6 +38,19 @@ export struct FreeClassroomPage {
 
   private async loadBuildings(): Promise<void> {
     this.isLoadingBuildings = true; this.errorMessage = ''; this.selectedBuildings = []; this.rooms = [];
+    if (AhuCache.getMockData()) {
+      const scenario = AhuCache.getMockScenario();
+      if (scenario === 'network_error' || scenario === 'expired_login') {
+        this.buildings = []; this.errorMessage = scenario === 'expired_login' ? 'Mock 场景：登录状态已过期' : 'Mock 场景：接口返回 500';
+      } else if (scenario === 'empty_campus' || (scenario === 'longhe_only' && this.campusId !== 2)) {
+        this.buildings = [];
+      } else {
+        const prefix = this.campusId === 2 ? '龙河' : '磬苑';
+        this.buildings = [{ id: this.campusId * 100 + 1, nameZh: `${prefix}教学主楼` },
+          { id: this.campusId * 100 + 2, nameZh: `${prefix}公共教学楼` }];
+      }
+      this.isLoadingBuildings = false; return;
+    }
     const result = await this.client.getJson<Array<Building>>(
       `https://jw.ahu.edu.cn/student/ws/room/get-buildings?campusId=${this.campusId}&hasDataPermission=false`);
     if (result.isSuccess) this.buildings = (result.data ?? []).sort((a: Building, b: Building): number => a.nameZh.localeCompare(b.nameZh));
@@ -92,6 +106,21 @@ export struct FreeClassroomPage {
     const units = (this.selectedUnits.length > 0 ? this.selectedUnits : Array.from({ length: 13 }, (_: Object, i: number) => i + 1))
       .map((unit: number): string => `${unit}`);
     this.isSearching = true; this.errorMessage = ''; const rooms: Array<FreeRoom> = [];
+    if (AhuCache.getMockData()) {
+      const scenario = AhuCache.getMockScenario();
+      if (scenario === 'network_error' || scenario === 'expired_login') {
+        this.rooms = []; this.errorMessage = scenario === 'expired_login' ? 'Mock 场景：登录状态已过期' : 'Mock 场景：接口返回 500';
+      } else {
+        ids.forEach((buildingId: number) => {
+          const building = this.buildings.find((item: Building) => item.id === buildingId);
+          if (!building) return;
+          rooms.push({ id: buildingId * 10 + 1, nameZh: '301', floor: 3, building: { id: building.id, nameZh: building.nameZh }, remark: '多媒体教室' });
+          rooms.push({ id: buildingId * 10 + 2, nameZh: '302', floor: 3, building: { id: building.id, nameZh: building.nameZh } });
+        });
+        this.rooms = rooms;
+      }
+      this.filtersExpanded = false; this.isSearching = false; return;
+    }
     for (let index = 0; index < ids.length; index++) {
       const request: FreeRoomRequest = { buildingId: `${ids[index]}`, campusId: `${this.campusId}`,
         dateTimeSegmentCmd: { startDateTime: this.startDate, endDateTime: this.endDate, startTime: '', endTime: '', units: units, weekdays: [] },
