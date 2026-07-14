@@ -9,7 +9,8 @@
     "feature_schedule": "file:../feature/schedule",
     "core_designsystem": "file:../core/designsystem",
     "core_datastore": "file:../core/datastore",
-    "core_network": "file:../core/network"
+    "core_network": "file:../core/network",
+    "core_sdk": "file:../core/sdk"
   }
 }
 

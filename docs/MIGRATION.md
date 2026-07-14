@@ -4,7 +4,7 @@
 >
 > 当前分支：`migration/android-to-harmonyos`
 >
-> 当前阶段：M3 基础能力（进行中）
+> 当前阶段：M4 首次启动与认证（待开始）
 
 本文档是安大通 HarmonyOS 迁移的唯一进度台账。每完成一个可独立验收的功能，必须在同一个提交中更新对应条目、验证结果和变更记录，然后将提交推送到远程迁移分支。
 
@@ -50,8 +50,8 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`data_schedule`、`feature_schedule` HAR
-- 当前实现：已建立分层依赖链、统一结果与网络层、跨层业务模型、按用户隔离的 Preferences 存储和 ArkUI 基础设计系统，业务功能尚未迁移
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_schedule`、`feature_schedule` HAR
+- 当前实现：M1-M3 基础架构已完成；原生 SDK 目前提供可替换契约和明确失败的占位实现，业务能力尚未迁移
 
 ## 3. 架构映射
 
@@ -100,7 +100,7 @@ entry (HAP / composition root)
 | M0 | README、迁移文档、功能与架构基线 | 已完成 |
 | M1 | 多模块骨架、依赖规则、测试与构建基线 | 已完成 |
 | M2 | Design System、主题、通用页面骨架与导航 | 已完成 |
-| M3 | Model、Datastore、Network、SDK 基础能力 | 进行中 |
+| M3 | Model、Datastore、Network、SDK 基础能力 | 已完成 |
 | M4 | 协议确认、首次启动、登录与会话管理 | 待开始 |
 | M5 | 主页、课表、课程详情与周次配置 | 待开始 |
 | M6 | 成绩、考试、校历与空闲教室 | 待开始 |
@@ -215,3 +215,4 @@ entry (HAP / composition root)
 | 2026-07-14 | 模型 | 新增 `core_model` HAR，迁移账户、课程、成绩、考试、校园卡、缴费和失物招领等跨层模型及课表数值转换 | 由 `data_schedule` 实际导入；API 24 Debug HAP 构建成功 |
 | 2026-07-14 | 存储 | 新增 `core_datastore` HAR，在 UIAbility 启动时初始化 Preferences，迁移用户、协议、学期、课表与显示偏好的按用户隔离缓存 | API 24 Debug HAP 构建成功且无 ArkTS 警告；敏感凭据不写入普通 Preferences |
 | 2026-07-14 | 网络 | 新增 `core_network` HAR 与统一 `AppResult`，实现超时、JSON、HTTP/认证错误、主机 Cookie 会话及请求资源释放，并声明 INTERNET 权限 | API 24 Debug HAP 构建成功且无 ArkTS 警告；Cookie 仅驻留内存，待认证层接安全存储 |
+| 2026-07-14 | SDK 边界 | 新增 `core_sdk_api` / `core_sdk`，迁移 `CampusNativeGateway` 能力契约、Provider 与明确失败的占位实现 | API 24 Debug HAP 构建成功且无 ArkTS 警告；Rust/JNI 尚未迁移，调用不会伪装成功 |

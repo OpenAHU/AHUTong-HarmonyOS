@@ -1,0 +1,11 @@
+{
+  "name": "core_sdk_api",
+  "version": "1.0.0",
+  "description": "Native campus capability contracts for AHUTong.",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "core_common": "file:../common",
+    "core_model": "file:../model"
+  }
+}

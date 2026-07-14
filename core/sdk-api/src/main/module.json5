@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "core_sdk_api",
+    "type": "har",
+    "deviceTypes": [
+      "phone"
+    ]
+  }
+}

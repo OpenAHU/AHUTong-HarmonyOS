@@ -1,0 +1,12 @@
+{
+  "name": "core_sdk",
+  "version": "1.0.0",
+  "description": "HarmonyOS implementation boundary for AHUTong native campus capabilities.",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "core_common": "file:../common",
+    "core_model": "file:../model",
+    "core_sdk_api": "file:../sdk-api"
+  }
+}

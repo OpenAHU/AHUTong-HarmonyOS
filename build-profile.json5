@@ -99,6 +99,30 @@
       ]
     },
     {
+      "name": "core_sdk_api",
+      "srcPath": "./core/sdk-api",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "core_sdk",
+      "srcPath": "./core/sdk",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
       "name": "data_schedule",
       "srcPath": "./data/schedule",
       "targets": [
