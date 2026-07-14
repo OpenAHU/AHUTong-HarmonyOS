@@ -135,6 +135,12 @@ export class DefaultScheduleRepository implements ScheduleRepository {
     const schoolTerm = rawTerm.startsWith(`${schoolYear}-`)
       ? rawTerm.substring(schoolYear.length + 1)
       : rawTerm;
+    if (AhuCache.getMockData()) {
+      const scenario = AhuCache.getMockScenario();
+      if (scenario === 'network_error') return AppResults.failure<Array<Course>>(AppErrorKind.HTTP, 'Mock 场景：接口返回 500', 500);
+      if (scenario === 'expired_login') return AppResults.failure<Array<Course>>(AppErrorKind.AUTHENTICATION, 'Mock 场景：登录状态已过期', 401);
+      return AppResults.success<Array<Course>>(AhuCache.getSchedule(schoolYear, schoolTerm));
+    }
     if (!refresh) {
       const cached = AhuCache.getSchedule(schoolYear, schoolTerm);
       if (cached.length > 0) {
@@ -154,6 +160,7 @@ export class DefaultScheduleRepository implements ScheduleRepository {
     if (!AhuCache.isLogin()) {
       return AppResults.failure<Array<Course>>(AppErrorKind.AUTHENTICATION, '请先登录');
     }
+    if (AhuCache.getMockData()) return AppResults.success<Array<Course>>([]);
     if (!refresh) {
       const cached = AhuCache.getNextSchedule();
       if (cached !== undefined) return AppResults.success<Array<Course>>(cached);

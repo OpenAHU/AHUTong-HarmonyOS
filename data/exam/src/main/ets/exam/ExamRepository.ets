@@ -82,6 +82,12 @@ export class DefaultExamRepository implements ExamRepository {
   }
 
   async getExams(refresh: boolean = false): Promise<AppResult<Array<Exam>>> {
+    if (AhuCache.getMockData()) {
+      const scenario = AhuCache.getMockScenario();
+      if (scenario === 'network_error') return AppResults.failure<Array<Exam>>(AppErrorKind.HTTP, 'Mock 场景：接口返回 500', 500);
+      if (scenario === 'expired_login') return AppResults.failure<Array<Exam>>(AppErrorKind.AUTHENTICATION, 'Mock 场景：登录状态已过期', 401);
+      return AppResults.success<Array<Exam>>(AhuCache.getExams());
+    }
     if (!refresh) {
       const cached = AhuCache.getExams();
       if (cached.length > 0) return AppResults.success<Array<Exam>>(cached);

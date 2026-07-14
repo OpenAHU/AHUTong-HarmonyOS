@@ -140,6 +140,12 @@ export class DefaultGradeRepository implements GradeRepository {
   }
 
   async getGrade(refresh: boolean = false): Promise<AppResult<Grade>> {
+    if (AhuCache.getMockData()) {
+      const scenario = AhuCache.getMockScenario();
+      if (scenario === 'network_error') return AppResults.failure<Grade>(AppErrorKind.HTTP, 'Mock 场景：接口返回 500', 500);
+      if (scenario === 'expired_login') return AppResults.failure<Grade>(AppErrorKind.AUTHENTICATION, 'Mock 场景：登录状态已过期', 401);
+      return AppResults.success<Grade>(AhuCache.getGrade() ?? { termGradeList: [] });
+    }
     if (!refresh) {
       const cached = AhuCache.getGrade();
       if (cached) {
@@ -173,6 +179,14 @@ export class DefaultGradeRepository implements GradeRepository {
   }
 
   async getGpaRank(profileId: string, refresh: boolean = false): Promise<AppResult<GpaRankInfo>> {
+    if (AhuCache.getMockData()) {
+      const scenario = AhuCache.getMockScenario();
+      if (scenario === 'network_error') return AppResults.failure<GpaRankInfo>(AppErrorKind.HTTP, 'Mock 场景：接口返回 500', 500);
+      if (scenario === 'expired_login') return AppResults.failure<GpaRankInfo>(AppErrorKind.AUTHENTICATION, 'Mock 场景：登录状态已过期', 401);
+      const rank = AhuCache.getGpaRank(profileId);
+      return rank ? AppResults.success<GpaRankInfo>(rank) :
+        AppResults.failure<GpaRankInfo>(AppErrorKind.PARSE, 'Mock 场景：暂无专业排名');
+    }
     if (!refresh) { const cached = AhuCache.getGpaRank(profileId); if (cached) return AppResults.success<GpaRankInfo>(cached); }
     const result = await this.client.getText(
       `${DefaultGradeRepository.BASE_URL}/student/for-std/grade/sheet/semester-index/${profileId}`);
