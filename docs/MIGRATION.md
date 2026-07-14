@@ -132,7 +132,7 @@ entry (HAP / composition root)
 | --- | --- | --- | --- | --- |
 | 首页与卡片编排 | `feature:home` | `feature/home` | 待开始 | 今日课程、校园卡、天气、缴费入口 |
 | 首页卡片编辑 | `feature:home` | `feature/home` | 待开始 | 排序、显示隐藏、持久化 |
-| 电子课表 | `feature:schedule` + `data:schedule` | 对应同名域 | 待开始 | 周切换、当前周、刷新、缓存 |
+| 电子课表 | `feature:schedule` + `data:schedule` | 对应同名域 | 进行中 | 已迁移当前学期解析、教务课表 JSON 请求、课程模型转换、用户/学期隔离缓存及强制刷新数据语义；周课表、课程详情 UI 待接入；API 24 构建通过，真实账号响应待设备验证 |
 | 课程详情 | `feature:schedule` | `feature/schedule` | 待开始 | 时间、地点、教师等信息 |
 | 成绩查询 | `feature:grade` + `data:grade` | 对应同名域 | 待开始 | 学期、成绩详情、异常状态 |
 | 考试查询 | `feature:exam` + `data:exam` | 对应同名域 | 待开始 | 考试时间、地点与空状态 |
@@ -226,3 +226,4 @@ entry (HAP / composition root)
 | 2026-07-14 | 安全凭据与冷启动恢复 | 新增 Asset Store 凭据封装；登录成功后安全保存账号密码，冷启动用凭据重建门户/CAS Cookie，会话恢复失败时清除缓存用户并回到登录页，退出时删除安全资产 | API 24 Debug HAP 构建成功且无 ArkTS 警告；Asset Store 与冷启动流程因无设备未做运行验证，业务请求会话过期自动重登待后续仓库接入 |
 | 2026-07-14 | 个人与学期初始化 | 迁移 Android `Info` 页面，新增学年、1/2/3 学期、当前周输入与校验；按用户保存标准学期键，并依据当前日期和周次反推、保存开学周一 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，未执行输入法和视觉验证 |
 | 2026-07-14 | 教务会话失效重登 | 新增教务业务请求客户端，统一携带内存 Cookie，识别 HTTP 认证错误及 CAS 登录页；会话失效时从 Asset Store 凭据重建门户/教务会话并限次重试 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，失效重登待运行验证 |
+| 2026-07-14 | 课表数据源与缓存 | 迁移 Android 课表爬虫与仓库：解析教务当前学期脚本、请求 `print-data`、映射课程周次/星期/节次/教师/教室，并按用户和学期缓存及支持强制刷新 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；匿名请求仅能验证认证防线，真实课程数据待账号设备验收 |
