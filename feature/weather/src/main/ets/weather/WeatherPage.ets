@@ -1,6 +1,6 @@
 import { AhuColors, AhuInsetCard, AhuScreen, AhuTypography } from 'core_designsystem';
 import { ForecastDay, HourlyForecast, LifeIndexItem, WeatherAlert, WeatherResponse } from 'core_model';
-import { WeatherRepository, WeatherRepositoryProvider } from 'data_weather';
+import { WeatherHomeConfig, WeatherRepository, WeatherRepositoryProvider } from 'data_weather';
 import { abilityAccessCtrl, common, Permissions } from '@kit.AbilityKit';
 import { geoLocationManager } from '@kit.LocationKit';
 
@@ -15,11 +15,26 @@ export struct WeatherPage {
   @State city: string = '';
   @State searching: boolean = false;
   @State showOnHome: boolean = false;
+  @State showLocation: boolean = true;
+  @State showTemperature: boolean = true;
+  @State showCondition: boolean = true;
+  @State showAqi: boolean = true;
   @State locating: boolean = false;
   @State locationMessage: string = '';
   onBack: () => void = () => {};
 
-  aboutToAppear(): void { this.showOnHome = this.repository.showOnHome(); this.load(); }
+  aboutToAppear(): void {
+    const config = this.repository.homeConfig();
+    this.showOnHome = config.showOnHome; this.showLocation = config.showLocation;
+    this.showTemperature = config.showTemperature; this.showCondition = config.showCondition;
+    this.showAqi = config.showAqi; this.load();
+  }
+
+  private saveHomeConfig(): void {
+    const config: WeatherHomeConfig = { showOnHome: this.showOnHome, showLocation: this.showLocation,
+      showTemperature: this.showTemperature, showCondition: this.showCondition, showAqi: this.showAqi };
+    this.repository.saveHomeConfig(config);
+  }
 
   private async load(city?: string): Promise<void> {
     if (this.loading && this.weather) return;
@@ -78,6 +93,14 @@ export struct WeatherPage {
     return rain(weather.weather) || hourlyRain || dailyRain ? '建议带伞' : '暂时不用带伞';
   }
 
+  @Builder
+  private weatherSetting(label: string, enabled: boolean, onChange: (value: boolean) => void) {
+    Row() {
+      Text(label).fontSize(AhuTypography.body).fontColor(AhuColors.onSurface).layoutWeight(1);
+      Toggle({ type: ToggleType.Switch, isOn: enabled }).onChange(onChange);
+    }.width('100%').padding({ top: 2, bottom: 2 });
+  }
+
   build() {
     AhuScreen({ scrollable: true }) {
       Row({ space: 10 }) {
@@ -101,12 +124,24 @@ export struct WeatherPage {
       }
       if (this.locationMessage.length > 0) Text(this.locationMessage).fontSize(AhuTypography.label)
         .fontColor(AhuColors.onSurfaceSecondary).padding({ left: 20, right: 20 });
-      Row() {
-        Column({ space: 3 }) { Text('在首页显示天气').fontWeight(FontWeight.Medium);
-          Text('展示位置、温度、天气和空气质量').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary); }
-          .layoutWeight(1).alignItems(HorizontalAlign.Start);
-        Toggle({ type: ToggleType.Switch, isOn: this.showOnHome }).onChange((value: boolean) => {
-          this.showOnHome = value; this.repository.setShowOnHome(value);
+      Column({ space: 8 }) {
+        Text('天气设置').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold).width('100%');
+        Text('选择要在首页卡片上显示的信息：').fontSize(AhuTypography.label)
+          .fontColor(AhuColors.onSurfaceSecondary).width('100%');
+        this.weatherSetting('在首页显示天气', this.showOnHome, (value: boolean) => {
+          this.showOnHome = value; this.saveHomeConfig();
+        });
+        this.weatherSetting('显示城市名', this.showLocation, (value: boolean) => {
+          this.showLocation = value; this.saveHomeConfig();
+        });
+        this.weatherSetting('显示温度', this.showTemperature, (value: boolean) => {
+          this.showTemperature = value; this.saveHomeConfig();
+        });
+        this.weatherSetting('显示天气状况', this.showCondition, (value: boolean) => {
+          this.showCondition = value; this.saveHomeConfig();
+        });
+        this.weatherSetting('显示空气质量', this.showAqi, (value: boolean) => {
+          this.showAqi = value; this.saveHomeConfig();
         });
       }.width('100%').padding({ left: 20, right: 20 });
       if (this.loading && !this.weather) {

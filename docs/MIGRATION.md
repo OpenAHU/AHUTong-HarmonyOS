@@ -150,7 +150,7 @@ entry (HAP / composition root)
 | 浴室开放信息 | `feature:home` | `feature/home` | 不适用 | 当前 Android 基线已注释开放状态 UI，`CrawlerCampusCardSource.fetchBathrooms()` 固定返回空列表，仅保留浴室缴费卡片；2022 年历史接口 `https://ahuer.cn/api/bathroom/open` 已不可连接，因此 HarmonyOS 保持当前基线行为，不恢复过期静态状态 |
 | 失物招领 | `feature:portal` + `data:portal` | 对应同名域 | 已完成 | 双状态列表、缓存、刷新、分页、详情、发布/删除、本人帖子管理、全字段搜索、校区/类别筛选、结果计数和多图全屏浏览均已迁移；API 24 Debug HAP 构建通过，无真实账号与连接设备，接口、图片加载和视觉待运行验收 |
 | 校园电话本 | `feature:tools` | `feature/tools` | 已完成 | 已迁移九类、全部 2025/2026 更新内置号码、磬苑/龙河标识、跨目录名称/号码搜索、单号码直接拨号和双号码校区选择；使用系统隐式拨号器，不申请直接通话权限；API 24 Debug HAP 构建通过，待真机验证拨号器拉起 |
-| 天气 | `feature:weather` | `data/weather` + `feature/weather` | 已完成 | 已迁移完整模型、城市/IP/区划码查询、系统定位与逆地理编码、缓存/失败回退、实况、预警、7 日/24 小时预报、AQI、带伞建议和生活指数；首页显示开关与位置/温度/天气/AQI/短时降雨卡已接入；线上合肥接口及 API 24 构建通过，定位权限流程待真机验收 |
+| 天气 | `feature:weather` | `data/weather` + `feature/weather` | 已完成 | 已迁移完整模型、城市/IP/区划码查询、系统定位与逆地理编码、缓存/失败回退、实况、预警、7 日/24 小时预报、AQI、带伞建议和生活指数；首页总开关与位置/温度/天气/AQI 四项独立显示偏好均已持久化并驱动卡片，短时降雨提示保持独立；线上合肥接口及 API 24 构建通过，定位权限流程待真机验收 |
 
 ### 6.4 工具与系统能力
 
@@ -285,3 +285,4 @@ entry (HAP / composition root)
 | 2026-07-15 | Debug 代码发布隔离 | 对齐 Android `debugImplementation`：Entry 拆为共享应用根组件及 Debug/Release 目标入口，只有 Debug 目标引用并注入 `feature_debug`；跨入口的清除数据复用同一维护协调器，Mock、灰度和返回状态通过 AppStorage 修订信号同步 | 分别构建 `entry@debug` 与 `entry@release`；扫描 Release HAP 的 `modules.abc` 和源码映射，必须不存在 `feature_debug`、`DebugPage`、`MockScenarioController` 与 Mock 数据文本 |
 | 2026-07-15 | 全量源码迁移收口 | 逐项复核 Android 全部导航路由、功能台账、设置项与 HarmonyOS 模块；确认 Android 二维码首页偏好当前为注释代码，不额外恢复；将源码完成与外部验收分离，M4-M7/M11 转为明确阻塞状态 | `core_common`、`core_model`、`data_crawler`、`feature_update` 四模块测试全部通过；`entry@debug` Debug HAP、`entry@release` Release HAP 构建通过；Release 源码映射及字节码不含 Debug 模块；HDC 无设备 |
 | 2026-07-15 | 已下载文件管理 | 对照 Android 独立下载管理页补齐鸿蒙端交互：标题显示选中计数，支持管理/完成、逐项选择、全选/取消全选、删除所选，并为单文件和批量删除提供一致的二次确认；返回键优先退出管理模式 | API 24 Debug HAP 构建成功；新增代码无 ArkTS 告警，仅保留工程未配置签名的既有提示；无连接设备，选择态与确认层视觉待真机验收 |
+| 2026-07-15 | 首页天气显示项 | 补齐 Android 天气设置中可见的总开关、城市名、温度、天气状况和空气质量五项开关；在数据仓库持久化四项细分偏好并由首页卡片逐项读取，修复 Android 基线中细分开关仅修改页面内存、首页未消费的原有缺陷；降雨提醒不受 AQI 开关影响 | API 24 Debug HAP 构建成功；新增代码无 ArkTS 告警，仅保留工程未配置签名的既有提示；无连接设备，设置返回首页后的重组和极端全关闭布局待真机验收 |

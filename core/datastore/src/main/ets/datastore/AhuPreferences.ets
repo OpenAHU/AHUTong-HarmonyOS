@@ -30,6 +30,10 @@ export class PreferencesKeys {
   static readonly WEATHER_CACHE: string = 'weather_cache';
   static readonly WEATHER_ADCODE: string = 'weather_adcode';
   static readonly WEATHER_SHOW_ON_HOME: string = 'weather_show_on_home';
+  static readonly WEATHER_SHOW_LOCATION: string = 'weather_show_location';
+  static readonly WEATHER_SHOW_TEMPERATURE: string = 'weather_show_temperature';
+  static readonly WEATHER_SHOW_CONDITION: string = 'weather_show_condition';
+  static readonly WEATHER_SHOW_AQI: string = 'weather_show_aqi';
   static readonly SCHEDULE_WIDGET_IDS: string = 'schedule_widget_ids';
   static readonly ELECTRICITY_ROOM_HISTORY: string = 'electricity_room_history';
 }

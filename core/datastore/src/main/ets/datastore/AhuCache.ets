@@ -250,6 +250,31 @@ export class AhuCache {
     return AhuPreferences.getBoolean(PreferencesKeys.WEATHER_SHOW_ON_HOME);
   }
 
+  static saveWeatherShowLocation(enabled: boolean): void {
+    AhuPreferences.putBoolean(PreferencesKeys.WEATHER_SHOW_LOCATION, enabled);
+  }
+  static getWeatherShowLocation(): boolean {
+    return AhuPreferences.getBoolean(PreferencesKeys.WEATHER_SHOW_LOCATION, true);
+  }
+  static saveWeatherShowTemperature(enabled: boolean): void {
+    AhuPreferences.putBoolean(PreferencesKeys.WEATHER_SHOW_TEMPERATURE, enabled);
+  }
+  static getWeatherShowTemperature(): boolean {
+    return AhuPreferences.getBoolean(PreferencesKeys.WEATHER_SHOW_TEMPERATURE, true);
+  }
+  static saveWeatherShowCondition(enabled: boolean): void {
+    AhuPreferences.putBoolean(PreferencesKeys.WEATHER_SHOW_CONDITION, enabled);
+  }
+  static getWeatherShowCondition(): boolean {
+    return AhuPreferences.getBoolean(PreferencesKeys.WEATHER_SHOW_CONDITION, true);
+  }
+  static saveWeatherShowAqi(enabled: boolean): void {
+    AhuPreferences.putBoolean(PreferencesKeys.WEATHER_SHOW_AQI, enabled);
+  }
+  static getWeatherShowAqi(): boolean {
+    return AhuPreferences.getBoolean(PreferencesKeys.WEATHER_SHOW_AQI, true);
+  }
+
   static setUseLiquidGlass(enabled: boolean): void { AhuPreferences.putBoolean(PreferencesKeys.USE_LIQUID_GLASS, enabled); }
   static useLiquidGlass(): boolean { return AhuPreferences.getBoolean(PreferencesKeys.USE_LIQUID_GLASS, true); }
   static setCourseReminderEnabled(enabled: boolean): void {
