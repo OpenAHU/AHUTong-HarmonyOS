@@ -224,6 +224,11 @@
       "targets": [{ "name": "default", "applyToProducts": ["default"] }]
     },
     {
+      "name": "data_calendar",
+      "srcPath": "./data/calendar",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
       "name": "feature_exam",
       "srcPath": "./feature/exam",
       "targets": [{ "name": "default", "applyToProducts": ["default"] }]

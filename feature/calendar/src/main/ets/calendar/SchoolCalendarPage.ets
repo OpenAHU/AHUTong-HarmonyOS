@@ -1,10 +1,12 @@
 import { AhuColors, AhuLoading, AhuTypography } from 'core_designsystem';
 import { common } from '@kit.AbilityKit';
 import { CalendarImageSaver } from './CalendarImageSaver';
+import { SchoolCalendarRepository } from 'data_calendar';
 
 @Component
 export struct SchoolCalendarPage {
-  @State revision: number = 0;
+  @State imageSource: string = '';
+  @State localPath: string = '';
   @State isLoading: boolean = true;
   @State hasError: boolean = false;
   @State scaleValue: number = 1;
@@ -17,17 +19,21 @@ export struct SchoolCalendarPage {
   @State message: string = '';
   onBack: () => void = () => {};
 
-  private url(): string {
-    return this.revision === 0
-      ? 'https://openahu.org/download/xiaoli.jpg'
-      : `https://openahu.org/download/xiaoli.jpg?refresh=${this.revision}`;
-  }
+  aboutToAppear(): void { this.load(false); }
 
-  private refresh(): void {
+  private async load(forceRefresh: boolean): Promise<void> {
     this.isLoading = true;
     this.hasError = false;
-    this.revision = Date.now();
+    this.message = '';
+    try {
+      const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      const image = await SchoolCalendarRepository.getCalendarImage(context, forceRefresh);
+      this.localPath = image.path; this.imageSource = image.uri;
+    } catch (error) { this.hasError = true; this.message = (error as Error).message ?? '校历加载失败'; }
+    finally { this.isLoading = false; }
   }
+
+  private refresh(): void { this.load(true); }
 
   private resetTransform(): void {
     this.scaleValue = 1; this.offsetX = 0; this.offsetY = 0;
@@ -38,7 +44,7 @@ export struct SchoolCalendarPage {
     this.isSaving = true; this.message = '';
     try {
       const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
-      await CalendarImageSaver.save(context, this.url());
+      await CalendarImageSaver.saveLocal(context, this.localPath);
       this.message = '已保存到图库';
     } catch (error) {
       this.message = (error as Error).message ?? '保存失败';
@@ -60,7 +66,7 @@ export struct SchoolCalendarPage {
       .width('100%').padding({ left: 16, right: 16, top: 24 });
 
       Stack({ alignContent: Alignment.Center }) {
-        Image(this.url())
+        Image(this.imageSource)
           .width('100%').height('100%')
           .objectFit(ImageFit.Contain)
           .interpolation(ImageInterpolation.High)
@@ -87,7 +93,7 @@ export struct SchoolCalendarPage {
         } else if (this.hasError) {
           Column({ space: 14 }) {
             Text('校历加载失败').fontSize(AhuTypography.body).fontColor(AhuColors.error);
-            Button('重试', { type: ButtonType.Capsule }).onClick(() => this.refresh());
+            Button('重试', { type: ButtonType.Capsule }).onClick(() => this.load(false));
           }.alignItems(HorizontalAlign.Center);
         }
       }

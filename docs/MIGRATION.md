@@ -136,7 +136,7 @@ entry (HAP / composition root)
 | 课程详情 | `feature:schedule` | `feature/schedule` | 进行中 | 点击课程色块显示名称、连续/单双/离散周次、星期与节次、地点、教师，支持遮罩和按钮关闭；API 24 构建通过，待设备交互与视觉验收 |
 | 成绩查询 | `feature:grade` + `data:grade` | 对应同名域 | 进行中 | 已迁移多学籍入口识别、各学籍成绩 JSON 聚合、用户缓存、学期筛选、跨学期搜索、GPA/学分摘要、刷新与空错状态，并从首页工具进入；API 24 构建通过，真实账号接口与排名数据待设备验证 |
 | 考试查询 | `feature:exam` + `data:exam` | 对应同名域 | 进行中 | 已兼容新版考试表格/座位脚本与旧版 JS 数组，支持用户缓存、课程搜索、刷新、时间状态、地点座位及空错状态，并从首页工具进入；API 24 构建通过，真实页面待账号设备验证 |
-| 校历 | `feature:calendar` + `data:calendar` | 对应同名域 | 进行中 | 已迁移 OpenAHU 校历图片加载、系统图片缓存、强制刷新及加载/失败状态；支持 0.5–5 倍双指缩放、单指平移、双击复位，并通过 PhotoAccessHelper 系统确认对话框保存到图库；从首页工具进入，API 24 构建通过，手势与保存对话框待真机验收 |
+| 校历 | `feature:calendar` + `data:calendar` | 对应同名域 | 进行中 | 已补齐与 Android 一致的 `data_calendar` 仓库边界，将校历原子下载到应用 `files/images`、缓存优先、强制刷新失败回退旧缓存；UI 支持 0.5–5 倍双指缩放、单指平移、双击复位，并将同一缓存文件通过 PhotoAccessHelper 系统确认对话框保存到图库；API 24 构建通过，文件显示、手势与保存待真机验收 |
 | 空闲教室 | `feature:classroom` | `feature/classroom` | 进行中 | 已迁移磬苑/龙河校区、教学楼多选、1–13 节与上午/下午/晚上快捷选择、今天/明天及任意起止日期（不早于今天、自动维护起止顺序）、全楼/全节默认查询、结果去重排序与空错状态；教务 JSON POST 复用自动重登；API 24 构建通过，真实结果和日期选择器视觉待设备验证 |
 
 ### 6.3 校园生活与缴费
@@ -264,3 +264,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 电费历史房间 | 对齐 Android 的用户隔离房间历史，在支付成功后保存完整校区/楼栋/楼层/房间选择，按路径去重并保留最近 2 条；仅一条时进入页面自动逐级恢复，两条时展示快捷房间入口，选择后重新获取当前房间电量，避免使用陈旧余额 | API 24 Debug HAP 构建成功后记录；不执行真实资金操作，无测试账号与连接设备，成功后写入及恢复链路待小额真机验收 |
 | 2026-07-15 | 应用更新 | 新增 `feature_update`，将 Android APK 自更新替换为 HarmonyOS 安全分发流程：启动自动检查、设置页手动检查 GitHub 最新正式 Release，严格比较语义版本并校验发行链接主机，展示更新日志及可选/强制提示，提供 AppGallery 与项目发行页入口；发行说明含 `<!-- ahutong-force-update -->` 时启用强制提示 | 线上确认 Android 更新接口当前仅返回 3.1.9 APK，HarmonyOS 仓库暂无 Release；OHPM 全模块依赖同步，API 24 Debug HAP 构建成功且无 ArkTS 警告；待首个 HarmonyOS Release 与真机应用市场/浏览器拉起验收 |
 | 2026-07-15 | Debug / Mock 工具 | 新增 `feature_debug`，迁移设置应用卡 8 连击隐藏入口、12 个业务场景、课程/成绩/考试/余额/失物招领缓存样例、Mock 数据开关、时间偏移、缓存清理及通知测试；核心时钟接入首页、课表当前日/周和服务卡片；入口以生成的 `BuildProfile.DEBUG` 门控，release 构建不可进入 | OHPM 全模块依赖同步；API 24 Debug 与 Release HAP 均构建成功且无 ArkTS 警告；无连接设备，连续点击、场景刷新和通知触发待真机验收 |
+| 2026-07-15 | 校历数据层对齐 | 新增 `data_calendar` 并将远程地址、沙箱文件缓存、原子替换、强制刷新与失败回退从 UI 下沉到仓库；校历页面改为显示仓库本地文件，图库保存复用同一缓存，恢复 Android `data:calendar → feature:calendar` 依赖方向 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无连接设备，文件 URI 显示、离线回退与图库确认待真机验收 |

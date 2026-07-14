@@ -4,6 +4,15 @@ import { photoAccessHelper } from '@kit.MediaLibraryKit';
 import { http } from '@kit.NetworkKit';
 
 export class CalendarImageSaver {
+  static async saveLocal(context: common.UIAbilityContext, path: string): Promise<void> {
+    try {
+      const helper = photoAccessHelper.getPhotoAccessHelper(context);
+      const config: photoAccessHelper.PhotoCreationConfig = { title: '安大通校历', fileNameExtension: 'jpg',
+        photoType: photoAccessHelper.PhotoType.IMAGE };
+      await helper.showAssetsCreationDialog([fileUri.getUriFromPath(path)], [config]);
+    } catch (error) { throw new Error((error as Error).message ?? '校历保存失败'); }
+  }
+
   static async save(context: common.UIAbilityContext, url: string): Promise<void> {
     const request = http.createHttp();
     const path = `${context.cacheDir}/ahu_school_calendar.jpg`;
@@ -16,10 +25,7 @@ export class CalendarImageSaver {
       try { fs.writeSync(file.fd, response.result as ArrayBuffer); }
       catch (error) { throw new Error((error as Error).message ?? '校历缓存写入失败'); }
       finally { fs.closeSync(file); }
-      const helper = photoAccessHelper.getPhotoAccessHelper(context);
-      const config: photoAccessHelper.PhotoCreationConfig = { title: '安大通校历', fileNameExtension: 'jpg',
-        photoType: photoAccessHelper.PhotoType.IMAGE };
-      await helper.showAssetsCreationDialog([fileUri.getUriFromPath(path)], [config]);
+      await CalendarImageSaver.saveLocal(context, path);
     } catch (error) {
       throw new Error((error as Error).message ?? '校历保存失败');
     } finally {

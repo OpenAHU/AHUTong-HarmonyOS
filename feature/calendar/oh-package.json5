@@ -1,4 +1,4 @@
 {
   "name": "feature_calendar", "version": "1.0.0", "main": "Index.ets", "license": "GPL-3.0-only",
-  "dependencies": { "core_designsystem": "file:../../core/designsystem" }
+  "dependencies": { "core_designsystem": "file:../../core/designsystem", "data_calendar": "file:../../data/calendar" }
 }
