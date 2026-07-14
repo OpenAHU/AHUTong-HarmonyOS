@@ -5,6 +5,7 @@
   "main": "Index.ets",
   "license": "GPL-3.0-only",
   "dependencies": {
-    "data_schedule": "file:../../data/schedule"
+    "data_schedule": "file:../../data/schedule",
+    "core_designsystem": "file:../../core/designsystem"
   }
 }

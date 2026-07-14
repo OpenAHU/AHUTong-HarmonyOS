@@ -1,0 +1,15 @@
+{
+  "color": [
+    { "name": "ahu_page_background", "value": "#FF0F1113" },
+    { "name": "ahu_card", "value": "#FF1E2023" },
+    { "name": "ahu_card_strong", "value": "#FF2B2D30" },
+    { "name": "ahu_accent_surface", "value": "#FF193842" },
+    { "name": "ahu_primary_action", "value": "#FF80D4ED" },
+    { "name": "ahu_on_primary_action", "value": "#FF071114" },
+    { "name": "ahu_on_surface", "value": "#FFF6F7F8" },
+    { "name": "ahu_on_surface_secondary", "value": "#99F6F7F8" },
+    { "name": "ahu_chip_selected", "value": "#FF315C68" },
+    { "name": "ahu_chip_unselected", "value": "#FF2B2D30" },
+    { "name": "ahu_divider", "value": "#24F6F7F8" }
+  ]
+}

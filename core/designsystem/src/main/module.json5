@@ -1,0 +1,9 @@
+{
+  "module": {
+    "name": "core_designsystem",
+    "type": "har",
+    "deviceTypes": [
+      "phone"
+    ]
+  }
+}

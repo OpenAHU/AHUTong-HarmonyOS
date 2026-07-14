@@ -51,6 +51,18 @@
       ]
     },
     {
+      "name": "core_designsystem",
+      "srcPath": "./core/designsystem",
+      "targets": [
+        {
+          "name": "default",
+          "applyToProducts": [
+            "default"
+          ]
+        }
+      ]
+    },
+    {
       "name": "data_schedule",
       "srcPath": "./data/schedule",
       "targets": [

@@ -1,0 +1,10 @@
+{
+  "name": "core_designsystem",
+  "version": "1.0.0",
+  "description": "AHUTong ArkUI design tokens and reusable components.",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "core_common": "file:../common"
+  }
+}
