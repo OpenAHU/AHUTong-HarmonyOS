@@ -1,10 +1,21 @@
 import { AhuColors, AhuInsetCard, AhuPageHeader, AhuScreen, AhuTypography } from 'core_designsystem';
 import { AhuCache } from 'core_datastore';
 import { PreferencesPage } from './PreferencesPage';
+import { LicensePage } from './LicensePage';
+import { ContributorsPage } from './ContributorsPage';
+import { common } from '@kit.AbilityKit';
 
 @Component
 export struct SettingsPage {
   @State activePage: string = '';
+  @State message: string = '';
+
+  private async feedback(): Promise<void> {
+    try { const context = this.getUIContext().getHostContext() as common.UIAbilityContext;
+      await context.startAbility({ action: 'ohos.want.action.viewData',
+        uri: 'mqqapi://card/show_pslcard?src_type=internal&version=1&uin=1006203134&card_type=group&source=qrcode' });
+    } catch (_) { this.message = '请安装 QQ 或 TIM'; }
+  }
 
   @Builder private item(title: string, subtitle: string, route: string) {
     AhuInsetCard() {
@@ -20,6 +31,10 @@ export struct SettingsPage {
   build() {
     if (this.activePage === 'preferences') {
       PreferencesPage({ onBack: () => { this.activePage = ''; } });
+    } else if (this.activePage === 'license') {
+      LicensePage({ onBack: () => { this.activePage = ''; } });
+    } else if (this.activePage === 'contributors') {
+      ContributorsPage({ onBack: () => { this.activePage = ''; } });
     } else {
       AhuScreen({ scrollable: true }) {
         AhuPageHeader({ title: '设置' });
@@ -27,7 +42,7 @@ export struct SettingsPage {
           Row({ space: 16 }) {
             Image($r('app.media.startIcon')).width(64).height(64).borderRadius(18);
             Column({ space: 5 }) { Text('安大通').fontSize(24).fontWeight(FontWeight.Bold);
-              Text('HarmonyOS 迁移版').fontSize(AhuTypography.body).fontColor(AhuColors.onSurfaceSecondary); }
+              Text('1.0.0 · HarmonyOS').fontSize(AhuTypography.body).fontColor(AhuColors.onSurfaceSecondary); }
             .alignItems(HorizontalAlign.Start);
           }.width('100%');
         }
@@ -43,6 +58,13 @@ export struct SettingsPage {
         Text('关于').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold).padding({ left: 20 });
         this.item('开源协议', '查看第三方软件许可', 'license');
         this.item('贡献名单', '感谢每一位项目贡献者', 'contributors');
+        AhuInsetCard() {
+          Row() { Column({ space: 3 }) { Text('意见反馈').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium);
+            Text('加入安大通反馈群').fontSize(AhuTypography.label).fontColor(AhuColors.onSurfaceSecondary); }
+            .alignItems(HorizontalAlign.Start).layoutWeight(1); Text('›').fontSize(26); }
+          .width('100%').onClick(() => this.feedback());
+        }
+        if (this.message.length > 0) Text(this.message).fontColor(AhuColors.error).padding({ left: 20 });
         this.item('清除数据', '清除登录状态、课表和缓存', 'clear');
       }
     }
