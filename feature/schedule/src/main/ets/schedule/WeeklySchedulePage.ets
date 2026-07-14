@@ -27,6 +27,7 @@ export struct WeeklySchedulePage {
   @State startDate: string = '';
   @State isLoading: boolean = true;
   @State errorMessage: string = '';
+  @State selectedCourse?: Course = undefined;
 
   aboutToAppear(): void {
     const config = this.setupRepository.displayConfig();
@@ -85,6 +86,22 @@ export struct WeeklySchedulePage {
     const date = new Date(`${this.startDate}T00:00:00`);
     date.setDate(date.getDate() + (this.selectedWeek - 1) * 7 + day - 1);
     return `${date.getMonth() + 1}`.padStart(2, '0') + '-' + `${date.getDate()}`.padStart(2, '0');
+  }
+
+  private weekDescription(course: Course): string {
+    const weeks: Array<number> = course.weekIndexes ?? [];
+    if (weeks.length === 0) {
+      return '周次未知';
+    }
+    if (weeks.length === weeks[weeks.length - 1] - weeks[0] + 1) {
+      return `第 ${weeks[0]}-${weeks[weeks.length - 1]} 周`;
+    }
+    const interval = weeks.length > 1 ? weeks[1] - weeks[0] : 0;
+    if (interval === 2) {
+      const parity = weeks[0] % 2 === 0 ? '双周' : '单周';
+      return `第 ${weeks[0]}-${weeks[weeks.length - 1]} 周（${parity}）`;
+    }
+    return `第 ${weeks.join('、')} 周`;
   }
 
   @Builder
@@ -159,7 +176,10 @@ export struct WeeklySchedulePage {
     .justifyContent(FlexAlign.SpaceBetween)
     .backgroundColor(this.colorOf(course))
     .borderRadius(8)
-    .position({ x: 0, y: Math.max(0, courseStartTime(course) - 1) * 52 });
+    .position({ x: 0, y: Math.max(0, courseStartTime(course) - 1) * 52 })
+    .onClick(() => {
+      this.selectedCourse = course;
+    });
   }
 
   @Builder
@@ -220,6 +240,52 @@ export struct WeeklySchedulePage {
     .borderRadius(24);
   }
 
+  @Builder
+  private detailOverlay(course: Course) {
+    Stack({ alignContent: Alignment.Center }) {
+      Row()
+        .width('100%')
+        .height('100%')
+        .backgroundColor('#66000000')
+        .onClick(() => {
+          this.selectedCourse = undefined;
+        });
+      Column({ space: 18 }) {
+        Text(course.name ?? '未命名课程')
+          .width('100%')
+          .fontSize(24)
+          .fontWeight(FontWeight.Bold)
+          .fontColor(AhuColors.onSurface);
+        Text(`${this.weekDescription(course)} · 星期${WEEKDAYS[courseWeekday(course) - 1] ?? ''} · ` +
+          `第 ${courseStartTime(course)}-${courseStartTime(course) + courseLength(course) - 1} 节`)
+          .fontSize(AhuTypography.body)
+          .fontColor(AhuColors.onSurface);
+        Divider().color(AhuColors.divider);
+        Row({ space: 12 }) {
+          Text('地点').fontColor(AhuColors.onSurfaceSecondary);
+          Text(course.location ?? '未知').fontColor(AhuColors.onSurface).layoutWeight(1);
+        }
+        Row({ space: 12 }) {
+          Text('教师').fontColor(AhuColors.onSurfaceSecondary);
+          Text(course.teacher ?? '未知').fontColor(AhuColors.onSurface).layoutWeight(1);
+        }
+        Button('关闭', { type: ButtonType.Capsule })
+          .alignSelf(ItemAlign.End)
+          .fontColor(AhuColors.onPrimaryAction)
+          .backgroundColor(AhuColors.primaryAction)
+          .onClick(() => {
+            this.selectedCourse = undefined;
+          });
+      }
+      .width('86%')
+      .padding(24)
+      .backgroundColor(AhuColors.card)
+      .borderRadius(28);
+    }
+    .width('100%')
+    .height('100%');
+  }
+
   build() {
     Stack() {
       Column() {
@@ -256,6 +322,10 @@ export struct WeeklySchedulePage {
       .height('100%')
       .padding({ bottom: 80 })
       .backgroundColor(AhuColors.pageBackground);
+
+      if (this.selectedCourse) {
+        this.detailOverlay(this.selectedCourse);
+      }
     }
     .width('100%')
     .height('100%');
