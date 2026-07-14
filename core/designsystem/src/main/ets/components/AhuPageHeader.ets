@@ -2,9 +2,13 @@ import { AhuColors, AhuDimens, AhuTypography } from '../theme/AhuTokens';
 
 @Component
 export struct AhuPageHeader {
-  @Prop title: string = '';
-  @BuilderParam actions: () => void = () => {};
-  @BuilderParam below: () => void = () => {};
+  @Prop title: ResourceStr = '';
+
+  @Builder
+  private emptyContent() {}
+
+  @BuilderParam actions: () => void = this.emptyContent;
+  @BuilderParam below: () => void = this.emptyContent;
 
   build() {
     Column({ space: AhuDimens.contentHorizontal }) {

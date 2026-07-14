@@ -4,7 +4,11 @@ import { AhuColors, AhuDimens } from '../theme/AhuTokens';
 export struct AhuScreen {
   @Prop scrollable: boolean = true;
   @Prop clearBottomNav: boolean = false;
-  @BuilderParam content: () => void = () => {};
+
+  @Builder
+  private emptyContent() {}
+
+  @BuilderParam content: () => void = this.emptyContent;
 
   @Builder
   private pageContent() {
@@ -12,7 +16,6 @@ export struct AhuScreen {
       this.content();
     }
     .width('100%')
-    .minHeight('100%')
     .padding({ bottom: this.clearBottomNav ? AhuDimens.bottomNavClearance : 0 });
   }
 

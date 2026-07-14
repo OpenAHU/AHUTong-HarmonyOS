@@ -3,8 +3,8 @@ import { AhuColors, AhuTypography } from '../theme/AhuTokens';
 @Component
 export struct AhuPrimaryButton {
   @Prop text: string = '';
-  @Prop enabled: boolean = true;
-  onClick: () => void = () => {};
+  @Prop isEnabled: boolean = true;
+  clickAction: () => void = () => {};
 
   build() {
     Button(this.text, { type: ButtonType.Capsule, stateEffect: true })
@@ -12,10 +12,10 @@ export struct AhuPrimaryButton {
       .fontWeight(FontWeight.Medium)
       .fontColor(AhuColors.onPrimaryAction)
       .backgroundColor(AhuColors.primaryAction)
-      .opacity(this.enabled ? 1 : 0.4)
-      .enabled(this.enabled)
+      .opacity(this.isEnabled ? 1 : 0.4)
+      .enabled(this.isEnabled)
       .padding({ left: 16, right: 16, top: 12, bottom: 12 })
-      .onClick(() => this.onClick());
+      .onClick(() => this.clickAction());
   }
 }
 
@@ -23,7 +23,7 @@ export struct AhuPrimaryButton {
 export struct AhuChip {
   @Prop text: string = '';
   @Prop selected: boolean = false;
-  onClick: () => void = () => {};
+  clickAction: () => void = () => {};
 
   build() {
     Text(this.text)
@@ -33,6 +33,6 @@ export struct AhuChip {
       .backgroundColor(this.selected ? AhuColors.chipSelected : AhuColors.chipUnselected)
       .borderRadius(24)
       .padding({ left: 16, right: 16, top: 8, bottom: 8 })
-      .onClick(() => this.onClick());
+      .onClick(() => this.clickAction());
   }
 }

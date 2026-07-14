@@ -3,8 +3,12 @@ import { AhuColors, AhuDimens } from '../theme/AhuTokens';
 @Component
 export struct AhuCard {
   @Prop cornerRadius: number = AhuDimens.cardCorner;
-  @Prop backgroundColor: ResourceColor = AhuColors.card;
-  @BuilderParam content: () => void = () => {};
+  @Prop containerColor: ResourceColor = AhuColors.card;
+
+  @Builder
+  private emptyContent() {}
+
+  @BuilderParam content: () => void = this.emptyContent;
 
   build() {
     Column({ space: AhuDimens.contentHorizontal }) {
@@ -17,7 +21,7 @@ export struct AhuCard {
       top: AhuDimens.cardPaddingVertical,
       bottom: AhuDimens.cardPaddingVertical
     })
-    .backgroundColor(this.backgroundColor)
+    .backgroundColor(this.containerColor)
     .borderRadius(this.cornerRadius);
   }
 }
@@ -25,15 +29,24 @@ export struct AhuCard {
 @Component
 export struct AhuInsetCard {
   @Prop cornerRadius: number = AhuDimens.cardCorner;
-  @Prop backgroundColor: ResourceColor = AhuColors.card;
-  @BuilderParam content: () => void = () => {};
+  @Prop containerColor: ResourceColor = AhuColors.card;
+
+  @Builder
+  private emptyContent() {}
+
+  @Builder
+  private cardContent() {
+    this.content();
+  }
+
+  @BuilderParam content: () => void = this.emptyContent;
 
   build() {
     Row() {
       AhuCard({
         cornerRadius: this.cornerRadius,
-        backgroundColor: this.backgroundColor,
-        content: this.content
+        containerColor: this.containerColor,
+        content: this.cardContent
       });
     }
     .width('100%')
