@@ -5,6 +5,7 @@
   "license": "GPL-3.0-only",
   "dependencies": {
     "core_datastore": "file:../../core/datastore",
-    "core_designsystem": "file:../../core/designsystem"
+    "core_designsystem": "file:../../core/designsystem",
+    "data_payment": "file:../../data/payment"
   }
 }

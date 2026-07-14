@@ -50,7 +50,7 @@
 - 产品：`default`
 - 设备类型：`phone`
 - Target / Compatible SDK：HarmonyOS 6.1.1（API 24）
-- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom`、`feature_payment` HAR
+- 当前模块：`entry` HAP，以及 `core_common`、`core_model`、`core_designsystem`、`core_datastore`、`core_network`、`core_sdk_api`、`core_sdk`、`data_auth`、`data_crawler`、`data_schedule`、`data_grade`、`data_exam`、`data_campuscard`、`data_payment`、`feature_login`、`feature_home`、`feature_schedule`、`feature_grade`、`feature_exam`、`feature_calendar`、`feature_classroom`、`feature_payment` HAR
 - 当前实现：M1-M3 基础架构已完成；M4 已完成协议门、登录 UI、门户/教务联合登录、安全凭据冷启动恢复、业务请求失效重登及个人学期初始化，仍待真实账号真机验收；M5 已开始迁移教务业务数据链路
 
 ## 3. 架构映射
@@ -144,7 +144,7 @@ entry (HAP / composition root)
 | 功能 | Android 来源 | HarmonyOS 目标 | 状态 | 验证/备注 |
 | --- | --- | --- | --- | --- |
 | 校园卡信息与余额 | `data:campuscard` / Home | `data/campuscard` + `feature/home` | 进行中 | 新增门户业务会话客户端与失效重登，迁移 `/xzxcard/yue` 余额与 `/xzxcard/qrcode` 动态校园码；支持余额缓存/刷新、卡片正反切换、码刷新、全屏放大及亮度恢复；API 24 Debug HAP 构建通过，真实余额和动态码待真机账号验证 |
-| 校园卡余额充值 | `feature:payment` | `feature/payment` | 进行中 | 已迁移首页入口、金额格式校验、姓名/学号确认与剪贴板复制、支付宝校园卡 Scheme 及网页降级；YCard 银行卡订单与支付结果待下一切片；API 24 Debug HAP 构建通过，待真机验证支付宝拉起 |
+| 校园卡余额充值 | `feature:payment` | `data/payment` + `feature/payment` | 进行中 | 已迁移首页入口、金额校验、身份确认/复制、支付宝 Scheme/网页降级；银行卡路径已接入 YCard CAS 票据换 OAuth 令牌、账户余额、安全随机数与 SHA-256 签名、创建订单、支付结果及防重复提交；API 24 Debug HAP 构建通过，涉及真实资金，未经测试账号和真机成功小额验证前不标记完成 |
 | 电费充值 | `feature:payment` | `feature/payment` | 待开始 | 楼栋、房间、金额与结果 |
 | 浴室缴费 | `feature:payment` | `feature/payment` | 待开始 | 账户、金额与结果 |
 | 浴室开放信息 | `feature:home` | `feature/home` | 待开始 | 开放状态及异常降级 |
@@ -206,6 +206,7 @@ entry (HAP / composition root)
 - UI 一致不等于照搬 Android 系统控件；涉及系统权限、窗口和返回行为时优先满足 HarmonyOS 规范。
 - 隐私政策末段的“安卓存储隔离”已按目标平台改为“HarmonyOS 应用数据隔离”，其余协议内容与 Android 基线一致。
 - 测试账号、签名文件和线上接口凭据不得进入 Git。
+- YCard 订单签名协议依赖 Android 客户端已公开的应用级密钥；迁移仅为保持现有协议兼容，不将其视为用户凭据，发布前应与服务端协商更换为不依赖客户端固定密钥的方案。
 
 ## 10. 变更记录
 
@@ -238,3 +239,4 @@ entry (HAP / composition root)
 | 2026-07-15 | 校园卡余额 | 新增门户业务请求客户端及 Asset Store 凭据失效重登钩子；新增 `data_campuscard`，迁移余额获取和用户缓存，并在首页恢复余额卡、刷新与错误状态 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，门户余额及过期重登待运行验收 |
 | 2026-07-15 | 动态校园码 | 迁移 `/xzxcard/qrcode` 成功码与载荷校验，使用 ArkUI 原生 `QRCode` 渲染可扫码图形；首页卡片支持余额/校园码切换、点击刷新、全屏放大，并在关闭或离页时恢复原窗口亮度 | API 24 Debug HAP 构建成功且无 ArkTS 警告；无真实账号与连接设备，码内容、扫码成功率及亮度恢复待真机验收 |
 | 2026-07-15 | 校园卡支付宝充值 | 新增 `feature_payment`，从首页校园卡进入充值页；迁移金额格式校验、身份确认、剪贴板复制，并按 Android 原行为优先拉起支付宝校园卡小程序、失败时降级到网页 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功；支付宝 Scheme、剪贴板和网页降级因无连接设备待真机验收 |
+| 2026-07-15 | 校园卡银行卡充值 | 新增 `data_payment`，迁移 YCard CAS 重定向票据、OAuth 令牌、一卡通账户与余额查询；按 Android 协议恢复 11 位安全随机数、时间戳、SHA-256 订单/支付签名、订单号提取和支付结果，页面补充账户状态、进度、成功/失败及防重入 | OHPM 全模块依赖同步；API 24 Debug HAP 构建成功且无 ArkTS 警告；因涉及真实资金且无测试账号/连接设备，未执行真实充值 |

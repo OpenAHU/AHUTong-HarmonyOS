@@ -1,0 +1,10 @@
+{
+  "name": "data_payment",
+  "version": "1.0.0",
+  "main": "Index.ets",
+  "license": "GPL-3.0-only",
+  "dependencies": {
+    "core_common": "file:../../core/common",
+    "data_crawler": "file:../crawler"
+  }
+}

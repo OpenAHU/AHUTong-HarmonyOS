@@ -247,6 +247,11 @@
       "name": "feature_payment",
       "srcPath": "./feature/payment",
       "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "data_payment",
+      "srcPath": "./data/payment",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
     }
   ]
 }

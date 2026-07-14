@@ -2,6 +2,7 @@ import { AhuColors, AhuInsetCard, AhuScreen, AhuTypography } from 'core_designsy
 import { AhuCache } from 'core_datastore';
 import { common, Want } from '@kit.AbilityKit';
 import { pasteboard } from '@kit.BasicServicesKit';
+import { CardAccount, CardPaymentRepository, CardPaymentRepositoryProvider } from 'data_payment';
 
 const ALIPAY_SCHEME: string =
   'alipays://platformapi/startapp?appId=2019090967125695&page=pages%2Findex%2Findex&chInfo=ch_share__chsub_CopyLink';
@@ -9,10 +10,27 @@ const ALIPAY_FALLBACK_URL: string = 'https://www.wmslz.com/s/M6KARh485j3';
 
 @Component
 export struct CardRechargePage {
+  private readonly paymentRepository: CardPaymentRepository = CardPaymentRepositoryProvider.get();
   @State amount: string = '';
   @State showConfirm: boolean = false;
   @State opening: boolean = false;
+  @State account?: CardAccount = undefined;
+  @State accountLoading: boolean = true;
+  @State accountError: string = '';
+  @State paymentMessage: string = '';
+  @State paymentSuccess: boolean = false;
   onBack: () => void = () => {};
+
+  aboutToAppear(): void { this.loadAccount(); }
+
+  private async loadAccount(): Promise<void> {
+    this.accountLoading = true;
+    this.accountError = '';
+    const result = await this.paymentRepository.getAccount();
+    if (result.isSuccess && result.data) this.account = result.data;
+    else this.accountError = result.error?.message ?? '校园卡账户加载失败';
+    this.accountLoading = false;
+  }
 
   private validAmount(value: string): boolean {
     return /^\d*\.?\d{0,2}$/.test(value);
@@ -58,6 +76,23 @@ export struct CardRechargePage {
     this.opening = false;
   }
 
+  private async payByBankCard(): Promise<void> {
+    if (this.opening || !this.account) return;
+    this.opening = true;
+    this.paymentMessage = '';
+    const result = await this.paymentRepository.charge(this.amount, this.account.type);
+    if (result.isSuccess) {
+      this.paymentSuccess = true;
+      this.paymentMessage = `充值成功，订单号：${result.data ?? '--'}`;
+      await this.loadAccount();
+    } else {
+      this.paymentSuccess = false;
+      this.paymentMessage = result.error?.message ?? '充值失败';
+    }
+    this.showConfirm = false;
+    this.opening = false;
+  }
+
   @Builder
   private confirmPanel() {
     Column({ space: 18 }) {
@@ -69,6 +104,10 @@ export struct CardRechargePage {
       Button(this.opening ? '正在打开…' : '支付宝充值', { type: ButtonType.Capsule })
         .width('100%').enabled(!this.opening).fontColor(AhuColors.onPrimaryAction)
         .backgroundColor(AhuColors.primaryAction).onClick(() => this.openAlipay());
+      Button(this.opening ? '正在支付…' : '银行卡充值', { type: ButtonType.Capsule })
+        .width('100%').enabled(!this.opening && this.account !== undefined)
+        .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.cardStrong)
+        .onClick(() => this.payByBankCard());
       Button('取消', { type: ButtonType.Capsule }).width('100%')
         .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.chipUnselected)
         .onClick(() => this.showConfirm = false);
@@ -87,9 +126,25 @@ export struct CardRechargePage {
         AhuInsetCard() {
           Column({ space: 14 }) {
             Text('校园卡账户').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold);
-            Text(`${AhuCache.getCurrentUser()?.name ?? '--'}  ${AhuCache.getCurrentUser()?.xh ?? '--'}`)
-              .fontSize(AhuTypography.body).fontColor(AhuColors.onSurfaceSecondary);
+            if (this.accountLoading) {
+              LoadingProgress().width(28).height(28).color(AhuColors.primaryAction);
+            } else if (this.account) {
+              Text(`${this.account.name}  ${this.account.type}`)
+                .fontSize(AhuTypography.body).fontColor(AhuColors.onSurfaceSecondary);
+              Text(`账户余额  ¥ ${this.account.balance.toFixed(2)}`)
+                .fontSize(AhuTypography.body).fontWeight(FontWeight.Bold);
+            } else {
+              Text(this.accountError).fontSize(AhuTypography.body).fontColor(AhuColors.error)
+                .onClick(() => this.loadAccount());
+            }
           }.width('100%').alignItems(HorizontalAlign.Start);
+        }
+        if (this.paymentMessage.length > 0) {
+          AhuInsetCard() {
+            Text(this.paymentMessage).fontSize(AhuTypography.body).fontWeight(FontWeight.Bold)
+              .fontColor(this.paymentSuccess ? AhuColors.primaryAction : AhuColors.error)
+              .onClick(() => this.paymentMessage = '');
+          }
         }
         AhuInsetCard() {
           Column({ space: 12 }) {
