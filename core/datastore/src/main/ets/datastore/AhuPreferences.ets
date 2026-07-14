@@ -20,6 +20,8 @@ export class PreferencesKeys {
   static readonly EXAM_CACHE: string = 'exam_cache';
   static readonly CARD_BALANCE: string = 'card_balance';
   static readonly LOST_FOUND_LIST: string = 'lost_found_list';
+  static readonly LOST_FOUND_CAMPUSES: string = 'lost_found_campuses';
+  static readonly LOST_FOUND_TYPES: string = 'lost_found_types';
 }
 
 export class AhuPreferences {

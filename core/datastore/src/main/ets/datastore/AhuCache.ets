@@ -1,4 +1,4 @@
-import { Course, Exam, Grade, LostFoundItem, User } from 'core_model';
+import { CampusItem, Course, Exam, Grade, LostFoundItem, LostFoundType, User } from 'core_model';
 import { AhuPreferences, PreferencesKeys } from './AhuPreferences';
 
 export class AhuCache {
@@ -180,6 +180,26 @@ export class AhuCache {
     const raw = AhuPreferences.getString(AhuCache.userKey(`${PreferencesKeys.LOST_FOUND_LIST}:${state}`));
     if (raw.length === 0) return [];
     try { return JSON.parse(raw) as Array<LostFoundItem>; } catch (_) { return []; }
+  }
+
+  static saveLostFoundCampuses(items: Array<CampusItem>): void {
+    AhuPreferences.putString(PreferencesKeys.LOST_FOUND_CAMPUSES, JSON.stringify(items));
+  }
+
+  static getLostFoundCampuses(): Array<CampusItem> {
+    const raw = AhuPreferences.getString(PreferencesKeys.LOST_FOUND_CAMPUSES);
+    if (raw.length === 0) return [];
+    try { return JSON.parse(raw) as Array<CampusItem>; } catch (_) { return []; }
+  }
+
+  static saveLostFoundTypes(items: Array<LostFoundType>): void {
+    AhuPreferences.putString(PreferencesKeys.LOST_FOUND_TYPES, JSON.stringify(items));
+  }
+
+  static getLostFoundTypes(): Array<LostFoundType> {
+    const raw = AhuPreferences.getString(PreferencesKeys.LOST_FOUND_TYPES);
+    if (raw.length === 0) return [];
+    try { return JSON.parse(raw) as Array<LostFoundType>; } catch (_) { return []; }
   }
 
   static logout(): void {

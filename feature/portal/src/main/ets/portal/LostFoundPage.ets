@@ -1,5 +1,5 @@
 import { AhuColors, AhuInsetCard, AhuScreen, AhuTypography } from 'core_designsystem';
-import { LostFoundItem } from 'core_model';
+import { CampusItem, LostFoundItem, LostFoundPublishRequest, LostFoundType } from 'core_model';
 import { LostFoundRepository, LostFoundRepositoryProvider } from 'data_portal';
 
 @Component
@@ -13,9 +13,44 @@ export struct LostFoundPage {
   @State loadingMore: boolean = false;
   @State error: string = '';
   @State selected?: LostFoundItem = undefined;
+  @State showPublish: boolean = false;
+  @State campuses: Array<CampusItem> = [];
+  @State types: Array<LostFoundType> = [];
+  @State publishCampusId: string = '';
+  @State publishTypeId: string = '';
+  @State publishState: string = '1';
+  @State linkman: string = '';
+  @State phone: string = '';
+  @State title: string = '';
+  @State num1: string = '';
+  @State publishing: boolean = false;
+  @State publishError: string = '';
   onBack: () => void = () => {};
 
-  aboutToAppear(): void { this.load(true); }
+  aboutToAppear(): void { this.load(true); this.loadPublishOptions(); }
+
+  private async loadPublishOptions(): Promise<void> {
+    const campusResult = await this.repository.getCampuses();
+    if (campusResult.isSuccess && campusResult.data) this.campuses = campusResult.data;
+    const typeResult = await this.repository.getTypes();
+    if (typeResult.isSuccess && typeResult.data) this.types = typeResult.data;
+  }
+
+  private async publish(): Promise<void> {
+    if (this.linkman.trim().length === 0 || this.phone.trim().length === 0 || this.title.trim().length === 0 ||
+      this.publishCampusId.length === 0 || this.publishTypeId.length === 0) {
+      this.publishError = '请填写联系人、联系电话和描述，并选择校区与物品类型'; return;
+    }
+    this.publishing = true; this.publishError = '';
+    const request: LostFoundPublishRequest = { imgs: [], linkman: this.linkman.trim(), phone: this.phone.trim(),
+      title: this.title.trim(), num1: this.num1.trim(), campusid: this.publishCampusId,
+      typeid: this.publishTypeId, state: this.publishState, auditresult: 1 };
+    const result = await this.repository.publish(request);
+    this.publishing = false;
+    if (!result.isSuccess) { this.publishError = result.error?.message ?? '发布失败'; return; }
+    this.showPublish = false; this.linkman = ''; this.phone = ''; this.title = ''; this.num1 = '';
+    this.state = Number(this.publishState); await this.load(true);
+  }
 
   private async load(refresh: boolean): Promise<void> {
     if (refresh) { this.loading = true; this.page = 1; } else this.loadingMore = true;
@@ -61,6 +96,53 @@ export struct LostFoundPage {
       .alignItems(HorizontalAlign.Start);
   }
 
+  @Builder
+  private publishSheet() {
+    Column({ space: 12 }) {
+      Row() {
+        Text('发布信息').fontSize(AhuTypography.sectionTitle).fontWeight(FontWeight.Bold).layoutWeight(1);
+        Button('×', { type: ButtonType.Circle }).width(38).height(38).backgroundColor(AhuColors.chipUnselected)
+          .fontColor(AhuColors.onSurface).onClick(() => this.showPublish = false);
+      }.width('100%');
+      Text('当前版本与 Android 一致，暂不支持上传图片。').fontSize(AhuTypography.label)
+        .fontColor(AhuColors.onSurfaceSecondary);
+      TextInput({ text: this.linkman, placeholder: '联系人（必填）' }).onChange((value: string) => this.linkman = value);
+      TextInput({ text: this.phone, placeholder: '联系电话（必填）' }).type(InputType.PhoneNumber)
+        .onChange((value: string) => this.phone = value);
+      TextInput({ text: this.title, placeholder: '物品描述（必填）' }).onChange((value: string) => this.title = value);
+      TextInput({ text: this.num1, placeholder: '编号/补充说明（选填）' }).onChange((value: string) => this.num1 = value);
+      Text('选择校区').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium);
+      Scroll() { Row({ space: 8 }) { ForEach(this.campuses, (item: CampusItem) => {
+        Button(item.campusName, { type: ButtonType.Capsule })
+          .fontColor(this.publishCampusId === item.id ? AhuColors.onPrimaryAction : AhuColors.onSurface)
+          .backgroundColor(this.publishCampusId === item.id ? AhuColors.primaryAction : AhuColors.chipUnselected)
+          .onClick(() => this.publishCampusId = item.id);
+      }, (item: CampusItem) => item.id); } }.width('100%').scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off);
+      Text('选择物品类型').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium);
+      Scroll() { Row({ space: 8 }) { ForEach(this.types, (item: LostFoundType) => {
+        Button(item.typeName, { type: ButtonType.Capsule })
+          .fontColor(this.publishTypeId === item.typeId ? AhuColors.onPrimaryAction : AhuColors.onSurface)
+          .backgroundColor(this.publishTypeId === item.typeId ? AhuColors.primaryAction : AhuColors.chipUnselected)
+          .onClick(() => this.publishTypeId = item.typeId);
+      }, (item: LostFoundType) => item.typeId); } }.width('100%').scrollable(ScrollDirection.Horizontal).scrollBar(BarState.Off);
+      Text('信息类型').fontSize(AhuTypography.body).fontWeight(FontWeight.Medium);
+      Row({ space: 8 }) {
+        Button('失物招领', { type: ButtonType.Capsule }).layoutWeight(1)
+          .fontColor(this.publishState === '1' ? AhuColors.onPrimaryAction : AhuColors.onSurface)
+          .backgroundColor(this.publishState === '1' ? AhuColors.primaryAction : AhuColors.chipUnselected)
+          .onClick(() => this.publishState = '1');
+        Button('寻物启事', { type: ButtonType.Capsule }).layoutWeight(1)
+          .fontColor(this.publishState === '2' ? AhuColors.onPrimaryAction : AhuColors.onSurface)
+          .backgroundColor(this.publishState === '2' ? AhuColors.primaryAction : AhuColors.chipUnselected)
+          .onClick(() => this.publishState = '2');
+      }.width('100%');
+      if (this.publishError.length > 0) Text(this.publishError).fontSize(AhuTypography.label).fontColor(AhuColors.error);
+      Button(this.publishing ? '发布中…' : '发布', { type: ButtonType.Capsule }).width('100%').enabled(!this.publishing)
+        .fontColor(AhuColors.onPrimaryAction).backgroundColor(AhuColors.primaryAction).onClick(() => this.publish());
+    }.width('92%').height('88%').padding(22).backgroundColor(AhuColors.card).borderRadius(28)
+      .alignItems(HorizontalAlign.Start);
+  }
+
   build() {
     Stack({ alignContent: Alignment.Center }) {
       AhuScreen({ scrollable: true }) {
@@ -68,6 +150,8 @@ export struct LostFoundPage {
           Button('‹', { type: ButtonType.Circle }).width(40).height(40).fontSize(28)
             .fontColor(AhuColors.onSurface).backgroundColor(AhuColors.card).onClick(() => this.onBack());
           Text('失物招领').fontSize(28).fontWeight(FontWeight.Bold).layoutWeight(1);
+          Button('发布', { type: ButtonType.Capsule }).backgroundColor(AhuColors.primaryAction)
+            .fontColor(AhuColors.onPrimaryAction).onClick(() => this.showPublish = true);
           Button('刷新', { type: ButtonType.Capsule }).enabled(!this.loading).backgroundColor(AhuColors.card)
             .fontColor(AhuColors.onSurface).onClick(() => this.load(true));
         }.width('100%').padding({ left: 16, right: 16, top: 20 });
@@ -109,6 +193,10 @@ export struct LostFoundPage {
       }
       if (this.selected) {
         Column() { this.detail(this.selected); }.width('100%').height('100%')
+          .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).backgroundColor('#66000000');
+      }
+      if (this.showPublish) {
+        Column() { this.publishSheet(); }.width('100%').height('100%')
           .justifyContent(FlexAlign.Center).alignItems(HorizontalAlign.Center).backgroundColor('#66000000');
       }
     }.width('100%').height('100%');
