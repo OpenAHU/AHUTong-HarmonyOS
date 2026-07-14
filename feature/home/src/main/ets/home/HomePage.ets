@@ -48,6 +48,7 @@ export struct HomePage {
   private originalBrightness: number = -1;
   onOpenSchedule: () => void = () => {};
   onOpenWidget: (route: string) => void = (_: string) => {};
+  onOpenRecharge: () => void = () => {};
 
   aboutToAppear(): void {
     const config = this.setupRepository.displayConfig();
@@ -320,7 +321,8 @@ export struct HomePage {
           Button('↻', { type: ButtonType.Circle }).width(40).height(40).fontSize(20)
             .backgroundColor(AhuColors.chipUnselected).fontColor(AhuColors.onSurface).onClick(() => this.loadBalance(true));
           Divider().vertical(true).height(80).color(AhuColors.divider).margin({ left: 12, right: 12 });
-          Text('充\n值').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).textAlign(TextAlign.Center);
+          Text('充\n值').fontSize(AhuTypography.body).fontWeight(FontWeight.Bold).textAlign(TextAlign.Center)
+            .onClick(() => this.onOpenRecharge());
         }.width('100%').alignItems(VerticalAlign.Center);
       }
     }

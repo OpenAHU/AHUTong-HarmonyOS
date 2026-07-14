@@ -242,6 +242,11 @@
       "name": "data_campuscard",
       "srcPath": "./data/campuscard",
       "targets": [{ "name": "default", "applyToProducts": ["default"] }]
+    },
+    {
+      "name": "feature_payment",
+      "srcPath": "./feature/payment",
+      "targets": [{ "name": "default", "applyToProducts": ["default"] }]
     }
   ]
 }

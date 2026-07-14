@@ -14,6 +14,7 @@ import { GradePage } from 'feature_grade';
 import { ExamPage } from 'feature_exam';
 import { SchoolCalendarPage } from 'feature_calendar';
 import { FreeClassroomPage } from 'feature_classroom';
+import { CardRechargePage } from 'feature_payment';
 import { ScheduleSetupRepository } from 'data_schedule';
 
 @Component
@@ -74,6 +75,9 @@ struct Index {
             if (route === 'grade' || route === 'exam' || route === 'school_calendar' || route === 'free_classroom') {
               this.activePage = route;
             }
+          },
+          onOpenRecharge: () => {
+            this.activePage = 'card_recharge';
           }
         });
       }
@@ -137,6 +141,8 @@ struct Index {
         SchoolCalendarPage({ onBack: () => { this.activePage = ''; } });
       } else if (this.activePage === 'free_classroom') {
         FreeClassroomPage({ onBack: () => { this.activePage = ''; } });
+      } else if (this.activePage === 'card_recharge') {
+        CardRechargePage({ onBack: () => { this.activePage = ''; } });
       } else {
         this.mainContent();
       }
