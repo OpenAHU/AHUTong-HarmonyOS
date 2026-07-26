@@ -335,6 +335,25 @@ export class AhuCache {
 
   static setMockData(enabled: boolean): void { AhuPreferences.putBoolean(PreferencesKeys.MOCK_DATA, enabled); }
   static getMockData(): boolean { return AhuPreferences.getBoolean(PreferencesKeys.MOCK_DATA); }
+  static beginMockSession(): void {
+    if (AhuCache.getMockData()) return;
+    const user = AhuCache.getCurrentUser();
+    if (user) AhuPreferences.putString(PreferencesKeys.MOCK_PREVIOUS_USER, JSON.stringify(user));
+    else AhuPreferences.remove(PreferencesKeys.MOCK_PREVIOUS_USER);
+    AhuCache.setMockData(true);
+  }
+  static endMockSession(): void {
+    const raw = AhuPreferences.getString(PreferencesKeys.MOCK_PREVIOUS_USER);
+    if (raw.length > 0) {
+      try { AhuCache.saveCurrentUser(JSON.parse(raw) as User); }
+      catch (_) { AhuCache.clearCurrentUser(); }
+    } else {
+      AhuCache.clearCurrentUser();
+    }
+    AhuPreferences.remove(PreferencesKeys.MOCK_PREVIOUS_USER);
+    AhuCache.setMockData(false);
+    AhuCache.clearMockCurrentTimeMillis();
+  }
   static saveMockScenario(id: string): void { AhuPreferences.putString(PreferencesKeys.MOCK_SCENARIO, id); }
   static getMockScenario(): string { return AhuPreferences.getString(PreferencesKeys.MOCK_SCENARIO, 'standard_student'); }
   static saveMockCurrentTimeMillis(value: number): void {

@@ -94,7 +94,7 @@ export class MockScenarioController {
   static apply(id: string): MockScenarioOption {
     const selected = MockScenarioController.scenarios.find((item: MockScenarioOption) => item.id === id)
       ?? MockScenarioController.scenarios[0];
-    AhuCache.setMockData(true);
+    AhuCache.beginMockSession();
     AhuCache.saveMockScenario(selected.id);
     AhuCache.saveCurrentUser({ name: 'Mock 同学', xh: '2022000000' });
     AhuCache.setAgreementAccepted(); AhuCache.setPrivacyAccepted(); AhuCache.setBusinessAccepted();
@@ -122,5 +122,5 @@ export class MockScenarioController {
     return selected;
   }
 
-  static disable(): void { AhuCache.setMockData(false); AhuCache.clearMockCurrentTimeMillis(); }
+  static disable(): void { AhuCache.endMockSession(); }
 }

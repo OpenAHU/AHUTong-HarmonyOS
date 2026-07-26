@@ -18,6 +18,7 @@ export class PreferencesKeys {
   static readonly MOCK_CURRENT_TIME: string = 'mock_current_time';
   static readonly MOCK_DATA: string = 'mock_data';
   static readonly MOCK_SCENARIO: string = 'mock_scenario';
+  static readonly MOCK_PREVIOUS_USER: string = 'mock_previous_user';
   static readonly HOME_WIDGET_SLOTS: string = 'home_widget_slots';
   static readonly GRADE_CACHE: string = 'grade_cache';
   static readonly GRADE_PROFILES: string = 'grade_profiles';
